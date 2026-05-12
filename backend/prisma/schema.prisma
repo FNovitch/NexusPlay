@@ -1,0 +1,184 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  CUSTOMER
+  SELLER
+  ADMIN
+}
+
+enum SellerStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum ProductStatus {
+  DRAFT
+  PENDING
+  ACTIVE
+  REJECTED
+  ARCHIVED
+}
+
+enum OrderStatus {
+  CREATED
+  PAID
+  IN_PRODUCTION
+  SHIPPED
+  DELIVERED
+  CANCELED
+}
+
+enum PaymentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  REFUNDED
+}
+
+enum ReviewType {
+  PRODUCT
+  SELLER
+}
+
+model User {
+  id           String     @id @default(uuid())
+  name         String
+  email        String     @unique
+  passwordHash String
+  role         UserRole   @default(CUSTOMER)
+  avatarUrl    String?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  seller       Seller?
+  favorites    Favorite[]
+  orders       Order[]    @relation("BuyerOrders")
+  reviews      Review[]   @relation("AuthorReviews")
+}
+
+model Seller {
+  id          String       @id @default(uuid())
+  userId      String       @unique
+  storeName   String
+  slug        String       @unique
+  bio         String
+  story       String
+  avatarUrl   String?
+  coverUrl    String?
+  status      SellerStatus @default(PENDING)
+  rating      Float        @default(0)
+  salesCount  Int          @default(0)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  products    Product[]
+  orderItems  OrderItem[]
+  reviews     Review[]
+}
+
+model Category {
+  id          String    @id @default(uuid())
+  name        String
+  slug        String    @unique
+  description String?
+  imageUrl    String?
+  products    Product[]
+}
+
+model Product {
+  id                     String        @id @default(uuid())
+  sellerId               String
+  categoryId             String
+  name                   String
+  slug                   String
+  description            String
+  price                  Decimal       @db.Decimal(10, 2)
+  stock                  Int
+  images                 String[]
+  customizationAvailable Boolean       @default(false)
+  personalizationPrompt  String?
+  status                 ProductStatus @default(PENDING)
+  rating                 Float         @default(0)
+  salesCount             Int           @default(0)
+  createdAt              DateTime      @default(now())
+  updatedAt              DateTime      @updatedAt
+  seller                 Seller        @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  category               Category      @relation(fields: [categoryId], references: [id])
+  favorites              Favorite[]
+  orderItems             OrderItem[]
+  reviews                Review[]
+
+  @@unique([sellerId, slug])
+  @@index([name])
+  @@index([status, rating])
+}
+
+model Favorite {
+  userId    String
+  productId String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@id([userId, productId])
+}
+
+model Order {
+  id             String        @id @default(uuid())
+  buyerId        String
+  status         OrderStatus   @default(CREATED)
+  paymentStatus  PaymentStatus @default(PENDING)
+  total          Decimal       @db.Decimal(10, 2)
+  mpPreferenceId String?
+  mpPaymentId    String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  buyer          User          @relation("BuyerOrders", fields: [buyerId], references: [id])
+  items          OrderItem[]
+}
+
+model OrderItem {
+  id                 String   @id @default(uuid())
+  orderId            String
+  productId          String
+  sellerId           String
+  quantity           Int
+  unitPrice          Decimal  @db.Decimal(10, 2)
+  total              Decimal  @db.Decimal(10, 2)
+  customizationNotes String?
+  order              Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product            Product  @relation(fields: [productId], references: [id])
+  seller             Seller   @relation(fields: [sellerId], references: [id])
+  review             Review?
+}
+
+model Review {
+  id          String     @id @default(uuid())
+  authorId    String
+  productId   String?
+  sellerId    String?
+  orderItemId String?    @unique
+  type        ReviewType
+  rating      Int
+  comment     String
+  createdAt   DateTime   @default(now())
+  author      User       @relation("AuthorReviews", fields: [authorId], references: [id], onDelete: Cascade)
+  product     Product?   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  seller      Seller?    @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  orderItem   OrderItem? @relation(fields: [orderItemId], references: [id])
+}
+
+model Coupon {
+  id         String   @id @default(uuid())
+  code       String   @unique
+  percentOff Int
+  active     Boolean  @default(true)
+  expiresAt  DateTime?
+}
