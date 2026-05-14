@@ -3,10 +3,10 @@ import { Link } from "react-router-dom";
 
 export function Footer() {
   return (
-    <footer className="mt-10 border-t border-kriar-line/80 bg-white/70">
+    <footer className="mt-10 border-t border-kriar-line/80 bg-kriar-surface/70">
       <div className="app-shell grid gap-8 py-10 md:grid-cols-[1.2fr_0.8fr_0.8fr]">
         <div>
-          <Link to="/" className="inline-flex rounded-2xl transition hover:opacity-90" aria-label="KRIAR início">
+          <Link to="/" className="inline-flex rounded-[20px] transition duration-[250ms] hover:opacity-90" aria-label="KRIAR início">
             <img
               src="/brand/kriar-logo.png"
               alt="KRIAR - Onde a arte encontra o futuro"

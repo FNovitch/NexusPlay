@@ -6,23 +6,30 @@ export default {
     extend: {
       colors: {
         kriar: {
-          primary: "#0f5b66",
-          secondary: "#a45a3d",
-          support: "#d7b797",
-          contrast: "#1f2a32",
-          muted: "#6d756f",
-          paper: "#f8f6f2",
-          surface: "#ffffff",
-          line: "#e8e1d8"
+          background: "#f5f6f7",
+          surface: "#fefcfc",
+          primary: "#38616f",
+          secondary: "#9c6146",
+          accent: "#b39e8e",
+          contrast: "#1d2733",
+          muted: "#5c6773",
+          light: "#fefcfc",
+          line: "#e5e7eb",
+          success: "#3a7d44",
+          warning: "#c98a2e",
+          error: "#b42318",
+          paper: "#f5f6f7",
+          support: "#b39e8e"
         }
       },
       boxShadow: {
-        soft: "0 18px 60px rgba(31, 42, 50, 0.08)",
-        card: "0 16px 44px rgba(31, 42, 50, 0.07)",
-        lift: "0 24px 70px rgba(15, 91, 102, 0.14)"
+        soft: "0 12px 34px rgba(29, 39, 51, 0.06)",
+        card: "0 14px 36px rgba(29, 39, 51, 0.07)",
+        lift: "0 18px 48px rgba(29, 39, 51, 0.10)"
       },
       fontFamily: {
-        sans: ["Inter", "ui-sans-serif", "system-ui", "sans-serif"]
+        sans: ["Inter", "ui-sans-serif", "system-ui", "sans-serif"],
+        serif: ["Fraunces", "ui-serif", "Georgia", "serif"]
       }
     }
   },

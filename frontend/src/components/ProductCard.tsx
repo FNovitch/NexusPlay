@@ -39,12 +39,12 @@ export function ProductCard({ product }: { product: Product }) {
           <img src={product.images[0]} alt={product.name} className="h-full w-full object-cover transition duration-500 ease-out group-hover:scale-[1.035]" />
           <div className="absolute inset-0 bg-gradient-to-t from-kriar-contrast/20 via-transparent to-transparent opacity-0 transition group-hover:opacity-100" />
           {product.customizationAvailable && (
-            <span className="badge bg-white/95 text-kriar-primary shadow-sm backdrop-blur absolute left-3 top-3">
+            <span className="badge bg-kriar-surface/95 text-kriar-primary shadow-sm backdrop-blur absolute left-3 top-3">
               <Sparkle className="h-3 w-3" /> Personaliza
             </span>
           )}
           {product.stock <= 4 && (
-            <span className="badge bg-kriar-secondary text-white shadow-sm absolute bottom-3 left-3">Últimas {product.stock}</span>
+            <span className="badge bg-kriar-secondary text-kriar-light shadow-sm absolute bottom-3 left-3">Últimas {product.stock}</span>
           )}
         </div>
       </Link>
@@ -66,14 +66,14 @@ export function ProductCard({ product }: { product: Product }) {
           <div className="flex gap-1.5">
             <button
               onClick={handleFavorite}
-              className={`btn-icon h-10 w-10 ${isFavorite ? "bg-kriar-secondary text-white hover:bg-kriar-secondary hover:text-white" : ""}`}
+              className={`btn-icon ${isFavorite ? "bg-kriar-secondary text-kriar-light hover:bg-kriar-secondary hover:text-kriar-light" : ""}`}
               aria-label="Favoritar"
             >
               <Heart className={`h-4 w-4 ${isFavorite ? "fill-current" : ""}`} />
             </button>
             <button
               onClick={handleAdd}
-              className="grid h-10 w-10 place-items-center rounded-xl bg-kriar-primary text-white shadow-sm transition duration-200 hover:-translate-y-0.5 hover:bg-[#0b4c55] hover:shadow-lift active:translate-y-0"
+              className="inline-grid h-11 w-11 place-items-center rounded-full bg-kriar-primary text-kriar-light shadow-sm transition duration-[250ms] hover:-translate-y-0.5 hover:bg-[#2f5360] hover:shadow-soft active:translate-y-0"
               aria-label="Adicionar ao carrinho"
             >
               <ShoppingBag className="h-4 w-4" />

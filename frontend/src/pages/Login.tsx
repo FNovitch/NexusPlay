@@ -60,8 +60,8 @@ export function Login() {
           <LogIn className="h-5 w-5" /> {loading ? "Entrando..." : "Entrar"}
         </button>
         <div className="mt-4 grid gap-2 text-sm">
-          <button type="button" className="rounded-xl px-3 py-2 text-left font-bold text-kriar-muted transition hover:bg-kriar-primary/10 hover:text-kriar-primary" onClick={() => setEmail("atelie@kriar.com")}>Usar demo vendedor</button>
-          <button type="button" className="rounded-xl px-3 py-2 text-left font-bold text-kriar-muted transition hover:bg-kriar-primary/10 hover:text-kriar-primary" onClick={() => setEmail("admin@kriar.com")}>Usar demo admin</button>
+          <button type="button" className="min-h-11 rounded-full px-4 py-2 text-left font-bold text-kriar-muted transition duration-[250ms] hover:bg-kriar-primary/10 hover:text-kriar-primary" onClick={() => setEmail("atelie@kriar.com")}>Usar demo vendedor</button>
+          <button type="button" className="min-h-11 rounded-full px-4 py-2 text-left font-bold text-kriar-muted transition duration-[250ms] hover:bg-kriar-primary/10 hover:text-kriar-primary" onClick={() => setEmail("admin@kriar.com")}>Usar demo admin</button>
         </div>
       </form>
     </main>

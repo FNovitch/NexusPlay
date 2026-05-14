@@ -10,3 +10,4 @@ coverage
 .vercel
 .netlify
 backend/prisma/migrations/dev.db
+frontend/plans

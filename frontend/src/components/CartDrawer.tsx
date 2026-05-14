@@ -19,7 +19,7 @@ export function CartDrawer() {
 
   return (
     <div className="fixed inset-0 z-50 bg-kriar-contrast/30 backdrop-blur-sm">
-      <aside className="ml-auto flex h-full w-full max-w-md flex-col border-l border-kriar-line bg-kriar-paper shadow-lift">
+      <aside className="ml-auto flex h-full w-full max-w-md flex-col border-l border-kriar-line bg-kriar-background shadow-lift">
         <div className="flex items-center justify-between border-b border-kriar-line p-5">
           <div>
             <p className="eyebrow">Sua seleção</p>
@@ -33,7 +33,7 @@ export function CartDrawer() {
           {items.length === 0 ? (
             <div className="grid h-full place-items-center text-center">
               <div>
-                <div className="mx-auto mb-4 grid h-12 w-12 place-items-center rounded-2xl bg-kriar-primary/10 text-kriar-primary">
+                <div className="mx-auto mb-4 grid h-12 w-12 place-items-center rounded-[20px] bg-kriar-primary/10 text-kriar-primary">
                   <ShoppingBag className="h-5 w-5" />
                 </div>
                 <p className="font-black text-kriar-contrast">Seu carrinho está vazio</p>
@@ -73,7 +73,7 @@ export function CartDrawer() {
             </div>
           )}
         </div>
-        <div className="border-t border-kriar-line bg-white/70 p-5">
+        <div className="border-t border-kriar-line bg-kriar-surface/70 p-5">
           <div className="mb-4 flex items-center justify-between text-lg font-black text-kriar-contrast">
             <span>Total</span>
             <span>{currency.format(cartTotal(items))}</span>

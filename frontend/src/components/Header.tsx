@@ -33,8 +33,8 @@ export function Header() {
   }
 
   const navClass = ({ isActive }: { isActive: boolean }) =>
-    `rounded-xl px-3 py-2 text-sm font-bold transition ${
-      isActive ? "bg-kriar-primary text-white" : "text-kriar-muted hover:bg-kriar-primary/10 hover:text-kriar-primary"
+    `flex min-h-11 items-center rounded-full px-4 py-2 text-sm font-bold transition duration-[250ms] ${
+      isActive ? "bg-kriar-primary text-kriar-light" : "text-kriar-muted hover:bg-kriar-primary/10 hover:text-kriar-primary"
     }`;
 
   return (
@@ -51,7 +51,7 @@ export function Header() {
             placeholder="Buscar cerâmica, joias, decoração..."
           />
           {suggestions.length > 0 && (
-            <div className="absolute mt-2 w-full overflow-hidden rounded-2xl border border-kriar-line bg-white shadow-lift">
+            <div className="absolute mt-2 w-full overflow-hidden rounded-[20px] border border-kriar-line bg-kriar-surface shadow-lift">
               {suggestions.map((item) => (
                 <Link
                   key={item.id}
@@ -96,7 +96,7 @@ export function Header() {
       </div>
 
       {menu && (
-        <div className="border-t border-kriar-line bg-white/95 px-4 py-4 shadow-soft md:hidden">
+        <div className="border-t border-kriar-line bg-kriar-surface/95 px-4 py-4 shadow-soft md:hidden">
           <form onSubmit={submitSearch} className="mb-3 flex gap-2">
             <input
               value={query}
@@ -109,9 +109,9 @@ export function Header() {
             </button>
           </form>
           <div className="grid gap-1 text-sm font-bold">
-            <Link className="rounded-xl px-3 py-2 text-kriar-muted hover:bg-kriar-primary/10 hover:text-kriar-primary" onClick={() => setMenu(false)} to="/artesaos">Artesãos</Link>
-            <Link className="rounded-xl px-3 py-2 text-kriar-muted hover:bg-kriar-primary/10 hover:text-kriar-primary" onClick={() => setMenu(false)} to="/vendedor">Vender na KRIAR</Link>
-            <Link className="rounded-xl px-3 py-2 text-kriar-muted hover:bg-kriar-primary/10 hover:text-kriar-primary" onClick={() => setMenu(false)} to="/login">{user ? user.name : "Entrar"}</Link>
+            <Link className="flex min-h-11 items-center rounded-full px-4 py-2 text-kriar-muted transition duration-[250ms] hover:bg-kriar-primary/10 hover:text-kriar-primary" onClick={() => setMenu(false)} to="/artesaos">Artesãos</Link>
+            <Link className="flex min-h-11 items-center rounded-full px-4 py-2 text-kriar-muted transition duration-[250ms] hover:bg-kriar-primary/10 hover:text-kriar-primary" onClick={() => setMenu(false)} to="/vendedor">Vender na KRIAR</Link>
+            <Link className="flex min-h-11 items-center rounded-full px-4 py-2 text-kriar-muted transition duration-[250ms] hover:bg-kriar-primary/10 hover:text-kriar-primary" onClick={() => setMenu(false)} to="/login">{user ? user.name : "Entrar"}</Link>
           </div>
         </div>
       )}

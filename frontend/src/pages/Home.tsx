@@ -67,7 +67,7 @@ export function Home() {
             ))}
           </div>
         </div>
-        <div className="relative min-h-[430px] overflow-hidden rounded-[2rem] bg-kriar-paper shadow-lift">
+        <div className="relative min-h-[430px] overflow-hidden rounded-[28px] bg-kriar-background shadow-lift">
           <img
             src="https://images.unsplash.com/photo-1610701596007-11502861dcfa?auto=format&fit=crop&w=1300&q=80"
             alt="Artesã trabalhando em cerâmica"
@@ -81,7 +81,7 @@ export function Home() {
         </div>
       </section>
 
-      <section className="border-y border-kriar-line/80 bg-white/75">
+      <section className="border-y border-kriar-line/80 bg-kriar-surface/75">
         <div className="app-shell grid gap-3 py-5 md:grid-cols-4">
           {[
             [ShieldCheck, "Compra protegida"],
@@ -89,7 +89,7 @@ export function Home() {
             [BadgeCheck, "Artesãos avaliados"],
             [Boxes, "Carrinho multi-vendedor"]
           ].map(([Icon, label]) => (
-            <div key={String(label)} className="flex items-center gap-3 rounded-2xl px-1 py-2">
+            <div key={String(label)} className="flex items-center gap-3 rounded-[20px] px-1 py-2">
               <span className="grid h-10 w-10 place-items-center rounded-xl bg-kriar-primary/10 text-kriar-primary">
                 <Icon className="h-5 w-5" />
               </span>
@@ -119,7 +119,7 @@ export function Home() {
                 <option value="best_sellers">Mais vendidos</option>
                 <option value="price_asc">Menor preço</option>
               </select>
-              <span className="btn-icon bg-white">
+              <span className="btn-icon bg-kriar-surface">
                 <SlidersHorizontal className="h-4 w-4" />
               </span>
             </div>
@@ -143,7 +143,7 @@ export function Home() {
             title="Artesãos em alta"
             description="Lojas com história, reputação e produtos autorais."
             action={
-              <Link to="/artesaos" className="btn bg-white/10 text-white hover:bg-white/15">
+              <Link to="/artesaos" className="btn bg-kriar-surface/10 text-kriar-light hover:bg-kriar-surface/15">
                 Ver todos
               </Link>
             }

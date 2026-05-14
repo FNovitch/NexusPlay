@@ -48,7 +48,7 @@ export function ProductDetail() {
   return (
     <main className="app-shell py-8 sm:py-12">
       <div className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr]">
-        <div className="overflow-hidden rounded-[2rem] bg-kriar-paper shadow-card">
+        <div className="overflow-hidden rounded-[28px] bg-kriar-background shadow-card">
           <img src={product.images[0]} alt={product.name} className="aspect-[4/3] w-full object-cover" />
         </div>
         <section className="panel p-5 sm:p-7">
@@ -89,12 +89,12 @@ export function ProductDetail() {
           </div>
 
           <div className="mt-7 grid gap-3 sm:grid-cols-2">
-            <div className="rounded-2xl border border-kriar-line bg-kriar-paper/70 p-4">
+            <div className="rounded-[20px] border border-kriar-line bg-kriar-background/70 p-4">
               <ShieldCheck className="mb-2 h-5 w-5 text-kriar-primary" />
               <strong className="text-kriar-contrast">Pagamento Mercado Pago</strong>
               <p className="mt-1 text-sm leading-6 text-kriar-muted">Preferência gerada pela API e confirmação via webhook.</p>
             </div>
-            <div className="rounded-2xl border border-kriar-line bg-kriar-paper/70 p-4">
+            <div className="rounded-[20px] border border-kriar-line bg-kriar-background/70 p-4">
               <PackageCheck className="mb-2 h-5 w-5 text-kriar-primary" />
               <strong className="text-kriar-contrast">Pedido por vendedor</strong>
               <p className="mt-1 text-sm leading-6 text-kriar-muted">O carrinho separa itens por loja para produção e entrega.</p>

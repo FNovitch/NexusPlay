@@ -25,9 +25,9 @@ export function SellerStore() {
         <img src={seller.coverUrl} alt="" className="absolute inset-0 h-full w-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-kriar-contrast/90 via-kriar-contrast/40 to-kriar-contrast/15" />
         <div className="app-shell relative flex min-h-[390px] flex-col justify-end py-9 text-white">
-          <img src={seller.avatarUrl} alt={seller.storeName} className="mb-5 h-24 w-24 rounded-3xl border-4 border-white object-cover shadow-lift" />
+          <img src={seller.avatarUrl} alt={seller.storeName} className="mb-5 h-24 w-24 rounded-[28px] border-4 border-kriar-surface object-cover shadow-lift" />
           <div className="flex flex-wrap items-center gap-3">
-            <span className="badge bg-white/95 text-kriar-primary shadow-sm backdrop-blur">
+            <span className="badge bg-kriar-surface/95 text-kriar-primary shadow-sm backdrop-blur">
               <Store className="h-4 w-4" /> Loja própria
             </span>
             <Stars value={seller.rating} />

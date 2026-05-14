@@ -62,7 +62,7 @@ export function Checkout() {
               <h2 className="mb-4 font-black text-kriar-primary">{seller}</h2>
               <div className="space-y-3">
                 {sellerItems.map((item) => (
-                  <div key={item.product.id} className="flex items-center gap-3 rounded-2xl bg-kriar-paper/70 p-3">
+                  <div key={item.product.id} className="flex items-center gap-3 rounded-[20px] bg-kriar-background/70 p-3">
                     <img src={item.product.images[0]} alt="" className="h-16 w-16 rounded-xl object-cover" />
                     <div className="min-w-0 flex-1">
                       <strong className="line-clamp-1 text-kriar-contrast">{item.product.name}</strong>
