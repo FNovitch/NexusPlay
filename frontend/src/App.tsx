@@ -1,6 +1,8 @@
 import { Route, Routes } from "react-router-dom";
 import { CartDrawer } from "./components/CartDrawer";
+import { Footer } from "./components/Footer";
 import { Header } from "./components/Header";
+import { ToastViewport } from "./components/ToastViewport";
 import { AdminDashboard } from "./pages/AdminDashboard";
 import { Checkout } from "./pages/Checkout";
 import { CheckoutStatus } from "./pages/CheckoutStatus";
@@ -26,7 +28,9 @@ export function App() {
         <Route path="/vendedor" element={<SellerDashboard />} />
         <Route path="/admin" element={<AdminDashboard />} />
       </Routes>
+      <Footer />
       <CartDrawer />
+      <ToastViewport />
     </>
   );
 }

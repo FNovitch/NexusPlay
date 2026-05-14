@@ -3,8 +3,8 @@
 @tailwind utilities;
 
 :root {
-  color: #56260f;
-  background: #fdfdfd;
+  color: #1f2a32;
+  background: #f8f6f2;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -16,8 +16,10 @@ body {
   min-width: 320px;
   min-height: 100vh;
   background:
-    linear-gradient(180deg, rgba(204, 159, 123, 0.16), rgba(253, 253, 253, 0) 360px),
-    #fdfdfd;
+    radial-gradient(circle at top left, rgba(215, 183, 151, 0.28), transparent 360px),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.78), rgba(248, 246, 242, 0.96) 420px),
+    #f8f6f2;
+  color: #1f2a32;
 }
 
 button,
@@ -25,7 +27,12 @@ a,
 input,
 select,
 textarea {
-  outline-color: #175063;
+  outline-color: #0f5b66;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
 }
 
 .hide-scrollbar::-webkit-scrollbar {
@@ -34,4 +41,115 @@ textarea {
 
 .hide-scrollbar {
   scrollbar-width: none;
+}
+
+@layer base {
+  ::selection {
+    background: rgba(15, 91, 102, 0.16);
+  }
+
+  input,
+  select,
+  textarea {
+    font: inherit;
+  }
+
+  button:focus-visible,
+  a:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible {
+    outline: 3px solid rgba(15, 91, 102, 0.24);
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  .app-shell {
+    @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+  }
+
+  .section-y {
+    @apply py-12 sm:py-16;
+  }
+
+  .panel {
+    @apply rounded-2xl border border-kriar-line/80 bg-white/90 shadow-card backdrop-blur;
+  }
+
+  .panel-soft {
+    @apply rounded-2xl border border-white/70 bg-white/60 shadow-soft backdrop-blur;
+  }
+
+  .card-hover {
+    @apply transition duration-300 ease-out hover:-translate-y-1 hover:border-kriar-primary/20 hover:shadow-lift;
+  }
+
+  .btn {
+    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold transition duration-200 ease-out disabled:pointer-events-none disabled:opacity-60;
+  }
+
+  .btn-primary {
+    @apply btn bg-kriar-primary text-white shadow-sm hover:-translate-y-0.5 hover:bg-[#0b4c55] hover:shadow-lift active:translate-y-0;
+  }
+
+  .btn-secondary {
+    @apply btn border border-kriar-line bg-white text-kriar-contrast shadow-sm hover:-translate-y-0.5 hover:border-kriar-primary/25 hover:bg-kriar-paper active:translate-y-0;
+  }
+
+  .btn-ghost {
+    @apply btn text-kriar-muted hover:bg-kriar-primary/10 hover:text-kriar-primary;
+  }
+
+  .btn-icon {
+    @apply inline-grid h-11 w-11 place-items-center rounded-xl text-kriar-muted transition duration-200 hover:-translate-y-0.5 hover:bg-kriar-primary/10 hover:text-kriar-primary active:translate-y-0;
+  }
+
+  .input-field {
+    @apply h-11 rounded-xl border border-kriar-line bg-white/90 px-3 text-sm text-kriar-contrast shadow-sm transition placeholder:text-kriar-muted/70 focus:border-kriar-primary focus:bg-white;
+  }
+
+  .select-field {
+    @apply h-11 rounded-xl border border-kriar-line bg-white/90 px-3 text-sm font-semibold text-kriar-contrast shadow-sm transition focus:border-kriar-primary focus:bg-white;
+  }
+
+  .text-field {
+    @apply rounded-xl border border-kriar-line bg-white/90 p-3 text-sm text-kriar-contrast shadow-sm transition placeholder:text-kriar-muted/70 focus:border-kriar-primary focus:bg-white;
+  }
+
+  .badge {
+    @apply inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold;
+  }
+
+  .badge-primary {
+    @apply badge bg-kriar-primary text-white;
+  }
+
+  .badge-soft {
+    @apply badge bg-kriar-primary/10 text-kriar-primary;
+  }
+
+  .badge-warm {
+    @apply badge bg-kriar-secondary/10 text-kriar-secondary;
+  }
+
+  .eyebrow {
+    @apply text-xs font-black uppercase tracking-[0.16em] text-kriar-secondary;
+  }
+
+  .muted-copy {
+    @apply text-kriar-muted;
+  }
+
+  .table-modern {
+    @apply w-full min-w-[720px] border-separate border-spacing-0 text-left text-sm;
+  }
+
+  .table-modern th {
+    @apply bg-kriar-paper px-4 py-3 text-xs font-black uppercase tracking-[0.12em] text-kriar-muted first:rounded-l-xl last:rounded-r-xl;
+  }
+
+  .table-modern td {
+    @apply border-b border-kriar-line/70 px-4 py-4 align-middle;
+  }
 }

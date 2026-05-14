@@ -23,85 +23,95 @@ export function Header() {
 
   function submitSearch(event: React.FormEvent) {
     event.preventDefault();
-    navigate(`/?q=${encodeURIComponent(query)}`);
+    if (query.trim()) {
+      navigate(`/?q=${encodeURIComponent(query.trim())}`);
+    } else {
+      navigate("/");
+    }
     setQuery("");
+    setMenu(false);
   }
 
+  const navClass = ({ isActive }: { isActive: boolean }) =>
+    `rounded-xl px-3 py-2 text-sm font-bold transition ${
+      isActive ? "bg-kriar-primary text-white" : "text-kriar-muted hover:bg-kriar-primary/10 hover:text-kriar-primary"
+    }`;
+
   return (
-    <header className="sticky top-0 z-40 border-b border-kriar-support/30 bg-kriar-paper/95 backdrop-blur">
-      <div className="mx-auto flex max-w-7xl items-center gap-4 px-4 py-3">
+    <header className="sticky top-0 z-40 border-b border-kriar-line/80 bg-kriar-paper/90 backdrop-blur-xl">
+      <div className="app-shell flex items-center gap-4 py-3">
         <Brand />
 
         <form onSubmit={submitSearch} className="relative hidden flex-1 md:block">
-          <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-kriar-primary" />
+          <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-kriar-muted" />
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            className="h-11 w-full rounded-lg border border-kriar-support/50 bg-white pl-11 pr-4 text-sm shadow-sm transition focus:border-kriar-primary"
-            placeholder="Buscar ceramica, joias, decoracao..."
+            className="input-field w-full pl-11"
+            placeholder="Buscar cerâmica, joias, decoração..."
           />
           {suggestions.length > 0 && (
-            <div className="absolute mt-2 w-full overflow-hidden rounded-lg border border-kriar-support/30 bg-white shadow-soft">
+            <div className="absolute mt-2 w-full overflow-hidden rounded-2xl border border-kriar-line bg-white shadow-lift">
               {suggestions.map((item) => (
                 <Link
                   key={item.id}
                   to={`/produto/${item.slug}`}
-                  className="flex items-center gap-3 px-3 py-2 text-sm hover:bg-kriar-support/20"
+                  className="flex items-center gap-3 px-3 py-2.5 text-sm transition hover:bg-kriar-primary/5"
                   onClick={() => setQuery("")}
                 >
-                  <img src={item.images[0]} alt="" className="h-10 w-10 rounded-md object-cover" />
-                  <span>{item.name}</span>
+                  <img src={item.images[0]} alt="" className="h-11 w-11 rounded-xl object-cover" />
+                  <span className="font-semibold text-kriar-contrast">{item.name}</span>
                 </Link>
               ))}
             </div>
           )}
         </form>
 
-        <nav className="hidden items-center gap-2 md:flex">
-          <NavLink className="rounded-lg px-3 py-2 text-sm font-semibold hover:bg-kriar-support/20" to="/artesaos">
-            Artesaos
+        <nav className="hidden items-center gap-1 md:flex">
+          <NavLink className={navClass} to="/artesaos">
+            Artesãos
           </NavLink>
-          <NavLink className="rounded-lg px-3 py-2 text-sm font-semibold hover:bg-kriar-support/20" to="/vendedor">
+          <NavLink className={navClass} to="/vendedor">
             Vender
           </NavLink>
-          <NavLink className="rounded-lg px-3 py-2 text-sm font-semibold hover:bg-kriar-support/20" to="/admin">
+          <NavLink className={navClass} to="/admin">
             Admin
           </NavLink>
         </nav>
 
-        <button className="relative rounded-lg p-2 text-kriar-primary hover:bg-kriar-support/20" aria-label="Favoritos">
+        <button className="btn-icon relative" aria-label="Favoritos">
           <Heart className="h-5 w-5" />
-          {wishlistCount > 0 && <span className="absolute -right-1 -top-1 rounded-full bg-kriar-secondary px-1.5 text-xs text-white">{wishlistCount}</span>}
+          {wishlistCount > 0 && <span className="absolute -right-1 -top-1 grid min-h-5 min-w-5 place-items-center rounded-full bg-kriar-secondary px-1 text-[11px] font-black text-white">{wishlistCount}</span>}
         </button>
-        <button onClick={openCart} className="relative rounded-lg p-2 text-kriar-primary hover:bg-kriar-support/20" aria-label="Carrinho">
+        <button onClick={openCart} className="btn-icon relative" aria-label="Carrinho">
           <ShoppingBag className="h-5 w-5" />
-          {cartCount > 0 && <span className="absolute -right-1 -top-1 rounded-full bg-kriar-secondary px-1.5 text-xs text-white">{cartCount}</span>}
+          {cartCount > 0 && <span className="absolute -right-1 -top-1 grid min-h-5 min-w-5 place-items-center rounded-full bg-kriar-secondary px-1 text-[11px] font-black text-white">{cartCount}</span>}
         </button>
-        <Link to="/login" className="hidden rounded-lg p-2 text-kriar-primary hover:bg-kriar-support/20 md:block" aria-label="Minha conta">
+        <Link to="/login" className="btn-icon hidden md:grid" aria-label="Minha conta">
           <UserRound className="h-5 w-5" />
         </Link>
-        <button onClick={() => setMenu((open) => !open)} className="rounded-lg p-2 text-kriar-primary md:hidden" aria-label="Menu">
+        <button onClick={() => setMenu((open) => !open)} className="btn-icon md:hidden" aria-label="Menu">
           {menu ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </button>
       </div>
 
       {menu && (
-        <div className="border-t border-kriar-support/30 px-4 py-3 md:hidden">
+        <div className="border-t border-kriar-line bg-white/95 px-4 py-4 shadow-soft md:hidden">
           <form onSubmit={submitSearch} className="mb-3 flex gap-2">
             <input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              className="h-11 flex-1 rounded-lg border border-kriar-support/50 px-3"
+              className="input-field flex-1"
               placeholder="Buscar produtos"
             />
-            <button className="rounded-lg bg-kriar-primary px-4 text-white">
+            <button className="btn-primary px-4" aria-label="Buscar">
               <Search className="h-4 w-4" />
             </button>
           </form>
-          <div className="grid gap-2 text-sm font-semibold">
-            <Link to="/artesaos">Artesaos</Link>
-            <Link to="/vendedor">Vender na KRIAR</Link>
-            <Link to="/login">{user ? user.name : "Entrar"}</Link>
+          <div className="grid gap-1 text-sm font-bold">
+            <Link className="rounded-xl px-3 py-2 text-kriar-muted hover:bg-kriar-primary/10 hover:text-kriar-primary" onClick={() => setMenu(false)} to="/artesaos">Artesãos</Link>
+            <Link className="rounded-xl px-3 py-2 text-kriar-muted hover:bg-kriar-primary/10 hover:text-kriar-primary" onClick={() => setMenu(false)} to="/vendedor">Vender na KRIAR</Link>
+            <Link className="rounded-xl px-3 py-2 text-kriar-muted hover:bg-kriar-primary/10 hover:text-kriar-primary" onClick={() => setMenu(false)} to="/login">{user ? user.name : "Entrar"}</Link>
           </div>
         </div>
       )}
