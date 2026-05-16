@@ -14,7 +14,11 @@ export function Login() {
   const navigate = useNavigate();
   const accountTypes: Array<[LucideIcon, string]> = [
     [UserRound, "Cliente"],
+<<<<<<< HEAD
     [Store, "Artesao"],
+=======
+    [Store, "Vendedor"],
+>>>>>>> ca0442ba7cb1df9480aa5e3fd5047c7dc246e2c7
     [ShieldCheck, "Admin"]
   ];
 
@@ -35,7 +39,11 @@ export function Login() {
           Entre para comprar, vender e acompanhar pedidos.
         </h1>
         <p className="mt-5 max-w-xl text-lg leading-8 text-kriar-muted">
+<<<<<<< HEAD
           A conta KRIAR usa JWT no backend, senhas com bcrypt e permissões para cliente, artesao e admin.
+=======
+          A conta KRIAR usa JWT no backend, senhas com bcrypt e permissões para cliente, vendedor e admin.
+>>>>>>> ca0442ba7cb1df9480aa5e3fd5047c7dc246e2c7
         </p>
         <div className="mt-8 grid max-w-xl gap-3 sm:grid-cols-3">
           {accountTypes.map(([Icon, label]) => (
@@ -60,7 +68,11 @@ export function Login() {
           <LogIn className="h-5 w-5" /> {loading ? "Entrando..." : "Entrar"}
         </button>
         <div className="mt-4 grid gap-2 text-sm">
+<<<<<<< HEAD
           <button type="button" className="min-h-11 rounded-full px-4 py-2 text-left font-bold text-kriar-muted transition duration-[250ms] hover:bg-kriar-primary/10 hover:text-kriar-primary" onClick={() => setEmail("atelie@kriar.com")}>Usar demo artesao</button>
+=======
+          <button type="button" className="min-h-11 rounded-full px-4 py-2 text-left font-bold text-kriar-muted transition duration-[250ms] hover:bg-kriar-primary/10 hover:text-kriar-primary" onClick={() => setEmail("atelie@kriar.com")}>Usar demo vendedor</button>
+>>>>>>> ca0442ba7cb1df9480aa5e3fd5047c7dc246e2c7
           <button type="button" className="min-h-11 rounded-full px-4 py-2 text-left font-bold text-kriar-muted transition duration-[250ms] hover:bg-kriar-primary/10 hover:text-kriar-primary" onClick={() => setEmail("admin@kriar.com")}>Usar demo admin</button>
         </div>
       </form>

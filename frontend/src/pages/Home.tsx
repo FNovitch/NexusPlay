@@ -5,7 +5,10 @@ import { EmptyState } from "../components/EmptyState";
 import { ProductCard } from "../components/ProductCard";
 import { SectionHeader } from "../components/SectionHeader";
 import { SellerCard } from "../components/SellerCard";
+<<<<<<< HEAD
 import { productCategorySlug, productRating, productSalesCount } from "../api/products";
+=======
+>>>>>>> ca0442ba7cb1df9480aa5e3fd5047c7dc246e2c7
 import { getCategories, getProducts, getSellers } from "../lib/api";
 import type { Category, Product, Seller } from "../types";
 
@@ -26,9 +29,15 @@ export function Home() {
 
   const visibleProducts = useMemo(() => {
     return products
+<<<<<<< HEAD
       .filter((product) => product.name.toLowerCase().includes(query.toLowerCase()))
       .filter((product) => category === "todos" || productCategorySlug(product) === category)
       .sort((a, b) => (sort === "best_sellers" ? productSalesCount(b) - productSalesCount(a) : sort === "price_asc" ? a.price - b.price : productRating(b) - productRating(a)));
+=======
+      .filter((product) => category === "todos" || product.category.slug === category)
+      .filter((product) => product.name.toLowerCase().includes(query.toLowerCase()))
+      .sort((a, b) => (sort === "best_sellers" ? b.salesCount - a.salesCount : sort === "price_asc" ? a.price - b.price : b.rating - a.rating));
+>>>>>>> ca0442ba7cb1df9480aa5e3fd5047c7dc246e2c7
   }, [products, category, sort, query]);
 
   return (

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import "./config/env.js";
 import app from "./app.js";
 import { env } from "./config/env.js";
@@ -15,3 +16,11 @@ server.on("error", (error: NodeJS.ErrnoException) => {
   console.error("Erro ao iniciar a API KRIAR:", error);
   process.exit(1);
 });
+=======
+import { app } from "./app.js";
+import { env } from "./config/env.js";
+
+app.listen(env.PORT, () => {
+  console.log(`KRIAR API rodando na porta ${env.PORT}`);
+});
+>>>>>>> ca0442ba7cb1df9480aa5e3fd5047c7dc246e2c7

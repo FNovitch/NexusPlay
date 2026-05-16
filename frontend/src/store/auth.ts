@@ -6,9 +6,13 @@ type User = {
   id: string;
   name: string;
   email: string;
+<<<<<<< HEAD
   role: "CUSTOMER" | "ARTISAN" | "ADMIN";
   storeId?: string | null;
   isDeleted?: boolean;
+=======
+  role: "CUSTOMER" | "SELLER" | "ADMIN";
+>>>>>>> ca0442ba7cb1df9480aa5e3fd5047c7dc246e2c7
 };
 
 type AuthState = {
@@ -31,7 +35,11 @@ export const useAuth = create<AuthState>()(
             id: "demo",
             name: email.includes("admin") ? "Admin KRIAR" : email.includes("atelie") ? "Lia Carvalho" : "Cliente KRIAR",
             email,
+<<<<<<< HEAD
             role: email.includes("admin") ? "ADMIN" : email.includes("atelie") ? "ARTISAN" : "CUSTOMER"
+=======
+            role: email.includes("admin") ? "ADMIN" : email.includes("atelie") ? "SELLER" : "CUSTOMER"
+>>>>>>> ca0442ba7cb1df9480aa5e3fd5047c7dc246e2c7
           } as User;
           localStorage.setItem("kriar-token", "demo-token");
           set({ token: "demo-token", user: demoUser });

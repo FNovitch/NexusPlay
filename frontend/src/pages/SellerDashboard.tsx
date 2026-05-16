@@ -1,14 +1,19 @@
 import { ClipboardList, ImagePlus, Package, TrendingUp, WalletCards } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+<<<<<<< HEAD
 import { useEffect, useMemo, useState } from "react";
 import { normalizeProduct, productImageUrl, productSalesCount, productSellerSlug } from "../api/products";
 import { products } from "../data/mock";
 import { api, getCategories } from "../lib/api";
 import type { Category, Product } from "../types";
+=======
+import { products } from "../data/mock";
+>>>>>>> ca0442ba7cb1df9480aa5e3fd5047c7dc246e2c7
 
 const currency = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
 
 export function SellerDashboard() {
+<<<<<<< HEAD
   const fallbackProducts = useMemo(() => products.filter((item) => productSellerSlug(item) === "atelie-raiz-digital"), []);
   const [myProducts, setMyProducts] = useState<Product[]>(fallbackProducts);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -89,21 +94,39 @@ export function SellerDashboard() {
     [Package, myProducts.length, "produtos ativos"],
     [ClipboardList, dashboard.orders, "pedidos"],
     [TrendingUp, dashboard.rating, "avaliacao"]
+=======
+  const myProducts = products.filter((item) => item.seller.slug === "atelie-raiz-digital");
+  const revenue = myProducts.reduce((sum, product) => sum + product.salesCount * product.price, 0);
+  const metrics: Array<[LucideIcon, string | number, string]> = [
+    [WalletCards, currency.format(revenue), "faturamento"],
+    [Package, myProducts.length, "produtos ativos"],
+    [ClipboardList, 38, "pedidos"],
+    [TrendingUp, "4.9", "avaliação"]
+>>>>>>> ca0442ba7cb1df9480aa5e3fd5047c7dc246e2c7
   ];
 
   return (
     <main className="app-shell section-y">
       <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
+<<<<<<< HEAD
           <p className="eyebrow mb-2">Operacao</p>
           <h1 className="text-3xl font-black tracking-tight text-kriar-contrast">Dashboard do artesao</h1>
           <p className="mt-2 text-kriar-muted">Produtos, pedidos e faturamento da sua loja.</p>
         </div>
         <button className="btn-primary" onClick={() => setShowForm((current) => !current)}>
+=======
+          <p className="eyebrow mb-2">Operação</p>
+          <h1 className="text-3xl font-black tracking-tight text-kriar-contrast">Dashboard do artesão</h1>
+          <p className="mt-2 text-kriar-muted">Produtos, pedidos e faturamento da sua loja.</p>
+        </div>
+        <button className="btn-primary">
+>>>>>>> ca0442ba7cb1df9480aa5e3fd5047c7dc246e2c7
           <ImagePlus className="h-5 w-5" /> Novo produto
         </button>
       </div>
 
+<<<<<<< HEAD
       {showForm && (
         <form onSubmit={submitProduct} className="panel mb-8 grid gap-4 p-5 md:grid-cols-2">
           <input className="input-field" required placeholder="Nome do produto" value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} />
@@ -120,6 +143,8 @@ export function SellerDashboard() {
         </form>
       )}
 
+=======
+>>>>>>> ca0442ba7cb1df9480aa5e3fd5047c7dc246e2c7
       <div className="grid gap-4 md:grid-cols-4">
         {metrics.map(([Icon, value, label]) => (
           <div key={String(label)} className="panel p-5">
@@ -136,7 +161,11 @@ export function SellerDashboard() {
         <div className="mb-5 flex items-center justify-between gap-4">
           <div>
             <h2 className="text-xl font-black tracking-tight text-kriar-primary">Produtos mais vendidos</h2>
+<<<<<<< HEAD
             <p className="mt-1 text-sm text-kriar-muted">Visao rapida de estoque, vendas e status.</p>
+=======
+            <p className="mt-1 text-sm text-kriar-muted">Visão rápida de estoque, vendas e status.</p>
+>>>>>>> ca0442ba7cb1df9480aa5e3fd5047c7dc246e2c7
           </div>
         </div>
         <div className="overflow-x-auto">
@@ -146,7 +175,11 @@ export function SellerDashboard() {
                 <th>Produto</th>
                 <th>Estoque</th>
                 <th>Vendas</th>
+<<<<<<< HEAD
                 <th>Preco</th>
+=======
+                <th>Preço</th>
+>>>>>>> ca0442ba7cb1df9480aa5e3fd5047c7dc246e2c7
                 <th>Status</th>
               </tr>
             </thead>
@@ -155,14 +188,24 @@ export function SellerDashboard() {
                 <tr key={product.id}>
                   <td>
                     <div className="flex items-center gap-3">
+<<<<<<< HEAD
                       <img src={productImageUrl(product)} alt="" className="h-12 w-12 rounded-xl object-cover" />
+=======
+                      <img src={product.images[0]} alt="" className="h-12 w-12 rounded-xl object-cover" />
+>>>>>>> ca0442ba7cb1df9480aa5e3fd5047c7dc246e2c7
                       <strong className="text-kriar-contrast">{product.name}</strong>
                     </div>
                   </td>
                   <td>{product.stock}</td>
+<<<<<<< HEAD
                   <td>{productSalesCount(product)}</td>
                   <td className="font-bold text-kriar-primary">{currency.format(product.price)}</td>
                   <td><span className="badge-soft">{product.status}</span></td>
+=======
+                  <td>{product.salesCount}</td>
+                  <td className="font-bold text-kriar-primary">{currency.format(product.price)}</td>
+                  <td><span className="badge-soft">Ativo</span></td>
+>>>>>>> ca0442ba7cb1df9480aa5e3fd5047c7dc246e2c7
                 </tr>
               ))}
             </tbody>

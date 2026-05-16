@@ -4,11 +4,18 @@ import { UserRole } from "@prisma/client";
 import { prisma } from "../lib/prisma.js";
 import { signToken } from "../middlewares/auth.js";
 import { AppError } from "../middlewares/error.js";
+<<<<<<< HEAD
 import { mapUserToResponse } from "../modules/users/user.mapper.js";
 import { slugify } from "../utils/slugify.js";
 
 export async function register(req: Request, res: Response) {
   const { name, email, password, role = UserRole.CUSTOMER, seller, artisan, customer, admin } = req.body;
+=======
+import { slugify } from "../utils/slugify.js";
+
+export async function register(req: Request, res: Response) {
+  const { name, email, password, role, seller } = req.body;
+>>>>>>> ca0442ba7cb1df9480aa5e3fd5047c7dc246e2c7
   const existing = await prisma.user.findUnique({ where: { email } });
 
   if (existing) {
@@ -16,6 +23,7 @@ export async function register(req: Request, res: Response) {
   }
 
   const passwordHash = await bcrypt.hash(password, 12);
+<<<<<<< HEAD
   const normalizedRole = role === UserRole.ARTISAN ? UserRole.ARTISAN : role === UserRole.ADMIN ? UserRole.ADMIN : UserRole.CUSTOMER;
   const user = await prisma.$transaction(async (tx) => {
     const createdUser = await tx.user.create({
@@ -112,6 +120,29 @@ export async function register(req: Request, res: Response) {
     }
 
     return tx.user.findUniqueOrThrow({ where: { id: createdUser.id }, include: { customer: true } });
+=======
+  const user = await prisma.user.create({
+    data: {
+      name,
+      email,
+      passwordHash,
+      role: role === UserRole.SELLER ? UserRole.SELLER : UserRole.CUSTOMER,
+      seller:
+        role === UserRole.SELLER && seller
+          ? {
+              create: {
+                storeName: seller.storeName,
+                slug: slugify(seller.storeName),
+                bio: seller.bio,
+                story: seller.story,
+                avatarUrl: seller.avatarUrl,
+                coverUrl: seller.coverUrl
+              }
+            }
+          : undefined
+    },
+    include: { seller: true }
+>>>>>>> ca0442ba7cb1df9480aa5e3fd5047c7dc246e2c7
   });
 
   const token = signToken({ sub: user.id, role: user.role });
@@ -125,7 +156,11 @@ export async function login(req: Request, res: Response) {
     include: { seller: true }
   });
 
+<<<<<<< HEAD
   if (!user || user.isDeleted || !(await bcrypt.compare(password, user.passwordHash))) {
+=======
+  if (!user || !(await bcrypt.compare(password, user.passwordHash))) {
+>>>>>>> ca0442ba7cb1df9480aa5e3fd5047c7dc246e2c7
     throw new AppError("Credenciais invalidas", 401);
   }
 
@@ -139,7 +174,11 @@ export async function me(req: Request, res: Response) {
     include: { seller: true }
   });
 
+<<<<<<< HEAD
   if (!user || user.isDeleted) {
+=======
+  if (!user) {
+>>>>>>> ca0442ba7cb1df9480aa5e3fd5047c7dc246e2c7
     throw new AppError("Usuario nao encontrado", 404);
   }
 
@@ -147,5 +186,10 @@ export async function me(req: Request, res: Response) {
 }
 
 function sanitizeUser(user: Record<string, unknown>) {
+<<<<<<< HEAD
   return mapUserToResponse(user as Parameters<typeof mapUserToResponse>[0]);
+=======
+  const { passwordHash, ...safe } = user;
+  return safe;
+>>>>>>> ca0442ba7cb1df9480aa5e3fd5047c7dc246e2c7
 }

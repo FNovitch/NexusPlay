@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { ProductStatus, SellerStatus } from "@prisma/client";
 import { z } from "zod";
 import {
@@ -13,6 +14,38 @@ export { loginSchema, productSchema, registerSchema, updateProductSchema };
 
 const url = z.string().url().optional().or(z.literal(""));
 
+=======
+import { ProductStatus, SellerStatus, UserRole } from "@prisma/client";
+import { z } from "zod";
+
+const url = z.string().url().optional().or(z.literal(""));
+
+export const registerSchema = z.object({
+  body: z.object({
+    name: z.string().min(2).max(120),
+    email: z.string().email(),
+    password: z.string().min(8).max(128),
+    role: z.nativeEnum(UserRole).optional(),
+    seller: z
+      .object({
+        storeName: z.string().min(2).max(90),
+        bio: z.string().min(10).max(240),
+        story: z.string().min(30).max(3000),
+        avatarUrl: url,
+        coverUrl: url
+      })
+      .optional()
+  })
+});
+
+export const loginSchema = z.object({
+  body: z.object({
+    email: z.string().email(),
+    password: z.string().min(1)
+  })
+});
+
+>>>>>>> ca0442ba7cb1df9480aa5e3fd5047c7dc246e2c7
 export const productQuerySchema = z.object({
   query: z.object({
     q: z.string().optional(),
@@ -24,6 +57,26 @@ export const productQuerySchema = z.object({
   })
 });
 
+<<<<<<< HEAD
+=======
+export const productSchema = z.object({
+  body: z.object({
+    categoryId: z.string().uuid(),
+    name: z.string().min(3).max(140),
+    description: z.string().min(20).max(5000),
+    price: z.coerce.number().positive(),
+    stock: z.coerce.number().int().min(0),
+    images: z.array(z.string().url()).min(1).max(8),
+    customizationAvailable: z.boolean().optional(),
+    personalizationPrompt: z.string().max(500).optional()
+  })
+});
+
+export const updateProductSchema = productSchema.deepPartial().extend({
+  params: z.object({ id: z.string().uuid() })
+});
+
+>>>>>>> ca0442ba7cb1df9480aa5e3fd5047c7dc246e2c7
 export const sellerUpdateSchema = z.object({
   body: z.object({
     storeName: z.string().min(2).max(90).optional(),

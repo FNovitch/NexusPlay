@@ -7,12 +7,20 @@ export function SellerCard({ seller }: { seller: Seller }) {
   return (
     <Link to={`/loja/${seller.slug}`} className="group panel block overflow-hidden card-hover">
       <div className="relative h-36 overflow-hidden bg-kriar-paper">
+<<<<<<< HEAD
         <img src={seller.coverUrl ?? ""} alt="" className="h-full w-full object-cover transition duration-500 ease-out group-hover:scale-[1.035]" />
+=======
+        <img src={seller.coverUrl} alt="" className="h-full w-full object-cover transition duration-500 ease-out group-hover:scale-[1.035]" />
+>>>>>>> ca0442ba7cb1df9480aa5e3fd5047c7dc246e2c7
         <div className="absolute inset-0 bg-gradient-to-t from-kriar-contrast/30 to-transparent" />
       </div>
       <div className="p-4">
         <div className="-mt-12 mb-4 flex items-end justify-between gap-3">
+<<<<<<< HEAD
           <img src={seller.avatarUrl ?? ""} alt={seller.storeName} className="relative h-16 w-16 rounded-2xl border-4 border-white object-cover shadow-soft" />
+=======
+          <img src={seller.avatarUrl} alt={seller.storeName} className="relative h-16 w-16 rounded-2xl border-4 border-white object-cover shadow-soft" />
+>>>>>>> ca0442ba7cb1df9480aa5e3fd5047c7dc246e2c7
           <span className="badge-primary shadow-sm">
             <Store className="h-3 w-3" />
             Feito à mão

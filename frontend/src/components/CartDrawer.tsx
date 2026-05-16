@@ -1,6 +1,9 @@
 import { Minus, Plus, ShoppingBag, Trash2, X } from "lucide-react";
 import { Link } from "react-router-dom";
+<<<<<<< HEAD
 import { productImageUrl } from "../api/products";
+=======
+>>>>>>> ca0442ba7cb1df9480aa5e3fd5047c7dc246e2c7
 import { cartTotal, groupedBySeller, useCart } from "../store/cart";
 import { useToast } from "../store/toast";
 
@@ -49,7 +52,11 @@ export function CartDrawer() {
                   <div className="space-y-3">
                     {sellerItems.map((item) => (
                       <div key={item.product.id} className="panel flex gap-3 p-3 shadow-none">
+<<<<<<< HEAD
                         <img src={productImageUrl(item.product)} alt="" className="h-20 w-20 rounded-xl object-cover" />
+=======
+                        <img src={item.product.images[0]} alt="" className="h-20 w-20 rounded-xl object-cover" />
+>>>>>>> ca0442ba7cb1df9480aa5e3fd5047c7dc246e2c7
                         <div className="min-w-0 flex-1">
                           <p className="truncate font-black text-kriar-contrast">{item.product.name}</p>
                           <p className="text-sm font-bold text-kriar-primary">{currency.format(item.product.price)}</p>

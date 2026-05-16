@@ -1,8 +1,14 @@
 import type { Request, Response } from "express";
+<<<<<<< HEAD
 import { Prisma, ProductStatus } from "@prisma/client";
 import { prisma } from "../lib/prisma.js";
 import { AppError } from "../middlewares/error.js";
 import type { CreateProductDTO, UpdateProductDTO } from "../modules/products/product.types.js";
+=======
+import { ProductStatus } from "@prisma/client";
+import { prisma } from "../lib/prisma.js";
+import { AppError } from "../middlewares/error.js";
+>>>>>>> ca0442ba7cb1df9480aa5e3fd5047c7dc246e2c7
 import { slugify } from "../utils/slugify.js";
 
 export async function myProducts(req: Request, res: Response) {
@@ -20,6 +26,7 @@ export async function createProduct(req: Request, res: Response) {
     throw new AppError("Apenas vendedores podem criar produtos", 403);
   }
 
+<<<<<<< HEAD
   const body = req.body as CreateProductDTO & { categoryId: string };
   const seller = await prisma.seller.findUnique({ where: { id: req.user.sellerId } });
 
@@ -49,6 +56,13 @@ export async function createProduct(req: Request, res: Response) {
       pickupAddress: body.pickupAddress ?? null,
       customizationAvailable: body.customizationAvailable ?? false,
       personalizationPrompt: body.personalizationPrompt ?? null,
+=======
+  const product = await prisma.product.create({
+    data: {
+      ...req.body,
+      sellerId: req.user.sellerId,
+      slug: slugify(req.body.name),
+>>>>>>> ca0442ba7cb1df9480aa5e3fd5047c7dc246e2c7
       status: ProductStatus.PENDING
     }
   });
@@ -63,6 +77,7 @@ export async function updateProduct(req: Request, res: Response) {
     throw new AppError("Produto nao encontrado", 404);
   }
 
+<<<<<<< HEAD
   const body = req.body as UpdateProductDTO & { categoryId?: string };
   const data: Prisma.ProductUpdateInput = {
     category: body.categoryId ? { connect: { id: body.categoryId } } : undefined,
@@ -87,6 +102,14 @@ export async function updateProduct(req: Request, res: Response) {
   const updated = await prisma.product.update({
     where: { id: product.id },
     data
+=======
+  const updated = await prisma.product.update({
+    where: { id: product.id },
+    data: {
+      ...req.body,
+      slug: req.body.name ? slugify(req.body.name) : undefined
+    }
+>>>>>>> ca0442ba7cb1df9480aa5e3fd5047c7dc246e2c7
   });
 
   res.json({ product: updated });
@@ -101,7 +124,11 @@ export async function archiveProduct(req: Request, res: Response) {
 
   await prisma.product.update({
     where: { id: product.id },
+<<<<<<< HEAD
     data: { status: ProductStatus.INACTIVE }
+=======
+    data: { status: ProductStatus.ARCHIVED }
+>>>>>>> ca0442ba7cb1df9480aa5e3fd5047c7dc246e2c7
   });
 
   res.status(204).send();

@@ -1,4 +1,5 @@
 import dotenv from "dotenv";
+<<<<<<< HEAD
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -16,6 +17,11 @@ const envPaths = [
 const envPath = envPaths.find((candidate) => fs.existsSync(candidate));
 
 dotenv.config(envPath ? { path: envPath } : undefined);
+=======
+import { z } from "zod";
+
+dotenv.config();
+>>>>>>> ca0442ba7cb1df9480aa5e3fd5047c7dc246e2c7
 
 const envSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
@@ -26,6 +32,7 @@ const envSchema = z.object({
   FRONTEND_URL: z.string().url().default("http://localhost:5173"),
   BACKEND_URL: z.string().url().default("http://localhost:4000"),
   MERCADO_PAGO_ACCESS_TOKEN: z.string().optional(),
+<<<<<<< HEAD
   MERCADO_PAGO_WEBHOOK_SECRET: z.string().optional(),
 });
 
@@ -38,3 +45,9 @@ if (!parsedEnv.success) {
 }
 
 export const env = parsedEnv.data;
+=======
+  MERCADO_PAGO_WEBHOOK_SECRET: z.string().optional()
+});
+
+export const env = envSchema.parse(process.env);
+>>>>>>> ca0442ba7cb1df9480aa5e3fd5047c7dc246e2c7

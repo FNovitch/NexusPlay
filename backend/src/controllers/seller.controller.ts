@@ -2,7 +2,10 @@ import type { Request, Response } from "express";
 import { ProductStatus, SellerStatus } from "@prisma/client";
 import { prisma } from "../lib/prisma.js";
 import { AppError } from "../middlewares/error.js";
+<<<<<<< HEAD
 import { mapProductToResponse } from "../modules/products/product.mapper.js";
+=======
+>>>>>>> ca0442ba7cb1df9480aa5e3fd5047c7dc246e2c7
 import { slugify } from "../utils/slugify.js";
 
 export async function listSellers(_req: Request, res: Response) {
@@ -38,12 +41,16 @@ export async function getSellerStore(req: Request, res: Response) {
     throw new AppError("Loja nao encontrada", 404);
   }
 
+<<<<<<< HEAD
   res.json({
     seller: {
       ...seller,
       products: seller.products.map((product) => mapProductToResponse({ ...product, seller }))
     }
   });
+=======
+  res.json({ seller });
+>>>>>>> ca0442ba7cb1df9480aa5e3fd5047c7dc246e2c7
 }
 
 export async function updateMySeller(req: Request, res: Response) {

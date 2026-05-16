@@ -15,6 +15,7 @@ export async function createReview(req: Request, res: Response) {
   });
 
   if (review.productId) {
+<<<<<<< HEAD
     const [agg, totalReviews] = await Promise.all([
       prisma.review.aggregate({
         where: { productId: review.productId },
@@ -27,6 +28,15 @@ export async function createReview(req: Request, res: Response) {
     await prisma.product.update({
       where: { id: review.productId },
       data: { averageRating, totalReviews, rating: averageRating }
+=======
+    const agg = await prisma.review.aggregate({
+      where: { productId: review.productId },
+      _avg: { rating: true }
+    });
+    await prisma.product.update({
+      where: { id: review.productId },
+      data: { rating: agg._avg.rating ?? 0 }
+>>>>>>> ca0442ba7cb1df9480aa5e3fd5047c7dc246e2c7
     });
   }
 

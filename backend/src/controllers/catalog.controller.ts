@@ -1,7 +1,10 @@
 import type { Request, Response } from "express";
 import { ProductStatus } from "@prisma/client";
 import { prisma } from "../lib/prisma.js";
+<<<<<<< HEAD
 import { mapProductToResponse } from "../modules/products/product.mapper.js";
+=======
+>>>>>>> ca0442ba7cb1df9480aa5e3fd5047c7dc246e2c7
 
 export async function listCategories(_req: Request, res: Response) {
   const categories = await prisma.category.findMany({
@@ -46,7 +49,11 @@ export async function listProducts(req: Request, res: Response) {
     take: 60
   });
 
+<<<<<<< HEAD
   res.json({ products: products.map(mapProductToResponse) });
+=======
+  res.json({ products });
+>>>>>>> ca0442ba7cb1df9480aa5e3fd5047c7dc246e2c7
 }
 
 export async function getProduct(req: Request, res: Response) {
@@ -79,10 +86,14 @@ export async function getProduct(req: Request, res: Response) {
     include: { seller: true, category: true }
   });
 
+<<<<<<< HEAD
   res.json({
     product: mapProductToResponse(product),
     related: related.map(mapProductToResponse)
   });
+=======
+  res.json({ product, related });
+>>>>>>> ca0442ba7cb1df9480aa5e3fd5047c7dc246e2c7
 }
 
 export async function autocomplete(req: Request, res: Response) {
@@ -100,6 +111,7 @@ export async function autocomplete(req: Request, res: Response) {
     take: 8
   });
 
+<<<<<<< HEAD
   res.json({
     suggestions: products.map((product) => ({
       id: product.id,
@@ -134,4 +146,7 @@ export async function autocomplete(req: Request, res: Response) {
       }).images
     }))
   });
+=======
+  res.json({ suggestions: products });
+>>>>>>> ca0442ba7cb1df9480aa5e3fd5047c7dc246e2c7
 }

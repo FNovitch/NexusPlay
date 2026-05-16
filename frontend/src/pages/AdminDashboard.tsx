@@ -1,5 +1,6 @@
 import { CheckCircle2, Shield, Store, Users } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+<<<<<<< HEAD
 import { useEffect, useMemo, useState } from "react";
 import { productImageUrl, productSellerName } from "../api/products";
 import { products, sellers } from "../data/mock";
@@ -48,14 +49,30 @@ export function AdminDashboard() {
     [Store, adminSellers.length, "vendedores aprovados"],
     [Shield, overview.pending, "pendencias"],
     [CheckCircle2, overview.activeProducts, "produtos ativos"]
+=======
+import { products, sellers } from "../data/mock";
+
+export function AdminDashboard() {
+  const metrics: Array<[LucideIcon, string | number, string]> = [
+    [Users, "12.408", "usuários"],
+    [Store, sellers.length, "vendedores aprovados"],
+    [Shield, "23", "pendências"],
+    [CheckCircle2, products.length, "produtos ativos"]
+>>>>>>> ca0442ba7cb1df9480aa5e3fd5047c7dc246e2c7
   ];
 
   return (
     <main className="app-shell section-y">
       <div className="mb-8">
+<<<<<<< HEAD
         <p className="eyebrow mb-2">Gestao</p>
         <h1 className="text-3xl font-black tracking-tight text-kriar-contrast">Painel admin</h1>
         <p className="mt-2 text-kriar-muted">Moderacao da plataforma, vendedores, produtos e relatorios.</p>
+=======
+        <p className="eyebrow mb-2">Gestão</p>
+        <h1 className="text-3xl font-black tracking-tight text-kriar-contrast">Painel admin</h1>
+        <p className="mt-2 text-kriar-muted">Moderação da plataforma, vendedores, produtos e relatórios.</p>
+>>>>>>> ca0442ba7cb1df9480aa5e3fd5047c7dc246e2c7
       </div>
       <div className="grid gap-4 md:grid-cols-4">
         {metrics.map(([Icon, value, label]) => (
@@ -71,11 +88,19 @@ export function AdminDashboard() {
 
       <div className="mt-8 grid gap-6 lg:grid-cols-2">
         <section className="panel p-5">
+<<<<<<< HEAD
           <h2 className="mb-1 text-xl font-black tracking-tight text-kriar-primary">Vendedores para aprovacao</h2>
           <p className="mb-5 text-sm text-kriar-muted">Revise perfis antes de publicar novas lojas.</p>
           {visibleSellers.map((seller) => (
             <div key={seller.id} className="flex items-center gap-3 border-t border-kriar-line py-4 first:border-t-0">
               <img src={seller.avatarUrl ?? ""} alt="" className="h-12 w-12 rounded-xl object-cover" />
+=======
+          <h2 className="mb-1 text-xl font-black tracking-tight text-kriar-primary">Vendedores para aprovação</h2>
+          <p className="mb-5 text-sm text-kriar-muted">Revise perfis antes de publicar novas lojas.</p>
+          {sellers.map((seller) => (
+            <div key={seller.id} className="flex items-center gap-3 border-t border-kriar-line py-4 first:border-t-0">
+              <img src={seller.avatarUrl} alt="" className="h-12 w-12 rounded-xl object-cover" />
+>>>>>>> ca0442ba7cb1df9480aa5e3fd5047c7dc246e2c7
               <div className="min-w-0 flex-1">
                 <strong className="block truncate text-kriar-contrast">{seller.storeName}</strong>
                 <p className="line-clamp-1 text-sm text-kriar-muted">{seller.bio}</p>
@@ -85,6 +110,7 @@ export function AdminDashboard() {
           ))}
         </section>
         <section className="panel p-5">
+<<<<<<< HEAD
           <h2 className="mb-1 text-xl font-black tracking-tight text-kriar-primary">Moderacao de produtos</h2>
           <p className="mb-5 text-sm text-kriar-muted">Acompanhe itens recentes e sinalizacoes.</p>
           {visibleProducts.map((product) => (
@@ -93,6 +119,16 @@ export function AdminDashboard() {
               <div className="min-w-0 flex-1">
                 <strong className="block truncate text-kriar-contrast">{product.name}</strong>
                 <p className="text-sm text-kriar-muted">{productSellerName(product)}</p>
+=======
+          <h2 className="mb-1 text-xl font-black tracking-tight text-kriar-primary">Moderação de produtos</h2>
+          <p className="mb-5 text-sm text-kriar-muted">Acompanhe itens recentes e sinalizações.</p>
+          {products.slice(0, 4).map((product) => (
+            <div key={product.id} className="flex items-center gap-3 border-t border-kriar-line py-4 first:border-t-0">
+              <img src={product.images[0]} alt="" className="h-12 w-12 rounded-xl object-cover" />
+              <div className="min-w-0 flex-1">
+                <strong className="block truncate text-kriar-contrast">{product.name}</strong>
+                <p className="text-sm text-kriar-muted">{product.seller.storeName}</p>
+>>>>>>> ca0442ba7cb1df9480aa5e3fd5047c7dc246e2c7
               </div>
               <button className="btn-secondary min-h-10 px-3 py-2 text-xs">Revisar</button>
             </div>

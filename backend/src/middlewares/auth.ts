@@ -39,17 +39,28 @@ export async function authenticate(req: Request, _res: Response, next: NextFunct
     const decoded = jwt.verify(token, env.JWT_SECRET) as JwtPayload;
     const user = await prisma.user.findUnique({
       where: { id: decoded.sub },
+<<<<<<< HEAD
       include: { seller: { select: { id: true } }, artisan: { select: { storeId: true } } }
     });
 
     if (!user || user.isDeleted) {
+=======
+      include: { seller: { select: { id: true } } }
+    });
+
+    if (!user) {
+>>>>>>> ca0442ba7cb1df9480aa5e3fd5047c7dc246e2c7
       return next(new AppError("Usuario nao encontrado", 401));
     }
 
     req.user = {
       id: user.id,
       role: user.role,
+<<<<<<< HEAD
       sellerId: user.storeId ?? user.artisan?.storeId ?? user.seller?.id ?? undefined
+=======
+      sellerId: user.seller?.id
+>>>>>>> ca0442ba7cb1df9480aa5e3fd5047c7dc246e2c7
     };
     next();
   } catch {
