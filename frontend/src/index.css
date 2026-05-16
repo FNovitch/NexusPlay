@@ -1,0 +1,161 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color: #1d2733;
+  background: #f5f6f7;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top left, rgba(179, 158, 142, 0.18), transparent 360px),
+    linear-gradient(180deg, rgba(254, 252, 252, 0.72), rgba(245, 246, 247, 0.96) 420px),
+    #f5f6f7;
+  color: #1d2733;
+}
+
+button,
+a,
+input,
+select,
+textarea {
+  outline-color: #38616f;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.hide-scrollbar {
+  scrollbar-width: none;
+}
+
+@layer base {
+  ::selection {
+    background: rgba(56, 97, 111, 0.16);
+  }
+
+  h1,
+  h2,
+  h3 {
+    @apply font-serif;
+  }
+
+  input,
+  select,
+  textarea {
+    font: inherit;
+  }
+
+  button:focus-visible,
+  a:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible {
+    outline: 3px solid rgba(56, 97, 111, 0.24);
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  .app-shell {
+    @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+  }
+
+  .section-y {
+    @apply py-12 sm:py-16;
+  }
+
+  .panel {
+    @apply rounded-[20px] border border-kriar-line bg-kriar-surface/95 shadow-card backdrop-blur;
+  }
+
+  .panel-soft {
+    @apply rounded-[20px] border border-kriar-line bg-kriar-surface/70 shadow-soft backdrop-blur;
+  }
+
+  .card-hover {
+    @apply transition duration-[250ms] ease-out hover:-translate-y-0.5 hover:border-kriar-primary/20 hover:shadow-lift;
+  }
+
+  .btn {
+    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-bold transition duration-[250ms] ease-out disabled:pointer-events-none disabled:opacity-60;
+  }
+
+  .btn-primary {
+    @apply btn bg-kriar-primary text-kriar-light shadow-sm hover:-translate-y-0.5 hover:bg-[#2f5360] hover:shadow-soft active:translate-y-0;
+  }
+
+  .btn-secondary {
+    @apply btn border border-kriar-line bg-kriar-surface text-kriar-contrast shadow-sm hover:-translate-y-0.5 hover:border-kriar-primary/35 hover:bg-kriar-surface active:translate-y-0;
+  }
+
+  .btn-ghost {
+    @apply btn text-kriar-muted hover:bg-kriar-primary/10 hover:text-kriar-primary;
+  }
+
+  .btn-icon {
+    @apply inline-grid h-11 w-11 place-items-center rounded-full text-kriar-muted transition duration-[250ms] hover:-translate-y-0.5 hover:bg-kriar-primary/10 hover:text-kriar-primary active:translate-y-0;
+  }
+
+  .input-field {
+    @apply h-11 rounded-xl border border-kriar-line bg-kriar-surface px-3 text-sm text-kriar-contrast shadow-sm transition duration-[250ms] placeholder:text-kriar-muted/70 focus:border-kriar-primary focus:bg-kriar-surface;
+  }
+
+  .select-field {
+    @apply h-11 rounded-xl border border-kriar-line bg-kriar-surface px-3 text-sm font-semibold text-kriar-contrast shadow-sm transition duration-[250ms] focus:border-kriar-primary focus:bg-kriar-surface;
+  }
+
+  .text-field {
+    @apply rounded-xl border border-kriar-line bg-kriar-surface p-3 text-sm text-kriar-contrast shadow-sm transition duration-[250ms] placeholder:text-kriar-muted/70 focus:border-kriar-primary focus:bg-kriar-surface;
+  }
+
+  .badge {
+    @apply inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold;
+  }
+
+  .badge-primary {
+    @apply badge bg-kriar-primary text-kriar-light;
+  }
+
+  .badge-soft {
+    @apply badge bg-kriar-accent/20 text-kriar-contrast;
+  }
+
+  .badge-warm {
+    @apply badge bg-kriar-secondary/10 text-kriar-secondary;
+  }
+
+  .eyebrow {
+    @apply text-xs font-black uppercase tracking-[0.16em] text-kriar-secondary;
+  }
+
+  .muted-copy {
+    @apply text-kriar-muted;
+  }
+
+  .table-modern {
+    @apply w-full min-w-[720px] border-separate border-spacing-0 text-left text-sm;
+  }
+
+  .table-modern th {
+    @apply bg-kriar-background px-4 py-3 text-xs font-black uppercase tracking-[0.12em] text-kriar-muted first:rounded-l-xl last:rounded-r-xl;
+  }
+
+  .table-modern td {
+    @apply border-b border-kriar-line/70 px-4 py-4 align-middle;
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "name": "kriar-marketplace",
+  "private": true,
+  "version": "1.0.0",
+  "description": "KRIAR - Onde a Arte encontra o Futuro",
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace backend & npm run dev --workspace frontend",
+    "build": "npm run build --workspace backend && npm run build --workspace frontend",
+    "lint": "npm run lint --workspace frontend",
+    "db:generate": "npm run prisma:generate --workspace backend",
+    "db:migrate": "npm run prisma:migrate --workspace backend",
+    "seed": "npm run prisma:seed --workspace backend"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
