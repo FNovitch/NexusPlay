@@ -1,9 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-<<<<<<< HEAD
 import { productSellerName } from "../api/products";
-=======
->>>>>>> ca0442ba7cb1df9480aa5e3fd5047c7dc246e2c7
 import type { CartItem, Product } from "../types";
 
 type CartState = {
@@ -58,12 +55,8 @@ export function cartTotal(items: CartItem[]) {
 
 export function groupedBySeller(items: CartItem[]) {
   return items.reduce<Record<string, CartItem[]>>((acc, item) => {
-<<<<<<< HEAD
     const sellerName = productSellerName(item.product);
     acc[sellerName] = [...(acc[sellerName] ?? []), item];
-=======
-    acc[item.product.seller.storeName] = [...(acc[item.product.seller.storeName] ?? []), item];
->>>>>>> ca0442ba7cb1df9480aa5e3fd5047c7dc246e2c7
     return acc;
   }, {});
 }

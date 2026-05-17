@@ -1,10 +1,7 @@
 import { CreditCard, Lock, PackageCheck } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
-<<<<<<< HEAD
 import { productImageUrl } from "../api/products";
-=======
->>>>>>> ca0442ba7cb1df9480aa5e3fd5047c7dc246e2c7
 import { EmptyState } from "../components/EmptyState";
 import { api } from "../lib/api";
 import { cartTotal, groupedBySeller, useCart } from "../store/cart";
@@ -67,11 +64,7 @@ export function Checkout() {
               <div className="space-y-3">
                 {sellerItems.map((item) => (
                   <div key={item.product.id} className="flex items-center gap-3 rounded-[20px] bg-kriar-background/70 p-3">
-<<<<<<< HEAD
                     <img src={productImageUrl(item.product)} alt="" className="h-16 w-16 rounded-xl object-cover" />
-=======
-                    <img src={item.product.images[0]} alt="" className="h-16 w-16 rounded-xl object-cover" />
->>>>>>> ca0442ba7cb1df9480aa5e3fd5047c7dc246e2c7
                     <div className="min-w-0 flex-1">
                       <strong className="line-clamp-1 text-kriar-contrast">{item.product.name}</strong>
                       <p className="text-sm text-kriar-muted">Quantidade: {item.quantity}</p>

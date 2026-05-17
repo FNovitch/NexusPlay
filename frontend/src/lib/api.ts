@@ -1,9 +1,6 @@
 import axios from "axios";
 import { products, sellers, categories } from "../data/mock";
-<<<<<<< HEAD
 import { normalizeProduct } from "../api/products";
-=======
->>>>>>> ca0442ba7cb1df9480aa5e3fd5047c7dc246e2c7
 import type { Product, Seller } from "../types";
 
 export const api = axios.create({
@@ -21,11 +18,7 @@ api.interceptors.request.use((config) => {
 export async function getProducts(params?: Record<string, string>) {
   try {
     const { data } = await api.get<{ products: Product[] }>("/products", { params });
-<<<<<<< HEAD
     return data.products.map(normalizeProduct);
-=======
-    return data.products;
->>>>>>> ca0442ba7cb1df9480aa5e3fd5047c7dc246e2c7
   } catch {
     return products;
   }
@@ -34,14 +27,10 @@ export async function getProducts(params?: Record<string, string>) {
 export async function getProduct(slug: string) {
   try {
     const { data } = await api.get<{ product: Product; related: Product[] }>(`/products/${slug}`);
-<<<<<<< HEAD
     return {
       product: normalizeProduct(data.product),
       related: data.related.map(normalizeProduct)
     };
-=======
-    return data;
->>>>>>> ca0442ba7cb1df9480aa5e3fd5047c7dc246e2c7
   } catch {
     const product = products.find((item) => item.slug === slug) ?? products[0];
     return {
@@ -63,11 +52,7 @@ export async function getSellers() {
 export async function getSeller(slug: string) {
   try {
     const { data } = await api.get<{ seller: Seller & { products: Product[] } }>(`/sellers/${slug}`);
-<<<<<<< HEAD
     return { ...data.seller, products: data.seller.products.map(normalizeProduct) };
-=======
-    return data.seller;
->>>>>>> ca0442ba7cb1df9480aa5e3fd5047c7dc246e2c7
   } catch {
     const seller = sellers.find((item) => item.slug === slug) ?? sellers[0];
     return { ...seller, products: products.filter((item) => item.sellerId === seller.id) };

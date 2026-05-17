@@ -9,7 +9,6 @@ datasource db {
 
 enum UserRole {
   CUSTOMER
-<<<<<<< HEAD
   ARTISAN
   ADMIN
 }
@@ -26,12 +25,6 @@ enum AdminPermissionLevel {
   SUPPORT
 }
 
-=======
-  SELLER
-  ADMIN
-}
-
->>>>>>> ca0442ba7cb1df9480aa5e3fd5047c7dc246e2c7
 enum SellerStatus {
   PENDING
   APPROVED
@@ -39,18 +32,10 @@ enum SellerStatus {
 }
 
 enum ProductStatus {
-<<<<<<< HEAD
   ACTIVE
   INACTIVE
   SOLD_OUT
   PENDING
-=======
-  DRAFT
-  PENDING
-  ACTIVE
-  REJECTED
-  ARCHIVED
->>>>>>> ca0442ba7cb1df9480aa5e3fd5047c7dc246e2c7
 }
 
 enum OrderStatus {
@@ -80,7 +65,6 @@ model User {
   email        String     @unique
   passwordHash String
   role         UserRole   @default(CUSTOMER)
-<<<<<<< HEAD
   storeId      String?
   isDeleted    Boolean    @default(false)
   avatarUrl    String?
@@ -203,35 +187,6 @@ model Address {
   @@index([customerId])
   @@index([artisanId])
   @@index([zipCode])
-=======
-  avatarUrl    String?
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
-  seller       Seller?
-  favorites    Favorite[]
-  orders       Order[]    @relation("BuyerOrders")
-  reviews      Review[]   @relation("AuthorReviews")
-}
-
-model Seller {
-  id          String       @id @default(uuid())
-  userId      String       @unique
-  storeName   String
-  slug        String       @unique
-  bio         String
-  story       String
-  avatarUrl   String?
-  coverUrl    String?
-  status      SellerStatus @default(PENDING)
-  rating      Float        @default(0)
-  salesCount  Int          @default(0)
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  products    Product[]
-  orderItems  OrderItem[]
-  reviews     Review[]
->>>>>>> ca0442ba7cb1df9480aa5e3fd5047c7dc246e2c7
 }
 
 model Category {
@@ -248,7 +203,6 @@ model Product {
   sellerId               String
   categoryId             String
   name                   String
-<<<<<<< HEAD
   slug                   String        @unique
   description            String
   price                  Decimal       @db.Decimal(10, 2)
@@ -269,16 +223,6 @@ model Product {
   status                 ProductStatus @default(PENDING)
   averageRating          Float         @default(0)
   totalReviews           Int           @default(0)
-=======
-  slug                   String
-  description            String
-  price                  Decimal       @db.Decimal(10, 2)
-  stock                  Int
-  images                 String[]
-  customizationAvailable Boolean       @default(false)
-  personalizationPrompt  String?
-  status                 ProductStatus @default(PENDING)
->>>>>>> ca0442ba7cb1df9480aa5e3fd5047c7dc246e2c7
   rating                 Float         @default(0)
   salesCount             Int           @default(0)
   createdAt              DateTime      @default(now())
@@ -291,13 +235,10 @@ model Product {
 
   @@unique([sellerId, slug])
   @@index([name])
-<<<<<<< HEAD
   @@index([artisanId])
   @@index([artisanSlug])
   @@index([categoryName])
   @@index([status, averageRating])
-=======
->>>>>>> ca0442ba7cb1df9480aa5e3fd5047c7dc246e2c7
   @@index([status, rating])
 }
 
@@ -326,30 +267,17 @@ model Order {
 }
 
 model OrderItem {
-<<<<<<< HEAD
   id                 String  @id @default(uuid())
-=======
-  id                 String   @id @default(uuid())
->>>>>>> ca0442ba7cb1df9480aa5e3fd5047c7dc246e2c7
   orderId            String
   productId          String
   sellerId           String
   quantity           Int
-<<<<<<< HEAD
   unitPrice          Decimal @db.Decimal(10, 2)
   total              Decimal @db.Decimal(10, 2)
   customizationNotes String?
   order              Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
   product            Product @relation(fields: [productId], references: [id])
   seller             Seller  @relation(fields: [sellerId], references: [id])
-=======
-  unitPrice          Decimal  @db.Decimal(10, 2)
-  total              Decimal  @db.Decimal(10, 2)
-  customizationNotes String?
-  order              Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  product            Product  @relation(fields: [productId], references: [id])
-  seller             Seller   @relation(fields: [sellerId], references: [id])
->>>>>>> ca0442ba7cb1df9480aa5e3fd5047c7dc246e2c7
   review             Review?
 }
 
@@ -370,16 +298,9 @@ model Review {
 }
 
 model Coupon {
-<<<<<<< HEAD
   id         String    @id @default(uuid())
   code       String    @unique
   percentOff Int
   active     Boolean   @default(true)
-=======
-  id         String   @id @default(uuid())
-  code       String   @unique
-  percentOff Int
-  active     Boolean  @default(true)
->>>>>>> ca0442ba7cb1df9480aa5e3fd5047c7dc246e2c7
   expiresAt  DateTime?
 }

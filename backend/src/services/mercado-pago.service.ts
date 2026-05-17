@@ -1,7 +1,6 @@
 import { MercadoPagoConfig, Payment, Preference } from "mercadopago";
 import { env } from "../config/env.js";
 
-<<<<<<< HEAD
 const mercadoPagoAccessToken = env.MERCADO_PAGO_ACCESS_TOKEN?.includes("...") ? undefined : env.MERCADO_PAGO_ACCESS_TOKEN;
 
 const client = mercadoPagoAccessToken
@@ -16,19 +15,12 @@ function mockPreference(orderId: string) {
   };
 }
 
-=======
-const client = env.MERCADO_PAGO_ACCESS_TOKEN
-  ? new MercadoPagoConfig({ accessToken: env.MERCADO_PAGO_ACCESS_TOKEN })
-  : null;
-
->>>>>>> ca0442ba7cb1df9480aa5e3fd5047c7dc246e2c7
 export async function createCheckoutPreference(input: {
   orderId: string;
   buyerEmail: string;
   items: Array<{ title: string; quantity: number; unit_price: number }>;
 }) {
   if (!client) {
-<<<<<<< HEAD
     return mockPreference(input.orderId);
   }
 
@@ -55,29 +47,6 @@ export async function createCheckoutPreference(input: {
 
     throw error;
   }
-=======
-    return {
-      id: `mock-${input.orderId}`,
-      init_point: `${env.FRONTEND_URL}/checkout/sucesso?mock=true&order=${input.orderId}`,
-      sandbox_init_point: `${env.FRONTEND_URL}/checkout/sucesso?mock=true&order=${input.orderId}`
-    };
-  }
-
-  const preference = new Preference(client);
-  return preference.create({
-    body: {
-      external_reference: input.orderId,
-      items: input.items.map((item, index) => ({ id: `${input.orderId}-${index}`, ...item })),
-      payer: { email: input.buyerEmail },
-      back_urls: {
-        success: `${env.FRONTEND_URL}/checkout/sucesso`,
-        failure: `${env.FRONTEND_URL}/checkout/erro`,
-        pending: `${env.FRONTEND_URL}/checkout/pendente`
-      },
-      notification_url: `${env.BACKEND_URL.replace(/\/$/, "")}/api/v1/payments/webhook`
-    }
-  });
->>>>>>> ca0442ba7cb1df9480aa5e3fd5047c7dc246e2c7
 }
 
 export async function getPayment(paymentId: string) {

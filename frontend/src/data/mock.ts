@@ -1,8 +1,5 @@
 import type { Category, Product, Seller } from "../types";
-<<<<<<< HEAD
 import { normalizeProduct } from "../api/products";
-=======
->>>>>>> ca0442ba7cb1df9480aa5e3fd5047c7dc246e2c7
 
 export const categories: Category[] = [
   { id: "cat-1", name: "Cerâmica", slug: "ceramica", description: "Peças modeladas e queimadas em pequenos lotes." },
@@ -151,8 +148,4 @@ export const products: Product[] = [
     seller: sellers[2],
     category: categories[1]
   }
-<<<<<<< HEAD
 ].map(normalizeProduct);
-=======
-];
->>>>>>> ca0442ba7cb1df9480aa5e3fd5047c7dc246e2c7

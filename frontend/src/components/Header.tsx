@@ -1,10 +1,7 @@
 import { Heart, Menu, Search, ShoppingBag, UserRound, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
-<<<<<<< HEAD
 import { productImageUrl } from "../api/products";
-=======
->>>>>>> ca0442ba7cb1df9480aa5e3fd5047c7dc246e2c7
 import { products } from "../data/mock";
 import { useAuth } from "../store/auth";
 import { useCart } from "../store/cart";
@@ -63,11 +60,7 @@ export function Header() {
                   className="flex items-center gap-3 px-3 py-2.5 text-sm transition hover:bg-kriar-primary/5"
                   onClick={() => setQuery("")}
                 >
-<<<<<<< HEAD
                   <img src={productImageUrl(item)} alt="" className="h-11 w-11 rounded-xl object-cover" />
-=======
-                  <img src={item.images[0]} alt="" className="h-11 w-11 rounded-xl object-cover" />
->>>>>>> ca0442ba7cb1df9480aa5e3fd5047c7dc246e2c7
                   <span className="font-semibold text-kriar-contrast">{item.name}</span>
                 </Link>
               ))}

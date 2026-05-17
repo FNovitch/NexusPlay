@@ -10,7 +10,6 @@ const images = [
   "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=900&q=80"
 ];
 
-<<<<<<< HEAD
 function productImage(url: string, alt: string) {
   return {
     url,
@@ -19,8 +18,6 @@ function productImage(url: string, alt: string) {
   };
 }
 
-=======
->>>>>>> ca0442ba7cb1df9480aa5e3fd5047c7dc246e2c7
 async function main() {
   const passwordHash = await bcrypt.hash("Kriar@12345", 12);
   const admin = await prisma.user.upsert({
@@ -28,7 +25,6 @@ async function main() {
     update: {},
     create: { name: "Admin KRIAR", email: "admin@kriar.com", passwordHash, role: UserRole.ADMIN }
   });
-<<<<<<< HEAD
   await prisma.admin.upsert({
     where: { userId: admin.id },
     update: {},
@@ -68,8 +64,6 @@ async function main() {
       isDefault: true
     }
   });
-=======
->>>>>>> ca0442ba7cb1df9480aa5e3fd5047c7dc246e2c7
 
   const categories = await Promise.all(
     ["Ceramica", "Joias autorais", "Decoracao", "Papelaria", "Textil"].map((name) =>
@@ -88,11 +82,7 @@ async function main() {
   const sellerUser = await prisma.user.upsert({
     where: { email: "atelie@kriar.com" },
     update: {},
-<<<<<<< HEAD
     create: { name: "Lia Carvalho", email: "atelie@kriar.com", passwordHash, role: UserRole.ARTISAN }
-=======
-    create: { name: "Lia Carvalho", email: "atelie@kriar.com", passwordHash, role: UserRole.SELLER }
->>>>>>> ca0442ba7cb1df9480aa5e3fd5047c7dc246e2c7
   });
 
   const seller = await prisma.seller.upsert({
@@ -110,7 +100,6 @@ async function main() {
       rating: 4.9
     }
   });
-<<<<<<< HEAD
   await prisma.user.update({ where: { id: sellerUser.id }, data: { storeId: seller.id } });
   const artisan = await prisma.artisan.upsert({
     where: { userId: sellerUser.id },
@@ -144,8 +133,6 @@ async function main() {
       isDefault: true
     }
   });
-=======
->>>>>>> ca0442ba7cb1df9480aa5e3fd5047c7dc246e2c7
 
   await Promise.all(
     [
@@ -153,31 +140,21 @@ async function main() {
       ["Colar Horizonte em prata", "Joia autoral com pingente martelado, embalagem presenteavel e ajuste de comprimento.", 149.9, 12, 1],
       ["Kit botanico de parede", "Composicao artesanal para decoracao com fibras naturais, madeira reaproveitada e suporte invisivel.", 229.9, 4, 2],
       ["Caderno Costura Japonesa", "Papel especial, capa artesanal e opcao de gravacao do nome na primeira pagina.", 79.9, 18, 3]
-<<<<<<< HEAD
     ].map(([name, description, price, stock, index]) => {
       const category = categories[Number(index) % categories.length];
       const image = productImage(images[Number(index)], String(name));
 
       return prisma.product.upsert({
-=======
-    ].map(([name, description, price, stock, index]) =>
-      prisma.product.upsert({
->>>>>>> ca0442ba7cb1df9480aa5e3fd5047c7dc246e2c7
         where: { sellerId_slug: { sellerId: seller.id, slug: slugify(String(name)) } },
         update: {},
         create: {
           sellerId: seller.id,
-<<<<<<< HEAD
           categoryId: category.id,
-=======
-          categoryId: categories[Number(index) % categories.length].id,
->>>>>>> ca0442ba7cb1df9480aa5e3fd5047c7dc246e2c7
           name: String(name),
           slug: slugify(String(name)),
           description: String(description),
           price: Number(price),
           stock: Number(stock),
-<<<<<<< HEAD
           categoryName: category.name,
           images: [image],
           mainImage: image,
@@ -199,17 +176,6 @@ async function main() {
         }
       });
     })
-=======
-          images: [images[Number(index)]],
-          customizationAvailable: Number(index) === 3,
-          personalizationPrompt: Number(index) === 3 ? "Nome ou frase curta para personalizacao" : null,
-          status: ProductStatus.ACTIVE,
-          rating: 4.8,
-          salesCount: 20 - Number(index) * 3
-        }
-      })
-    )
->>>>>>> ca0442ba7cb1df9480aa5e3fd5047c7dc246e2c7
   );
 
   console.log(`Seed concluido. Admin: ${admin.email} / senha: Kriar@12345`);

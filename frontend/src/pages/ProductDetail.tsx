@@ -4,10 +4,7 @@ import { Link, useParams } from "react-router-dom";
 import { ProductCard } from "../components/ProductCard";
 import { SectionHeader } from "../components/SectionHeader";
 import { Stars } from "../components/Stars";
-<<<<<<< HEAD
 import { productImageUrl, productRating, productSalesCount, productSellerName, productSellerSlug } from "../api/products";
-=======
->>>>>>> ca0442ba7cb1df9480aa5e3fd5047c7dc246e2c7
 import { getProduct } from "../lib/api";
 import { useCart } from "../store/cart";
 import { useToast } from "../store/toast";
@@ -53,7 +50,6 @@ export function ProductDetail() {
     <main className="app-shell py-8 sm:py-12">
       <div className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr]">
         <div className="overflow-hidden rounded-[28px] bg-kriar-background shadow-card">
-<<<<<<< HEAD
           <img src={productImageUrl(product)} alt={product.name} className="aspect-[4/3] w-full object-cover" />
         </div>
         <section className="panel p-5 sm:p-7">
@@ -64,18 +60,6 @@ export function ProductDetail() {
           <div className="mt-5 flex flex-wrap items-center gap-3">
             <Stars value={productRating(product)} />
             <span className="badge-soft">{productSalesCount(product)} vendas</span>
-=======
-          <img src={product.images[0]} alt={product.name} className="aspect-[4/3] w-full object-cover" />
-        </div>
-        <section className="panel p-5 sm:p-7">
-          <Link to={`/loja/${product.seller.slug}`} className="text-sm font-black text-kriar-secondary transition hover:text-kriar-primary">
-            {product.seller.storeName}
-          </Link>
-          <h1 className="mt-3 text-3xl font-black leading-tight tracking-tight text-kriar-contrast md:text-5xl">{product.name}</h1>
-          <div className="mt-5 flex flex-wrap items-center gap-3">
-            <Stars value={product.rating} />
-            <span className="badge-soft">{product.salesCount} vendas</span>
->>>>>>> ca0442ba7cb1df9480aa5e3fd5047c7dc246e2c7
             <span className="badge-warm">Feito à mão</span>
           </div>
           <p className="mt-6 text-base leading-8 text-kriar-muted sm:text-lg">{product.description}</p>
@@ -91,11 +75,7 @@ export function ProductDetail() {
                 value={notes}
                 onChange={(event) => setNotes(event.target.value)}
                 className="text-field min-h-28 w-full"
-<<<<<<< HEAD
                 placeholder={product.personalizationPrompt ?? undefined}
-=======
-                placeholder={product.personalizationPrompt}
->>>>>>> ca0442ba7cb1df9480aa5e3fd5047c7dc246e2c7
               />
             </label>
           )}

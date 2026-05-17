@@ -3,19 +3,11 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
-<<<<<<< HEAD
   "main": "dist/src/server.js",
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "build": "tsc",
     "start": "node dist/src/server.js",
-=======
-  "main": "dist/server.js",
-  "scripts": {
-    "dev": "tsx watch src/server.ts",
-    "build": "tsc",
-    "start": "node dist/server.js",
->>>>>>> ca0442ba7cb1df9480aa5e3fd5047c7dc246e2c7
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:seed": "tsx prisma/seed.ts"
