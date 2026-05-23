@@ -12,6 +12,11 @@ export type ProductDimensions = {
   length: number;
 };
 
+export type ProductVariation = {
+  name: string;
+  options: string[];
+};
+
 export type CreateProductDTO = {
   name: string;
   description: string;
@@ -20,6 +25,7 @@ export type CreateProductDTO = {
   category: string;
   categoryId?: string;
   images: ProductImage[];
+  variations?: ProductVariation[];
   dimensions?: ProductDimensions | null;
   weight?: number;
   shippingAvailable?: boolean;
@@ -49,6 +55,7 @@ export type ProductResponseDTO = {
   artisanName: string;
   artisanSlug: string;
   dimensions: ProductDimensions | null;
+  variations: ProductVariation[];
   weight: number;
   shippingAvailable: boolean;
   pickupAvailable: boolean;
@@ -60,6 +67,12 @@ export type ProductResponseDTO = {
   personalizationPrompt: string | null;
   rating: number;
   salesCount: number;
+  reviews?: Array<{
+    rating: number;
+    comment: string;
+    createdAt: string;
+    author?: { id: string; name: string; avatarUrl?: string | null };
+  }>;
   seller?: {
     id: string;
     storeName: string;

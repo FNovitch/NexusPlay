@@ -1,12 +1,23 @@
 import { Router } from "express";
-import { checkout, myOrders, paymentWebhook } from "../controllers/order.controller.js";
+import { artisanOrders, cancelMyOrder, checkout, getArtisanOrder, getMyOrder, myOrders, paymentWebhook, updateArtisanOrderStatus } from "../controllers/order.controller.js";
 import { asyncHandler } from "../middlewares/async-handler.js";
-import { authenticate } from "../middlewares/auth.js";
+import { authenticate, requireArtisan, requireCustomer } from "../middlewares/auth.js";
 import { validate } from "../middlewares/validate.js";
 import { checkoutSchema } from "./schemas.js";
 
 export const orderRoutes = Router();
 
-orderRoutes.post("/checkout", authenticate, validate(checkoutSchema), asyncHandler(checkout));
-orderRoutes.get("/orders", authenticate, asyncHandler(myOrders));
+orderRoutes.post("/pedidos", authenticate, requireCustomer, validate(checkoutSchema), asyncHandler(checkout));
+orderRoutes.post("/pedidos/checkout", authenticate, requireCustomer, validate(checkoutSchema), asyncHandler(checkout));
+orderRoutes.post("/checkout", authenticate, requireCustomer, validate(checkoutSchema), asyncHandler(checkout));
+orderRoutes.get("/pedidos/meus-pedidos", authenticate, requireCustomer, asyncHandler(myOrders));
+orderRoutes.get("/orders", authenticate, requireCustomer, asyncHandler(myOrders));
+orderRoutes.get("/pedidos/:id", authenticate, requireCustomer, asyncHandler(getMyOrder));
+orderRoutes.put("/pedidos/:id/cancelar", authenticate, requireCustomer, asyncHandler(cancelMyOrder));
+
+orderRoutes.get("/artesao/pedidos", authenticate, requireArtisan, asyncHandler(artisanOrders));
+orderRoutes.get("/artesao/pedidos/:id", authenticate, requireArtisan, asyncHandler(getArtisanOrder));
+orderRoutes.put("/artesao/pedidos/:id/status", authenticate, requireArtisan, asyncHandler(updateArtisanOrderStatus));
+
+orderRoutes.post("/webhooks/mercado-pago", asyncHandler(paymentWebhook));
 orderRoutes.post("/payments/webhook", asyncHandler(paymentWebhook));

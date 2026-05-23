@@ -11,6 +11,7 @@ import { env } from "./config/env.js";
 import { prisma } from "./lib/prisma.js";
 import { router } from "./routes/index.js";
 import { errorHandler, notFound } from "./middlewares/error.js";
+import { uploadRoot } from "./middlewares/upload.js";
 
 const app = express();
 const allowedOrigins = new Set([env.FRONTEND_URL, "http://localhost:5173", "http://127.0.0.1:5173"]);
@@ -36,6 +37,7 @@ app.use(
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use("/uploads", express.static(uploadRoot));
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,

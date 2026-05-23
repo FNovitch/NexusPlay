@@ -12,7 +12,11 @@ export type ArtisanResponseDTO = {
   storeName: string;
   storeSlug: string;
   storeDescription: string;
+  craftCategories: string[];
   document: string;
+  acceptsLocalPickup: boolean;
+  pickupInstructions: string | null;
+  status: "PENDING" | "APPROVED" | "REJECTED";
   address: AddressDTO | null;
   isDeleted: boolean;
   createdAt: string;
@@ -28,6 +32,9 @@ export type CreateArtisanDTO = {
   storeName: string;
   storeSlug?: string;
   storeDescription: string;
+  craftCategories: string[];
   document: string;
   address: CreateAddressDTO;
+  acceptsLocalPickup?: boolean;
+  pickupInstructions?: string | null;
 };

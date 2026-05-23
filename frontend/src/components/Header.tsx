@@ -72,10 +72,17 @@ export function Header() {
           <NavLink className={navClass} to="/artesaos">
             Artesãos
           </NavLink>
-          <NavLink className={navClass} to="/vendedor">
-            Vender
+          <NavLink className={navClass} to={user?.role === "CUSTOMER" ? "/cliente" : "/cliente/cadastro"}>
+            Cliente
           </NavLink>
-          <NavLink className={navClass} to="/admin">
+          {user?.role === "CUSTOMER" && <NavLink className={navClass} to="/meus-pedidos">Pedidos</NavLink>}
+          <NavLink className={navClass} to="/artesao/cadastro">
+            Sou artesao
+          </NavLink>
+          <NavLink className={navClass} to={user?.role === "ARTISAN" ? "/vendedor" : "/artesao/login"}>
+            {user?.role === "ARTISAN" ? "Dashboard do artesao" : "Entrar como artesao"}
+          </NavLink>
+          <NavLink className={navClass} to={user?.role === "ADMIN" ? "/admin/dashboard" : "/admin/login"}>
             Admin
           </NavLink>
         </nav>
@@ -111,7 +118,8 @@ export function Header() {
           </form>
           <div className="grid gap-1 text-sm font-bold">
             <Link className="flex min-h-11 items-center rounded-full px-4 py-2 text-kriar-muted transition duration-[250ms] hover:bg-kriar-primary/10 hover:text-kriar-primary" onClick={() => setMenu(false)} to="/artesaos">Artesãos</Link>
-            <Link className="flex min-h-11 items-center rounded-full px-4 py-2 text-kriar-muted transition duration-[250ms] hover:bg-kriar-primary/10 hover:text-kriar-primary" onClick={() => setMenu(false)} to="/vendedor">Vender na KRIAR</Link>
+            <Link className="flex min-h-11 items-center rounded-full px-4 py-2 text-kriar-muted transition duration-[250ms] hover:bg-kriar-primary/10 hover:text-kriar-primary" onClick={() => setMenu(false)} to="/artesao/cadastro">Cadastrar como artesao</Link>
+            <Link className="flex min-h-11 items-center rounded-full px-4 py-2 text-kriar-muted transition duration-[250ms] hover:bg-kriar-primary/10 hover:text-kriar-primary" onClick={() => setMenu(false)} to={user?.role === "ARTISAN" ? "/vendedor" : "/artesao/login"}>{user?.role === "ARTISAN" ? "Dashboard do artesao" : "Entrar como artesao"}</Link>
             <Link className="flex min-h-11 items-center rounded-full px-4 py-2 text-kriar-muted transition duration-[250ms] hover:bg-kriar-primary/10 hover:text-kriar-primary" onClick={() => setMenu(false)} to="/login">{user ? user.name : "Entrar"}</Link>
           </div>
         </div>

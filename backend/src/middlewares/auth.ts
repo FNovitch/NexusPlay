@@ -66,3 +66,45 @@ export function requireRole(...roles: UserRole[]) {
     next();
   };
 }
+
+export async function requireArtisan(req: Request, _res: Response, next: NextFunction) {
+  if (!req.user) {
+    return next(new AppError("Autenticacao obrigatoria", 401));
+  }
+
+  if (req.user.role !== UserRole.ARTISAN || !req.user.sellerId) {
+    return next(new AppError("Acesso exclusivo para artesoes", 403));
+  }
+
+  const artisan = await prisma.artisan.findUnique({ where: { userId: req.user.id }, include: { store: true } });
+  if (!artisan || artisan.isDeleted || !artisan.active || artisan.blocked || artisan.status !== "APPROVED" || artisan.store?.status !== "APPROVED") {
+    return next(new AppError("Artesao sem permissao para esta acao", 403));
+  }
+
+  next();
+}
+
+export async function requireCustomer(req: Request, _res: Response, next: NextFunction) {
+  if (!req.user) {
+    return next(new AppError("Autenticacao obrigatoria", 401));
+  }
+
+  if (req.user.role !== UserRole.CUSTOMER) {
+    return next(new AppError("Acesso exclusivo para clientes", 403));
+  }
+
+  const customer = await prisma.customer.findUnique({ where: { userId: req.user.id } });
+  if (!customer || customer.isDeleted || !customer.active || customer.blocked) {
+    return next(new AppError("Cliente sem permissao para esta acao", 403));
+  }
+
+  next();
+}
+
+export async function requireAdmin(req: Request, _res: Response, next: NextFunction) {
+  if (!req.user) return next(new AppError("Autenticacao obrigatoria", 401));
+  if (req.user.role !== UserRole.ADMIN) return next(new AppError("Acesso exclusivo para administradores", 403));
+  const admin = await prisma.admin.findUnique({ where: { userId: req.user.id } });
+  if (!admin || admin.isDeleted || !admin.active) return next(new AppError("Administrador inativo", 403));
+  next();
+}

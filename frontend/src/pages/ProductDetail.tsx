@@ -18,6 +18,7 @@ export function ProductDetail() {
   const [product, setProduct] = useState<Product>();
   const [related, setRelated] = useState<Product[]>([]);
   const [notes, setNotes] = useState("");
+  const [selectedVariations, setSelectedVariations] = useState<Record<string, string>>({});
   const addItem = useCart((state) => state.addItem);
   const toggle = useWishlist((state) => state.toggle);
   const isFavorite = useWishlist((state) => (product ? state.has(product.id) : false));
@@ -37,7 +38,12 @@ export function ProductDetail() {
   const currentProduct = product;
 
   function handleAdd() {
-    addItem(currentProduct, 1, notes);
+    const missing = currentProduct.variations.find((variation) => !selectedVariations[variation.name]);
+    if (missing) {
+      showToast({ title: "Escolha uma variacao", description: `Selecione ${missing.name}.`, variant: "warning" });
+      return;
+    }
+    addItem(currentProduct, 1, notes, selectedVariations);
     showToast({ title: "Produto adicionado", description: currentProduct.name, variant: "success" });
   }
 
@@ -80,6 +86,41 @@ export function ProductDetail() {
             </label>
           )}
 
+          {product.variations.length > 0 && (
+            <div className="mt-7 grid gap-3">
+              {product.variations.map((variation) => (
+                <label key={variation.name} className="block">
+                  <span className="mb-2 block text-sm font-black text-kriar-contrast">{variation.name}</span>
+                  <select
+                    className="select-field w-full"
+                    value={selectedVariations[variation.name] ?? ""}
+                    onChange={(event) => setSelectedVariations((current) => ({ ...current, [variation.name]: event.target.value }))}
+                  >
+                    <option value="">Selecione</option>
+                    {variation.options.map((option) => (
+                      <option key={option} value={option}>{option}</option>
+                    ))}
+                  </select>
+                </label>
+              ))}
+            </div>
+          )}
+
+          {product.reviews && product.reviews.length > 0 && (
+            <div className="mt-7 border-t border-kriar-line pt-5">
+              <h2 className="text-xl font-black text-kriar-primary">Avaliacoes</h2>
+              <div className="mt-3 grid gap-3">
+                {product.reviews.map((review, index) => (
+                  <div key={`${review.createdAt}-${index}`} className="rounded-xl bg-kriar-background/70 p-3">
+                    <Stars value={review.rating} />
+                    <p className="mt-2 text-sm text-kriar-muted">{review.comment}</p>
+                    <strong className="mt-2 block text-xs text-kriar-contrast">{review.author?.name ?? "Cliente"}</strong>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="mt-7 flex flex-col gap-3 sm:flex-row">
             <button onClick={handleAdd} className="btn-primary flex-1">
               <ShoppingBag className="h-5 w-5" /> Adicionar ao carrinho
@@ -97,8 +138,12 @@ export function ProductDetail() {
             </div>
             <div className="rounded-[20px] border border-kriar-line bg-kriar-background/70 p-4">
               <PackageCheck className="mb-2 h-5 w-5 text-kriar-primary" />
-              <strong className="text-kriar-contrast">Pedido por vendedor</strong>
-              <p className="mt-1 text-sm leading-6 text-kriar-muted">O carrinho separa itens por loja para produção e entrega.</p>
+              <strong className="text-kriar-contrast">{product.pickupAvailable ? "Retirada local disponivel" : "Pedido por vendedor"}</strong>
+              <p className="mt-1 text-sm leading-6 text-kriar-muted">
+                {product.pickupAvailable
+                  ? product.pickupAddress ?? "O artesao combina a retirada apos a compra."
+                  : "O carrinho separa itens por loja para producao e entrega."}
+              </p>
             </div>
           </div>
         </section>

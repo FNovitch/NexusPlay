@@ -1,6 +1,38 @@
 import { z } from "zod";
 
 const onlyDigits = (value: string) => value.replace(/\D/g, "");
+const validStates = new Set(["AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO"]);
+
+function hasRepeatedDigits(value: string) {
+  return /^(\d)\1+$/.test(value);
+}
+
+function isValidCpf(value: string) {
+  if (value.length !== 11 || hasRepeatedDigits(value)) return false;
+  const digits = value.split("").map(Number);
+  const calc = (factor: number) => {
+    const total = digits.slice(0, factor - 1).reduce((sum, digit, index) => sum + digit * (factor - index), 0);
+    const rest = (total * 10) % 11;
+    return rest === 10 ? 0 : rest;
+  };
+  return calc(10) === digits[9] && calc(11) === digits[10];
+}
+
+function isValidCnpj(value: string) {
+  if (value.length !== 14 || hasRepeatedDigits(value)) return false;
+  const calc = (base: string, factors: number[]) => {
+    const total = base.split("").reduce((sum, digit, index) => sum + Number(digit) * factors[index], 0);
+    const rest = total % 11;
+    return rest < 2 ? 0 : 11 - rest;
+  };
+  const first = calc(value.slice(0, 12), [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]);
+  const second = calc(value.slice(0, 12) + first, [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]);
+  return first === Number(value[12]) && second === Number(value[13]);
+}
+
+function isValidDocument(value: string) {
+  return value.length === 11 ? isValidCpf(value) : value.length === 14 ? isValidCnpj(value) : false;
+}
 
 export const userRoleSchema = z.preprocess(
   (value) => (value === "SELLER" ? "ARTISAN" : value),
@@ -9,34 +41,42 @@ export const userRoleSchema = z.preprocess(
 export const userTypeSchema = z.enum(["CUSTOMER", "ARTISAN", "ADMIN"]);
 export const adminPermissionLevelSchema = z.enum(["SUPER_ADMIN", "MANAGER", "SUPPORT"]);
 
-export const passwordSchema = z.string().min(8).max(128);
+export const passwordSchema = z
+  .string()
+  .min(8, "A senha deve ter no minimo 8 caracteres")
+  .max(128)
+  .regex(/[A-Z]/, "A senha deve conter uma letra maiuscula")
+  .regex(/[a-z]/, "A senha deve conter uma letra minuscula")
+  .regex(/\d/, "A senha deve conter um numero")
+  .regex(/[^A-Za-z0-9]/, "A senha deve conter um caractere especial");
 
 export const cpfSchema = z
   .string()
   .transform(onlyDigits)
-  .refine((value) => value.length === 11, "CPF deve conter 11 digitos");
+  .refine(isValidCpf, "CPF invalido");
 
 export const documentSchema = z
   .string()
   .transform(onlyDigits)
-  .refine((value) => value.length === 11 || value.length === 14, "Documento deve conter CPF ou CNPJ valido");
+  .refine(isValidDocument, "Informe um CPF ou CNPJ valido");
 
 export const phoneSchema = z
   .string()
   .transform(onlyDigits)
-  .refine((value) => value.length >= 10 && value.length <= 13, "Telefone invalido");
+  .refine((value) => value.length === 10 || value.length === 11, "Informe um telefone brasileiro com DDD valido")
+  .refine((value) => !hasRepeatedDigits(value), "Telefone invalido");
 
 export const birthDateSchema = z
   .string()
   .refine((value) => !Number.isNaN(Date.parse(value)), "Data de nascimento invalida");
 
 export const addressSchema = z.object({
-  street: z.string().min(2).max(160),
+  street: z.string().min(2, "Rua obrigatoria").max(160),
   number: z.string().min(1).max(30),
   complement: z.string().max(120).nullish(),
-  neighborhood: z.string().min(2).max(120),
-  city: z.string().min(2).max(120),
-  state: z.string().min(2).max(2).transform((value) => value.toUpperCase()),
+  neighborhood: z.string().min(2, "Bairro obrigatorio").max(120),
+  city: z.string().min(2, "Cidade obrigatoria").max(120),
+  state: z.string().min(2).max(2).transform((value) => value.toUpperCase()).refine((value) => validStates.has(value), "UF invalida"),
   zipCode: z
     .string()
     .transform(onlyDigits)
@@ -46,7 +86,7 @@ export const addressSchema = z.object({
 });
 
 export const createCustomerDTOSchema = z.object({
-  name: z.string().min(2).max(120),
+  name: z.string().min(3).max(120).regex(/[A-Za-zÀ-ÿ]/, "Nome deve conter letras"),
   email: z.string().email().transform((value) => value.toLowerCase()),
   password: passwordSchema,
   birthDate: birthDateSchema,
@@ -55,17 +95,30 @@ export const createCustomerDTOSchema = z.object({
   address: addressSchema
 });
 
-export const createArtisanDTOSchema = z.object({
-  name: z.string().min(2).max(120),
+const createArtisanBaseDTOSchema = z.object({
+  name: z.string().min(3).max(120).regex(/[A-Za-zÀ-ÿ]/, "Nome deve conter letras"),
   email: z.string().email().transform((value) => value.toLowerCase()),
   password: passwordSchema,
   cpf: cpfSchema.nullish(),
   phone: phoneSchema,
-  storeName: z.string().min(2).max(90),
+  storeName: z.string().min(3).max(90),
   storeSlug: z.string().min(2).max(120).optional(),
   storeDescription: z.string().min(10).max(3000),
+  craftCategories: z.array(z.string().min(2).max(80)).min(1, "Informe pelo menos uma categoria"),
   document: documentSchema,
-  address: addressSchema
+  address: addressSchema,
+  acceptsLocalPickup: z.boolean().default(false),
+  pickupInstructions: z.string().max(600).nullish()
+});
+
+export const createArtisanDTOSchema = createArtisanBaseDTOSchema.superRefine((data, ctx) => {
+  if (data.acceptsLocalPickup && !data.pickupInstructions?.trim()) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Informe as instrucoes de retirada",
+      path: ["pickupInstructions"]
+    });
+  }
 });
 
 export const createAdminDTOSchema = z.object({
@@ -83,12 +136,22 @@ export const updateCustomerDTOSchema = createCustomerDTOSchema
     address: addressSchema.partial().optional()
   });
 
-export const updateArtisanDTOSchema = createArtisanDTOSchema
+export const updateArtisanDTOSchema = createArtisanBaseDTOSchema
   .omit({ email: true, password: true, address: true })
   .partial()
   .extend({
     isDeleted: z.boolean().optional(),
+    status: z.enum(["PENDING", "APPROVED", "REJECTED"]).optional(),
     address: addressSchema.partial().optional()
+  })
+  .superRefine((data, ctx) => {
+    if (data.acceptsLocalPickup && !data.pickupInstructions?.trim()) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Informe as instrucoes de retirada",
+        path: ["pickupInstructions"]
+      });
+    }
   });
 
 export const updateAdminDTOSchema = createAdminDTOSchema.omit({ email: true, password: true }).partial().extend({
@@ -111,7 +174,7 @@ export const legacyRegisterSchema = z.object({
           coverUrl: z.string().url().optional().or(z.literal(""))
         })
         .optional(),
-      artisan: createArtisanDTOSchema.omit({ name: true, email: true, password: true }).optional(),
+      artisan: createArtisanBaseDTOSchema.omit({ name: true, email: true, password: true }).optional(),
       customer: createCustomerDTOSchema.omit({ name: true, email: true, password: true }).optional(),
       admin: createAdminDTOSchema.omit({ name: true, email: true, password: true }).optional()
     })

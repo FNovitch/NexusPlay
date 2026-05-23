@@ -5,6 +5,7 @@ import { mapProductToResponse } from "../modules/products/product.mapper.js";
 
 export async function listCategories(_req: Request, res: Response) {
   const categories = await prisma.category.findMany({
+    where: { active: true },
     orderBy: { name: "asc" },
     include: { _count: { select: { products: true } } }
   });
@@ -40,7 +41,7 @@ export async function listProducts(req: Request, res: Response) {
       seller: {
         select: { id: true, storeName: true, slug: true, avatarUrl: true, rating: true, status: true }
       },
-      reviews: { select: { rating: true } }
+      reviews: { where: { hidden: false }, select: { rating: true } }
     },
     orderBy,
     take: 60
@@ -59,6 +60,7 @@ export async function getProduct(req: Request, res: Response) {
       category: true,
       seller: true,
       reviews: {
+        where: { hidden: false },
         include: { author: { select: { id: true, name: true, avatarUrl: true } } },
         orderBy: { createdAt: "desc" }
       }

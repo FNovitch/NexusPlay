@@ -14,6 +14,21 @@ export const productDimensionsSchema = z.object({
   length: z.coerce.number().positive()
 });
 
+export const productVariationSchema = z.object({
+  name: z.string().min(2).max(60),
+  options: z.array(z.string().min(1).max(60)).min(1).max(12)
+});
+
+const jsonArray = <T extends z.ZodTypeAny>(schema: T, max = 99) =>
+  z.preprocess((value) => {
+    if (typeof value !== "string") return value;
+    try {
+      return JSON.parse(value);
+    } catch {
+      return [];
+    }
+  }, z.array(schema).max(max));
+
 export const createProductDTOSchema = z.object({
   name: z.string().min(3).max(140),
   description: z.string().min(10).max(5000),
@@ -21,13 +36,14 @@ export const createProductDTOSchema = z.object({
   stock: z.coerce.number().int().min(0),
   category: z.string().min(1).max(120),
   categoryId: z.string().uuid(),
-  images: z.array(productImageSchema).min(1).max(3),
+  images: z.array(productImageSchema).min(1).max(3).optional(),
+  variations: jsonArray(productVariationSchema, 8).optional(),
   dimensions: productDimensionsSchema.nullish(),
   weight: z.coerce.number().min(0).optional(),
-  shippingAvailable: z.boolean().optional(),
-  pickupAvailable: z.boolean().optional(),
+  shippingAvailable: z.coerce.boolean().optional(),
+  pickupAvailable: z.coerce.boolean().optional(),
   pickupAddress: z.string().max(300).nullish(),
-  customizationAvailable: z.boolean().optional(),
+  customizationAvailable: z.coerce.boolean().optional(),
   personalizationPrompt: z.string().max(500).nullish()
 });
 

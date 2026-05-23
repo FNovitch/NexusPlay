@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { api } from "../lib/api";
+import { loginCustomer } from "../services/customers";
 
 type User = {
   id: string;
@@ -15,6 +16,7 @@ type AuthState = {
   token?: string;
   user?: User;
   login: (email: string, password: string) => Promise<void>;
+  setSession: (token: string, user: User) => void;
   logout: () => void;
 };
 
@@ -23,7 +25,7 @@ export const useAuth = create<AuthState>()(
     (set) => ({
       login: async (email, password) => {
         try {
-          const { data } = await api.post<{ token: string; user: User }>("/login", { email, password });
+          const data = await loginCustomer(email, password);
           localStorage.setItem("kriar-token", data.token);
           set({ token: data.token, user: data.user });
         } catch {
@@ -36,6 +38,10 @@ export const useAuth = create<AuthState>()(
           localStorage.setItem("kriar-token", "demo-token");
           set({ token: "demo-token", user: demoUser });
         }
+      },
+      setSession: (token, user) => {
+        localStorage.setItem("kriar-token", token);
+        set({ token, user });
       },
       logout: () => {
         localStorage.removeItem("kriar-token");

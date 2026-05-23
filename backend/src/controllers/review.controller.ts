@@ -1,14 +1,32 @@
 import type { Request, Response } from "express";
 import { prisma } from "../lib/prisma.js";
+import { AppError } from "../middlewares/error.js";
 
 export async function createReview(req: Request, res: Response) {
+  const orderItem = await prisma.orderItem.findUnique({
+    where: { id: req.body.orderItemId },
+    include: { order: true, review: true, product: true }
+  });
+
+  if (!orderItem || orderItem.order.buyerId !== req.user!.id) {
+    throw new AppError("Voce so pode avaliar produtos comprados por voce", 403);
+  }
+
+  if (orderItem.order.status !== "DELIVERED") {
+    throw new AppError("Produto so pode ser avaliado apos a entrega", 400, { order: "Pedido ainda nao foi entregue." });
+  }
+
+  if (orderItem.review) {
+    throw new AppError("Este item ja foi avaliado", 409, { review: "Avaliacao duplicada nao permitida." });
+  }
+
   const review = await prisma.review.create({
     data: {
       authorId: req.user!.id,
-      productId: req.body.productId,
-      sellerId: req.body.sellerId,
-      orderItemId: req.body.orderItemId,
-      type: req.body.type,
+      productId: orderItem.productId,
+      sellerId: orderItem.sellerId,
+      orderItemId: orderItem.id,
+      type: "PRODUCT",
       rating: req.body.rating,
       comment: req.body.comment
     }

@@ -20,15 +20,16 @@ function productImage(url: string, alt: string) {
 
 async function main() {
   const passwordHash = await bcrypt.hash("Kriar@12345", 12);
+  const adminPasswordHash = await bcrypt.hash(process.env.ADMIN_SEED_PASSWORD ?? "Admin@123456", 12);
   const admin = await prisma.user.upsert({
     where: { email: "admin@kriar.com" },
-    update: {},
-    create: { name: "Admin KRIAR", email: "admin@kriar.com", passwordHash, role: UserRole.ADMIN }
+    update: { passwordHash: adminPasswordHash, role: UserRole.ADMIN, isDeleted: false },
+    create: { name: "Admin KRIAR", email: process.env.ADMIN_SEED_EMAIL ?? "admin@kriar.com", passwordHash: adminPasswordHash, role: UserRole.ADMIN }
   });
   await prisma.admin.upsert({
     where: { userId: admin.id },
-    update: {},
-    create: { userId: admin.id, name: admin.name, permissionLevel: "SUPER_ADMIN" }
+    update: { active: true, isDeleted: false },
+    create: { userId: admin.id, name: admin.name, permissionLevel: "SUPER_ADMIN", active: true }
   });
 
   const customerUser = await prisma.user.upsert({
@@ -113,7 +114,11 @@ async function main() {
       storeName: seller.storeName,
       storeSlug: seller.slug,
       storeDescription: seller.story,
-      document: "00000000000200"
+      craftCategories: ["Ceramica", "Decoracao"],
+      document: "00000000000200",
+      acceptsLocalPickup: true,
+      pickupInstructions: "Retirada com agendamento previo no atelie.",
+      status: SellerStatus.APPROVED
     }
   });
   await prisma.address.upsert({
@@ -164,8 +169,8 @@ async function main() {
           dimensions: { width: 10, height: 10, length: 10 },
           weight: 0.3,
           shippingAvailable: true,
-          pickupAvailable: false,
-          pickupAddress: null,
+          pickupAvailable: true,
+          pickupAddress: "Rua do Atelie, 42, Aldeota, Fortaleza - CE, 60150000",
           customizationAvailable: Number(index) === 3,
           personalizationPrompt: Number(index) === 3 ? "Nome ou frase curta para personalizacao" : null,
           status: ProductStatus.ACTIVE,
@@ -178,7 +183,7 @@ async function main() {
     })
   );
 
-  console.log(`Seed concluido. Admin: ${admin.email} / senha: Kriar@12345`);
+  console.log(`Seed concluido. Admin: ${admin.email} / senha: ${process.env.ADMIN_SEED_PASSWORD ?? "Admin@123456"}`);
 }
 
 main()

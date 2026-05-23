@@ -1,4 +1,4 @@
-import type { ProductDimensions, ProductImage, ProductResponseDTO, ProductStatus } from "./product.types.js";
+import type { ProductDimensions, ProductImage, ProductResponseDTO, ProductStatus, ProductVariation } from "./product.types.js";
 
 type ProductMapperInput = {
   id: string;
@@ -16,6 +16,7 @@ type ProductMapperInput = {
   artisanName: string;
   artisanSlug: string;
   dimensions: unknown;
+  variations?: unknown;
   weight: unknown;
   shippingAvailable: boolean;
   pickupAvailable: boolean;
@@ -44,7 +45,7 @@ type ProductMapperInput = {
     description?: string | null;
     imageUrl?: string | null;
   };
-  reviews?: Array<{ rating: number }>;
+  reviews?: Array<{ rating: number; comment?: string; createdAt?: Date; author?: { id: string; name: string; avatarUrl?: string | null } }>;
 };
 
 type JsonRecord = Record<string, unknown>;
@@ -100,6 +101,17 @@ function normalizeDimensions(value: unknown): ProductDimensions | null {
   return { width, height, length };
 }
 
+function normalizeVariations(value: unknown): ProductVariation[] {
+  if (!Array.isArray(value)) return [];
+  return value
+    .filter(isRecord)
+    .map((variation) => ({
+      name: typeof variation.name === "string" ? variation.name : "",
+      options: Array.isArray(variation.options) ? variation.options.filter((option): option is string => typeof option === "string" && option.length > 0) : []
+    }))
+    .filter((variation) => variation.name.length > 0 && variation.options.length > 0);
+}
+
 export function mapProductToResponse(product: ProductMapperInput): ProductResponseDTO {
   const images = normalizeProductImages(product.images, product.name);
   const mainImage = normalizeImage(product.mainImage, product.name) ?? images[0] ?? null;
@@ -125,6 +137,7 @@ export function mapProductToResponse(product: ProductMapperInput): ProductRespon
     artisanName: product.artisanName || product.seller?.storeName || "",
     artisanSlug: product.artisanSlug || product.seller?.slug || "",
     dimensions: normalizeDimensions(product.dimensions),
+    variations: normalizeVariations(product.variations),
     weight: Number(product.weight),
     shippingAvailable: product.shippingAvailable,
     pickupAvailable: product.pickupAvailable,
@@ -136,6 +149,12 @@ export function mapProductToResponse(product: ProductMapperInput): ProductRespon
     personalizationPrompt: product.personalizationPrompt ?? null,
     rating: reviewsAverage || product.rating,
     salesCount: product.salesCount,
+    reviews: reviews.map((review) => ({
+      rating: review.rating,
+      comment: review.comment ?? "",
+      createdAt: review.createdAt?.toISOString?.() ?? "",
+      author: review.author
+    })),
     seller: product.seller,
     categoryDetails: product.category,
     createdAt: product.createdAt.toISOString(),

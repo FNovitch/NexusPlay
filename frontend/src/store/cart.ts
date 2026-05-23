@@ -6,7 +6,7 @@ import type { CartItem, Product } from "../types";
 type CartState = {
   items: CartItem[];
   isOpen: boolean;
-  addItem: (product: Product, quantity?: number, customizationNotes?: string) => void;
+  addItem: (product: Product, quantity?: number, customizationNotes?: string, selectedVariations?: Record<string, string>) => void;
   removeItem: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
   clear: () => void;
@@ -19,20 +19,21 @@ export const useCart = create<CartState>()(
     (set) => ({
       items: [],
       isOpen: false,
-      addItem: (product, quantity = 1, customizationNotes) =>
+      addItem: (product, quantity = 1, customizationNotes, selectedVariations) =>
         set((state) => {
-          const existing = state.items.find((item) => item.product.id === product.id);
+          const variationKey = JSON.stringify(selectedVariations ?? {});
+          const existing = state.items.find((item) => item.product.id === product.id && JSON.stringify(item.selectedVariations ?? {}) === variationKey);
           if (existing) {
             return {
               items: state.items.map((item) =>
                 item.product.id === product.id
-                  ? { ...item, quantity: Math.min(item.quantity + quantity, product.stock), customizationNotes }
+                  ? { ...item, quantity: Math.min(item.quantity + quantity, product.stock), customizationNotes, selectedVariations }
                   : item
               ),
               isOpen: true
             };
           }
-          return { items: [...state.items, { product, quantity, customizationNotes }], isOpen: true };
+          return { items: [...state.items, { product, quantity, customizationNotes, selectedVariations }], isOpen: true };
         }),
       removeItem: (productId) => set((state) => ({ items: state.items.filter((item) => item.product.id !== productId) })),
       updateQuantity: (productId, quantity) =>

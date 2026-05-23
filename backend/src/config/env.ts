@@ -30,6 +30,7 @@ const envSchema = z.object({
   FRONTEND_URL: z.string().url().default("http://localhost:5173"),
   BACKEND_URL: z.string().url().default("http://localhost:4001"),
   MERCADO_PAGO_ACCESS_TOKEN: z.string().optional(),
+  MERCADO_PAGO_PUBLIC_KEY: z.string().optional(),
   MERCADO_PAGO_WEBHOOK_SECRET: z.string().optional(),
 });
 

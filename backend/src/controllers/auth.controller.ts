@@ -31,8 +31,11 @@ export async function register(req: Request, res: Response) {
       const artisanData = artisan ?? {
         storeName: seller.storeName,
         storeDescription: seller.story ?? seller.bio,
+        craftCategories: ["Artesanato"],
         document: "00000000000",
         phone: "0000000000",
+        acceptsLocalPickup: false,
+        pickupInstructions: null,
         address: {
           street: "Endereco pendente",
           number: "0",
@@ -66,7 +69,10 @@ export async function register(req: Request, res: Response) {
           storeName: artisanData.storeName,
           storeSlug,
           storeDescription: artisanData.storeDescription,
-          document: artisanData.document
+          craftCategories: artisanData.craftCategories,
+          document: artisanData.document,
+          acceptsLocalPickup: artisanData.acceptsLocalPickup ?? false,
+          pickupInstructions: artisanData.pickupInstructions ?? null
         }
       });
       await tx.address.create({

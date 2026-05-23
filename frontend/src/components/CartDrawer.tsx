@@ -53,6 +53,11 @@ export function CartDrawer() {
                         <div className="min-w-0 flex-1">
                           <p className="truncate font-black text-kriar-contrast">{item.product.name}</p>
                           <p className="text-sm font-bold text-kriar-primary">{currency.format(item.product.price)}</p>
+                          {item.selectedVariations && Object.keys(item.selectedVariations).length > 0 && (
+                            <p className="mt-1 text-xs font-bold text-kriar-muted">
+                              {Object.entries(item.selectedVariations).map(([name, option]) => `${name}: ${option}`).join(" · ")}
+                            </p>
+                          )}
                           <div className="mt-3 flex items-center gap-2">
                             <button className="grid h-8 w-8 place-items-center rounded-lg border border-kriar-line text-kriar-muted transition hover:bg-kriar-primary/10 hover:text-kriar-primary" onClick={() => updateQuantity(item.product.id, item.quantity - 1)} aria-label="Diminuir">
                               <Minus className="h-3 w-3" />

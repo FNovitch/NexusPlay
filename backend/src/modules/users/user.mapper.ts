@@ -74,6 +74,9 @@ export function mapCustomerToResponse(customer: CustomerWithUser): CustomerRespo
 export function mapArtisanToResponse(artisan: ArtisanWithUser): ArtisanResponseDTO {
   const addresses = artisan.addresses ?? [];
   const defaultAddress = addresses.find((address) => address.isDefault) ?? addresses[0] ?? null;
+  const craftCategories = Array.isArray(artisan.craftCategories)
+    ? artisan.craftCategories.filter((category): category is string => typeof category === "string")
+    : [];
 
   return {
     id: artisan.id,
@@ -87,7 +90,11 @@ export function mapArtisanToResponse(artisan: ArtisanWithUser): ArtisanResponseD
     storeName: artisan.storeName,
     storeSlug: artisan.storeSlug,
     storeDescription: artisan.storeDescription,
+    craftCategories,
     document: artisan.document,
+    acceptsLocalPickup: artisan.acceptsLocalPickup,
+    pickupInstructions: artisan.pickupInstructions ?? null,
+    status: artisan.status,
     address: defaultAddress ? mapAddressToResponse(defaultAddress) : null,
     isDeleted: artisan.isDeleted,
     createdAt: artisan.createdAt.toISOString(),

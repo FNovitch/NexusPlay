@@ -65,6 +65,7 @@ export function normalizeProduct(product: RawProduct): Product {
     artisanName: product.artisanName ?? seller?.storeName ?? "",
     artisanSlug: product.artisanSlug ?? seller?.slug ?? "",
     dimensions: product.dimensions ?? null,
+    variations: product.variations ?? [],
     weight: Number(product.weight ?? 0),
     shippingAvailable: product.shippingAvailable ?? true,
     pickupAvailable: product.pickupAvailable ?? false,
@@ -76,6 +77,7 @@ export function normalizeProduct(product: RawProduct): Product {
     personalizationPrompt: product.personalizationPrompt ?? null,
     rating: product.rating ?? product.averageRating ?? 0,
     salesCount: product.salesCount ?? 0,
+    reviews: product.reviews ?? [],
     seller,
     createdAt: product.createdAt,
     updatedAt: product.updatedAt
@@ -83,7 +85,11 @@ export function normalizeProduct(product: RawProduct): Product {
 }
 
 export function productImageUrl(product: Product) {
-  return product.mainImage?.url ?? product.images[0]?.url ?? "";
+  const url = product.mainImage?.url ?? product.images[0]?.url ?? "";
+  if (url.startsWith("/uploads")) {
+    return `${new URL(import.meta.env.VITE_API_URL ?? "http://localhost:4000/api/v1").origin}${url}`;
+  }
+  return url;
 }
 
 export function productCategorySlug(product: Product) {

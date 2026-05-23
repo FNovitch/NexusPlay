@@ -33,6 +33,11 @@ export type ProductDimensions = {
   length: number;
 };
 
+export type ProductVariation = {
+  name: string;
+  options: string[];
+};
+
 export type Product = {
   id: string;
   sellerId: string;
@@ -50,6 +55,7 @@ export type Product = {
   artisanName: string;
   artisanSlug: string;
   dimensions: ProductDimensions | null;
+  variations: ProductVariation[];
   weight: number;
   shippingAvailable: boolean;
   pickupAvailable: boolean;
@@ -61,6 +67,12 @@ export type Product = {
   personalizationPrompt?: string | null;
   rating: number;
   salesCount: number;
+  reviews?: Array<{
+    rating: number;
+    comment: string;
+    createdAt: string;
+    author?: { id: string; name: string; avatarUrl?: string | null };
+  }>;
   seller?: Seller;
   createdAt?: string;
   updatedAt?: string;
@@ -70,4 +82,5 @@ export type CartItem = {
   product: Product;
   quantity: number;
   customizationNotes?: string;
+  selectedVariations?: Record<string, string>;
 };

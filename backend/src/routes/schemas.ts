@@ -5,11 +5,15 @@ import {
   updateProductSchema
 } from "../modules/products/product.schema.js";
 import {
+  createArtisanSchema as registerArtisanSchema,
+  createCustomerSchema as registerCustomerSchema,
   legacyRegisterSchema as registerSchema,
-  loginSchema
+  loginSchema,
+  updateArtisanSchema as artisanUpdateSchema,
+  updateCustomerSchema as customerUpdateSchema
 } from "../modules/users/user.schema.js";
 
-export { loginSchema, productSchema, registerSchema, updateProductSchema };
+export { artisanUpdateSchema, customerUpdateSchema, loginSchema, productSchema, registerArtisanSchema, registerCustomerSchema, registerSchema, updateProductSchema };
 
 const url = z.string().url().optional().or(z.literal(""));
 
@@ -36,15 +40,20 @@ export const sellerUpdateSchema = z.object({
 
 export const checkoutSchema = z.object({
   body: z.object({
+    shippingAddress: z.unknown().optional(),
+    enderecoEntrega: z.unknown().optional(),
+    shippingTotal: z.coerce.number().min(0).optional(),
+    valorFrete: z.coerce.number().min(0).optional(),
     items: z
       .array(
         z.object({
           productId: z.string().uuid(),
-          quantity: z.number().int().min(1).max(99),
-          customizationNotes: z.string().max(500).optional()
-        })
+            quantity: z.number().int().min(1).max(99),
+            customizationNotes: z.string().max(500).optional(),
+            selectedVariations: z.record(z.string()).optional()
+              })
       )
-      .min(1)
+      .min(1, "Carrinho vazio.")
   })
 });
 
@@ -53,12 +62,11 @@ export const reviewSchema = z.object({
     .object({
       productId: z.string().uuid().optional(),
       sellerId: z.string().uuid().optional(),
-      orderItemId: z.string().uuid().optional(),
-      type: z.enum(["PRODUCT", "SELLER"]),
+      orderItemId: z.string().uuid(),
+      type: z.enum(["PRODUCT", "SELLER"]).optional(),
       rating: z.number().int().min(1).max(5),
       comment: z.string().min(5).max(1000)
     })
-    .refine((data) => data.productId || data.sellerId, "Informe productId ou sellerId")
 });
 
 export const moderateSellerSchema = z.object({

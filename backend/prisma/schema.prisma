@@ -36,10 +36,13 @@ enum ProductStatus {
   INACTIVE
   SOLD_OUT
   PENDING
+  REJECTED
 }
 
 enum OrderStatus {
   CREATED
+  PENDING
+  AWAITING_PAYMENT
   PAID
   IN_PRODUCTION
   SHIPPED
@@ -51,6 +54,7 @@ enum PaymentStatus {
   PENDING
   APPROVED
   REJECTED
+  CANCELED
   REFUNDED
 }
 
@@ -114,6 +118,9 @@ model Customer {
   birthDate DateTime
   cpf       String    @unique
   phone     String
+  active    Boolean   @default(true)
+  blocked   Boolean   @default(false)
+  blockReason String?
   isDeleted Boolean   @default(false)
   storeId   String?
   createdAt DateTime  @default(now())
@@ -136,7 +143,15 @@ model Artisan {
   storeName        String
   storeSlug        String    @unique
   storeDescription String
+  craftCategories  String[]  @default([])
   document         String    @unique
+  acceptsLocalPickup Boolean @default(false)
+  pickupInstructions String?
+  status           SellerStatus @default(PENDING)
+  active           Boolean   @default(true)
+  blocked          Boolean   @default(false)
+  rejectionReason  String?
+  blockReason      String?
   isDeleted        Boolean   @default(false)
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
@@ -154,6 +169,7 @@ model Admin {
   userType        UserType             @default(ADMIN)
   name            String
   permissionLevel AdminPermissionLevel
+  active          Boolean              @default(true)
   isDeleted       Boolean              @default(false)
   createdAt       DateTime             @default(now())
   updatedAt       DateTime             @updatedAt
@@ -195,6 +211,7 @@ model Category {
   slug        String    @unique
   description String?
   imageUrl    String?
+  active      Boolean   @default(true)
   products    Product[]
 }
 
@@ -214,6 +231,7 @@ model Product {
   artisanName            String        @default("")
   artisanSlug            String        @default("")
   dimensions             Json?
+  variations             Json          @default("[]")
   weight                 Decimal       @default(0) @db.Decimal(10, 3)
   shippingAvailable      Boolean       @default(true)
   pickupAvailable        Boolean       @default(false)
@@ -221,6 +239,7 @@ model Product {
   customizationAvailable Boolean       @default(false)
   personalizationPrompt  String?
   status                 ProductStatus @default(PENDING)
+  rejectionReason        String?
   averageRating          Float         @default(0)
   totalReviews           Int           @default(0)
   rating                 Float         @default(0)
@@ -254,16 +273,23 @@ model Favorite {
 
 model Order {
   id             String        @id @default(uuid())
+  orderCode      String        @unique @default(uuid())
   buyerId        String
   status         OrderStatus   @default(CREATED)
   paymentStatus  PaymentStatus @default(PENDING)
+  paymentMethod  String?
+  productsTotal  Decimal       @default(0) @db.Decimal(10, 2)
+  shippingTotal  Decimal       @default(0) @db.Decimal(10, 2)
   total          Decimal       @db.Decimal(10, 2)
+  shippingAddress Json?
   mpPreferenceId String?
   mpPaymentId    String?
+  mpStatus       String?
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
   buyer          User          @relation("BuyerOrders", fields: [buyerId], references: [id])
   items          OrderItem[]
+  history        OrderHistory[]
 }
 
 model OrderItem {
@@ -271,14 +297,29 @@ model OrderItem {
   orderId            String
   productId          String
   sellerId           String
+  productName        String  @default("")
+  productImage       String?
   quantity           Int
   unitPrice          Decimal @db.Decimal(10, 2)
   total              Decimal @db.Decimal(10, 2)
   customizationNotes String?
+  selectedVariations Json?
   order              Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
   product            Product @relation(fields: [productId], references: [id])
   seller             Seller  @relation(fields: [sellerId], references: [id])
   review             Review?
+}
+
+model OrderHistory {
+  id             String      @id @default(uuid())
+  orderId        String
+  previousStatus OrderStatus?
+  newStatus      OrderStatus
+  note           String?
+  createdAt      DateTime    @default(now())
+  order          Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
 }
 
 model Review {
@@ -290,6 +331,7 @@ model Review {
   type        ReviewType
   rating      Int
   comment     String
+  hidden      Boolean    @default(false)
   createdAt   DateTime   @default(now())
   author      User       @relation("AuthorReviews", fields: [authorId], references: [id], onDelete: Cascade)
   product     Product?   @relation(fields: [productId], references: [id], onDelete: Cascade)
