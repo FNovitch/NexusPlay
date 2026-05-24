@@ -48,6 +48,8 @@ enum OrderStatus {
   SHIPPED
   DELIVERED
   CANCELED
+  PAYMENT_REJECTED
+  REFUNDED
 }
 
 enum PaymentStatus {
@@ -63,11 +65,40 @@ enum ReviewType {
   SELLER
 }
 
+enum SubscriptionPlanType {
+  MONTHLY
+  YEARLY
+}
+
+enum ArtisanSubscriptionStatus {
+  TRIAL_ACTIVE
+  ACTIVE
+  EXPIRED
+  CANCELED
+  PENDING
+  REJECTED
+}
+
+enum PaymentHistoryType {
+  ARTISAN_SUBSCRIPTION
+  CUSTOMER_PURCHASE
+  ARTISAN_PAYOUT
+}
+
+enum SellerPayoutStatus {
+  BLOCKED
+  AVAILABLE
+  PAID
+  CANCELED
+}
+
 model User {
   id           String     @id @default(uuid())
   name         String
   email        String     @unique
   passwordHash String
+  resetPasswordToken String?
+  resetPasswordExpires DateTime?
   role         UserRole   @default(CUSTOMER)
   storeId      String?
   isDeleted    Boolean    @default(false)
@@ -127,6 +158,7 @@ model Customer {
   updatedAt DateTime  @updatedAt
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   addresses Address[]
+  paymentHistories PaymentHistory[]
 
   @@index([userType, isDeleted])
   @@index([storeId])
@@ -147,6 +179,10 @@ model Artisan {
   document         String    @unique
   acceptsLocalPickup Boolean @default(false)
   pickupInstructions String?
+  subscriptionActive Boolean @default(false)
+  trialStart       DateTime?
+  trialEnd         DateTime?
+  subscriptionExpiresAt DateTime?
   status           SellerStatus @default(PENDING)
   active           Boolean   @default(true)
   blocked          Boolean   @default(false)
@@ -158,6 +194,10 @@ model Artisan {
   user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   store            Seller?   @relation("ArtisanStore", fields: [storeId], references: [id], onDelete: SetNull)
   addresses        Address[]
+  subscriptions    ArtisanSubscription[]
+  paymentHistories PaymentHistory[]
+  sellerPayouts    SellerPayout[]
+  shippingQuotes   OrderShipping[]
 
   @@index([userType, isDeleted])
   @@index([storeId])
@@ -171,6 +211,7 @@ model Admin {
   permissionLevel AdminPermissionLevel
   active          Boolean              @default(true)
   isDeleted       Boolean              @default(false)
+  lastLogin       DateTime?
   createdAt       DateTime             @default(now())
   updatedAt       DateTime             @updatedAt
   user            User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -215,6 +256,44 @@ model Category {
   products    Product[]
 }
 
+model SubscriptionPlan {
+  id          String               @id @default(uuid())
+  name        String
+  description String?
+  price       Decimal              @db.Decimal(10, 2)
+  durationDays Int
+  type        SubscriptionPlanType
+  active      Boolean              @default(true)
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+  subscriptions ArtisanSubscription[]
+
+  @@unique([type])
+}
+
+model ArtisanSubscription {
+  id          String                    @id @default(uuid())
+  artisanId   String
+  planId      String?
+  status      ArtisanSubscriptionStatus @default(PENDING)
+  trialStart  DateTime?
+  trialEnd    DateTime?
+  startDate   DateTime?
+  expirationDate DateTime?
+  mpPreferenceId String?
+  mpPaymentId    String?
+  mpStatus       String?
+  createdAt      DateTime              @default(now())
+  updatedAt      DateTime              @updatedAt
+  artisan        Artisan               @relation(fields: [artisanId], references: [id], onDelete: Cascade)
+  plan           SubscriptionPlan?      @relation(fields: [planId], references: [id], onDelete: SetNull)
+  paymentHistories PaymentHistory[]
+
+  @@index([artisanId])
+  @@index([status])
+  @@index([expirationDate])
+}
+
 model Product {
   id                     String        @id @default(uuid())
   sellerId               String
@@ -248,6 +327,7 @@ model Product {
   updatedAt              DateTime      @updatedAt
   seller                 Seller        @relation(fields: [sellerId], references: [id], onDelete: Cascade)
   category               Category      @relation(fields: [categoryId], references: [id])
+  productImages          ProductImage[]
   favorites              Favorite[]
   orderItems             OrderItem[]
   reviews                Review[]
@@ -259,6 +339,18 @@ model Product {
   @@index([categoryName])
   @@index([status, averageRating])
   @@index([status, rating])
+}
+
+model ProductImage {
+  id        String   @id @default(uuid())
+  productId String
+  url       String
+  publicId  String   @unique
+  fileName  String
+  createdAt DateTime @default(now())
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
 }
 
 model Favorite {
@@ -285,11 +377,44 @@ model Order {
   mpPreferenceId String?
   mpPaymentId    String?
   mpStatus       String?
+  paymentReleasedToArtisan Boolean @default(false)
+  customerConfirmedDelivery Boolean @default(false)
+  deliveryConfirmedAt DateTime?
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
   buyer          User          @relation("BuyerOrders", fields: [buyerId], references: [id])
   items          OrderItem[]
   history        OrderHistory[]
+  paymentHistories PaymentHistory[]
+  sellerPayouts    SellerPayout[]
+  shippingQuotes   OrderShipping[]
+}
+
+model OrderShipping {
+  id                 String   @id @default(uuid())
+  orderId            String
+  artisanId          String?
+  sellerId           String?
+  originZipCode      String
+  destinationZipCode String
+  carrier            String
+  service            String
+  serviceId          String
+  price              Decimal  @db.Decimal(10, 2)
+  deliveryTime       Int
+  melhorEnvioId      String?
+  status             String   @default("QUOTED")
+  trackingCode       String?
+  labelUrl           String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  order              Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  artisan            Artisan? @relation(fields: [artisanId], references: [id], onDelete: SetNull)
+
+  @@index([orderId])
+  @@index([artisanId])
+  @@index([sellerId])
+  @@index([status])
 }
 
 model OrderItem {
@@ -337,6 +462,53 @@ model Review {
   product     Product?   @relation(fields: [productId], references: [id], onDelete: Cascade)
   seller      Seller?    @relation(fields: [sellerId], references: [id], onDelete: Cascade)
   orderItem   OrderItem? @relation(fields: [orderItemId], references: [id])
+}
+
+model PaymentHistory {
+  id          String             @id @default(uuid())
+  artisanId   String?
+  customerId  String?
+  orderId     String?
+  subscriptionId String?
+  type        PaymentHistoryType
+  amount      Decimal            @db.Decimal(10, 2)
+  status      String
+  mpPaymentId String?
+  mpPreferenceId String?
+  description String?
+  createdAt   DateTime           @default(now())
+  artisan      Artisan?           @relation(fields: [artisanId], references: [id], onDelete: SetNull)
+  customer     Customer?          @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  order        Order?             @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  subscription ArtisanSubscription? @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+
+  @@index([artisanId])
+  @@index([customerId])
+  @@index([orderId])
+  @@index([subscriptionId])
+  @@index([type])
+}
+
+model SellerPayout {
+  id          String             @id @default(uuid())
+  orderId     String
+  artisanId   String
+  saleAmount  Decimal            @db.Decimal(10, 2)
+  shippingAmount Decimal         @default(0) @db.Decimal(10, 2)
+  totalAmount Decimal            @db.Decimal(10, 2)
+  availableAmount Decimal        @db.Decimal(10, 2)
+  status      SellerPayoutStatus @default(BLOCKED)
+  releasedAt  DateTime?
+  paidAt      DateTime?
+  note        String?
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  order       Order              @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  artisan     Artisan            @relation(fields: [artisanId], references: [id], onDelete: Cascade)
+
+  @@unique([orderId, artisanId])
+  @@index([artisanId])
+  @@index([status])
 }
 
 model Coupon {

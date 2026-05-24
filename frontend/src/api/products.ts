@@ -34,6 +34,8 @@ function normalizeImage(image: RawProductImage | null | undefined, fallbackAlt: 
 
   return {
     url: image.url,
+    id: image.id,
+    publicId: image.publicId,
     filename: image.filename || "product-image",
     alt: image.alt || fallbackAlt
   };

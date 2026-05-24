@@ -2,6 +2,8 @@ export type ProductStatus = "ACTIVE" | "INACTIVE" | "SOLD_OUT" | "PENDING";
 
 export type ProductImage = {
   url: string;
+  id?: string;
+  publicId?: string;
   filename: string;
   alt: string;
 };

@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
 import type { Prisma } from "@prisma/client";
-import { SellerStatus, UserRole } from "@prisma/client";
+import { ArtisanSubscriptionStatus, SellerStatus, UserRole } from "@prisma/client";
 import type { Request, Response } from "express";
 import { prisma } from "../lib/prisma.js";
 import { signToken } from "../middlewares/auth.js";
@@ -59,6 +59,9 @@ export async function registerArtisan(req: Request, res: Response) {
 
   const passwordHash = await bcrypt.hash(body.password, 12);
   const artisan = await prisma.$transaction(async (tx) => {
+    const trialStart = new Date();
+    const trialEnd = new Date(trialStart);
+    trialEnd.setDate(trialEnd.getDate() + 7);
     const storeSlug = await uniqueStoreSlug(body.storeSlug ?? body.storeName, tx);
     const user = await tx.user.create({
       data: {
@@ -94,7 +97,18 @@ export async function registerArtisan(req: Request, res: Response) {
         document: body.document,
         acceptsLocalPickup: body.acceptsLocalPickup ?? false,
         pickupInstructions: body.pickupInstructions ?? null,
+        trialStart,
+        trialEnd,
         status: SellerStatus.PENDING
+      }
+    });
+
+    await tx.artisanSubscription.create({
+      data: {
+        artisanId: artisanProfile.id,
+        status: ArtisanSubscriptionStatus.TRIAL_ACTIVE,
+        trialStart,
+        trialEnd
       }
     });
 

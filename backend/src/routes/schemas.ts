@@ -7,13 +7,15 @@ import {
 import {
   createArtisanSchema as registerArtisanSchema,
   createCustomerSchema as registerCustomerSchema,
+  forgotPasswordSchema,
   legacyRegisterSchema as registerSchema,
   loginSchema,
+  resetPasswordSchema,
   updateArtisanSchema as artisanUpdateSchema,
   updateCustomerSchema as customerUpdateSchema
 } from "../modules/users/user.schema.js";
 
-export { artisanUpdateSchema, customerUpdateSchema, loginSchema, productSchema, registerArtisanSchema, registerCustomerSchema, registerSchema, updateProductSchema };
+export { artisanUpdateSchema, customerUpdateSchema, forgotPasswordSchema, loginSchema, productSchema, registerArtisanSchema, registerCustomerSchema, registerSchema, resetPasswordSchema, updateProductSchema };
 
 const url = z.string().url().optional().or(z.literal(""));
 
@@ -44,6 +46,19 @@ export const checkoutSchema = z.object({
     enderecoEntrega: z.unknown().optional(),
     shippingTotal: z.coerce.number().min(0).optional(),
     valorFrete: z.coerce.number().min(0).optional(),
+    shippingSelections: z.array(z.object({
+      groupId: z.string().min(1),
+      sellerId: z.string().min(1).optional(),
+      artesaoId: z.string().min(1).nullish(),
+      cepOrigem: z.string().min(8),
+      cepDestino: z.string().min(8),
+      transportadora: z.string().min(1),
+      servico: z.string().min(1),
+      servicoId: z.union([z.string(), z.number()]).transform(String),
+      valor: z.coerce.number().min(0),
+      prazo: z.coerce.number().int().min(0),
+      melhorEnvioId: z.union([z.string(), z.number()]).optional().transform((value) => value === undefined ? undefined : String(value))
+    })).optional(),
     items: z
       .array(
         z.object({
@@ -54,6 +69,17 @@ export const checkoutSchema = z.object({
               })
       )
       .min(1, "Carrinho vazio.")
+  })
+});
+
+export const freightCalculateSchema = z.object({
+  body: z.object({
+    cepDestino: z.string().min(8),
+    itens: z.array(z.object({
+      produtoId: z.string().uuid(),
+      quantidade: z.coerce.number().int().min(1).max(99),
+      variacaoSelecionada: z.record(z.string()).optional()
+    })).min(1, "Carrinho vazio.")
   })
 });
 

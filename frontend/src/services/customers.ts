@@ -15,3 +15,17 @@ export async function getCustomerProfile() {
   const { data } = await api.get<{ data: CustomerResponseDTO }>("/clientes/perfil");
   return data.data;
 }
+
+export async function requestCustomerPasswordReset(email: string) {
+  const { data } = await api.post<{ success: boolean; message: string }>("/clientes/esqueci-senha", { email });
+  return data;
+}
+
+export async function resetCustomerPassword(token: string, password: string, confirmPassword: string) {
+  const { data } = await api.post<{ success: boolean; message: string }>("/clientes/resetar-senha", {
+    token,
+    password,
+    confirmPassword
+  });
+  return data;
+}

@@ -20,6 +20,7 @@ export async function getProducts(params?: Record<string, string>) {
     const { data } = await api.get<{ products: Product[] }>("/products", { params });
     return data.products.map(normalizeProduct);
   } catch {
+    if (!import.meta.env.DEV) return [];
     return products;
   }
 }
@@ -32,6 +33,10 @@ export async function getProduct(slug: string) {
       related: data.related.map(normalizeProduct)
     };
   } catch {
+    if (!import.meta.env.DEV) {
+      throw new Error("Produto nao encontrado.");
+    }
+
     const product = products.find((item) => item.slug === slug) ?? products[0];
     return {
       product,
@@ -45,6 +50,7 @@ export async function getSellers() {
     const { data } = await api.get<{ sellers: Seller[] }>("/sellers");
     return data.sellers;
   } catch {
+    if (!import.meta.env.DEV) return [];
     return sellers;
   }
 }
@@ -54,6 +60,10 @@ export async function getSeller(slug: string) {
     const { data } = await api.get<{ seller: Seller & { products: Product[] } }>(`/sellers/${slug}`);
     return { ...data.seller, products: data.seller.products.map(normalizeProduct) };
   } catch {
+    if (!import.meta.env.DEV) {
+      throw new Error("Loja nao encontrada.");
+    }
+
     const seller = sellers.find((item) => item.slug === slug) ?? sellers[0];
     return { ...seller, products: products.filter((item) => item.sellerId === seller.id) };
   }
@@ -64,6 +74,7 @@ export async function getCategories() {
     const { data } = await api.get<{ categories: typeof categories }>("/categories");
     return data.categories;
   } catch {
+    if (!import.meta.env.DEV) return [];
     return categories;
   }
 }

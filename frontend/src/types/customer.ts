@@ -9,6 +9,9 @@ export type CustomerResponseDTO = {
   birthDate: string;
   cpf: string;
   phone: string;
+  active: boolean;
+  blocked: boolean;
+  blockReason: string | null;
   addresses: AddressDTO[];
   isDeleted: boolean;
   createdAt: string;

@@ -4,15 +4,24 @@ export const productStatusSchema = z.enum(["ACTIVE", "INACTIVE", "SOLD_OUT", "PE
 
 export const productImageSchema = z.object({
   url: z.string().url(),
+  id: z.string().uuid().optional(),
+  publicId: z.string().min(1).optional(),
   filename: z.string().min(1).max(180),
   alt: z.string().min(1).max(180)
 });
 
-export const productDimensionsSchema = z.object({
+export const productDimensionsSchema = z.preprocess((value) => {
+  if (typeof value !== "string") return value;
+  try {
+    return JSON.parse(value);
+  } catch {
+    return value;
+  }
+}, z.object({
   width: z.coerce.number().positive(),
   height: z.coerce.number().positive(),
   length: z.coerce.number().positive()
-});
+}));
 
 export const productVariationSchema = z.object({
   name: z.string().min(2).max(60),
@@ -38,8 +47,8 @@ export const createProductDTOSchema = z.object({
   categoryId: z.string().uuid(),
   images: z.array(productImageSchema).min(1).max(3).optional(),
   variations: jsonArray(productVariationSchema, 8).optional(),
-  dimensions: productDimensionsSchema.nullish(),
-  weight: z.coerce.number().min(0).optional(),
+  dimensions: productDimensionsSchema,
+  weight: z.coerce.number().positive("Peso obrigatorio para calculo de frete"),
   shippingAvailable: z.coerce.boolean().optional(),
   pickupAvailable: z.coerce.boolean().optional(),
   pickupAddress: z.string().max(300).nullish(),
@@ -48,7 +57,12 @@ export const createProductDTOSchema = z.object({
 });
 
 export const updateProductDTOSchema = createProductDTOSchema.partial().extend({
-  status: productStatusSchema.optional()
+  status: productStatusSchema.optional(),
+  removeImageIds: jsonArray(z.string().uuid(), 3).optional()
+});
+
+export const sellerUpdateProductDTOSchema = createProductDTOSchema.partial().extend({
+  removeImageIds: jsonArray(z.string().uuid(), 3).optional()
 });
 
 export const createProductSchema = z.object({
@@ -57,7 +71,7 @@ export const createProductSchema = z.object({
 
 export const updateProductSchema = z.object({
   params: z.object({ id: z.string().uuid() }),
-  body: updateProductDTOSchema
+  body: sellerUpdateProductDTOSchema
 });
 
 export type CreateProductDTO = z.infer<typeof createProductDTOSchema>;

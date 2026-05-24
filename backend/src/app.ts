@@ -16,6 +16,7 @@ import { uploadRoot } from "./middlewares/upload.js";
 const app = express();
 const allowedOrigins = new Set([env.FRONTEND_URL, "http://localhost:5173", "http://127.0.0.1:5173"]);
 
+app.set("trust proxy", 1);
 app.use(helmet());
 app.use(compression());
 app.use(cookieParser());
@@ -37,7 +38,9 @@ app.use(
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use("/uploads", express.static(uploadRoot));
+if (env.NODE_ENV !== "production") {
+  app.use("/uploads", express.static(uploadRoot));
+}
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,

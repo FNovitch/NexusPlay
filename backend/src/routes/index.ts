@@ -5,10 +5,12 @@ import { authRoutes } from "./auth.routes.js";
 import { catalogRoutes } from "./catalog.routes.js";
 import { customerRoutes } from "./customer.routes.js";
 import { favoriteRoutes } from "./favorite.routes.js";
+import { freightRoutes } from "./freight.routes.js";
 import { orderRoutes } from "./order.routes.js";
 import { productRoutes } from "./product.routes.js";
 import { reviewRoutes } from "./review.routes.js";
 import { sellerRoutes } from "./seller.routes.js";
+import { subscriptionRoutes } from "./subscription.routes.js";
 
 export const router = Router();
 
@@ -18,7 +20,9 @@ router.use(customerRoutes);
 router.use(catalogRoutes);
 router.use(sellerRoutes);
 router.use(productRoutes);
+router.use(subscriptionRoutes);
 router.use(orderRoutes);
 router.use(reviewRoutes);
 router.use(favoriteRoutes);
+router.use(freightRoutes);
 router.use(adminRoutes);

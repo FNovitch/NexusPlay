@@ -1,99 +1,61 @@
-# KRIAR - Onde a Arte encontra o Futuro
+# KRIAR
 
-Marketplace fullstack de artesanato inspirado no Elo7, com vendedores independentes, lojas proprias, catalogo com filtros, carrinho multi-vendedor, avaliacoes, painel do artesao, admin e checkout Mercado Pago.
+Marketplace fullstack de artesanato com cliente, artesao, administrador, produtos, carrinho, pedidos, Mercado Pago, Melhor Envio e Cloudinary.
 
 ## Stack
 
 - Frontend: React, TypeScript, Vite, TailwindCSS, Zustand, React Router
 - Backend: Node.js, Express, Prisma, PostgreSQL, JWT, bcrypt, Helmet, rate limiting
-- Pagamentos: Mercado Pago Preferences + webhook
-- Deploy sugerido: Vercel para `frontend/`, Render/Railway para `backend/`, Supabase/Neon para PostgreSQL
+- Pagamentos: Mercado Pago Checkout Pro + webhooks
+- Frete: Melhor Envio
+- Imagens: Cloudinary
 
-## Estrutura
-
-```txt
-frontend/        SPA React com vitrine, loja, carrinho, checkout e dashboards
-backend/         API REST Express em estrutura MVC
-backend/prisma/  Schema PostgreSQL e seed
-```
-
-## Rodando localmente
-
-1. Instale dependencias:
+## Rodando Localmente
 
 ```bash
 npm install
 ```
 
-2. Copie `.env.example` para `.env` e preencha as variaveis.
-
-3. Gere o Prisma Client e rode a migracao:
+Copie `.env.example` para `.env` e preencha valores reais apenas no seu ambiente local/produção.
 
 ```bash
 npm run db:generate
 npm run db:migrate
 npm run seed
+npm run create:admin
 ```
 
-4. Rode backend e frontend em terminais separados:
+Rode backend e frontend:
 
 ```bash
 npm run dev --workspace backend
 npm run dev --workspace frontend
 ```
 
-Frontend: `http://127.0.0.1:5173`  
+Frontend: `http://127.0.0.1:5173`
 Backend: `http://localhost:4000/health`
 
-## Contas demo do seed
+## Administrador
 
-- Admin: `admin@kriar.com` / `Kriar@12345`
-- Vendedor: `atelie@kriar.com` / `Kriar@12345`
+Admins nao sao criados por seed e nao existem credenciais publicas no repositorio.
 
-## Principais rotas da API
+Crie o primeiro administrador manualmente:
 
-- `POST /api/v1/register`
-- `POST /api/v1/login`
-- `GET /api/v1/products`
-- `GET /api/v1/products/autocomplete?q=vaso`
-- `GET /api/v1/products/:slug`
-- `GET /api/v1/sellers/:slug`
-- `POST /api/v1/seller/products`
-- `POST /api/v1/checkout`
-- `POST /api/v1/payments/webhook`
-- `POST /api/v1/reviews`
-- `GET /api/v1/admin/overview`
+```bash
+npm run create:admin
+```
 
-## Mercado Pago
+O comando solicita nome, email e senha forte, salva apenas o hash bcrypt e nao imprime a senha.
 
-Defina `MERCADO_PAGO_ACCESS_TOKEN` no backend. Sem token, a API retorna uma preferencia mock para desenvolvimento. Em producao, configure o webhook publico do backend em `POST /api/v1/payments/webhook`.
+## Seed
+
+O seed e seguro para desenvolvimento e cria apenas dados nao sensiveis, como categorias e planos. Em `NODE_ENV=production`, o seed e ignorado.
 
 ## Seguranca
 
-- Senhas com bcrypt
-- JWT para autenticacao
-- Roles `CUSTOMER`, `SELLER`, `ADMIN`
-- Helmet, CORS restrito, rate limiting e HPP
-- Validador Zod em entradas
-- Prisma ORM para evitar SQL injection por queries parametrizadas
-- Sanitizacao basica contra scripts no corpo das requisicoes
-
-## Deploy
-
-### Frontend na Vercel
-
-- Root directory: `frontend`
-- Build command: `npm run build`
-- Output directory: `dist`
-- Env: `VITE_API_URL=https://sua-api.com/api/v1`
-
-### Backend no Render/Railway
-
-- Root directory: `backend`
-- Build command: `npm install && npm run prisma:generate && npm run build`
-- Start command: `npm run start`
-- Env: `DATABASE_URL`, `JWT_SECRET`, `FRONTEND_URL`, `MERCADO_PAGO_ACCESS_TOKEN`
-
-### Banco no Supabase/Neon
-
-Use a connection string PostgreSQL em `DATABASE_URL` e rode as migracoes do Prisma no ambiente de deploy ou via CI.
+- `.env` e `.env.*` ficam fora do Git.
+- Senhas sao salvas com bcrypt.
+- JWT usa `JWT_SECRET` vindo do ambiente.
+- Admin usa login separado e rotas protegidas por role `ADMIN`.
+- Webhook Mercado Pago valida `x-signature` e `x-request-id`.
+- Tokens Mercado Pago, Cloudinary, SMTP e Melhor Envio nunca devem ser expostos no frontend.

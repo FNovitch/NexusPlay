@@ -41,6 +41,7 @@ export async function listProducts(req: Request, res: Response) {
       seller: {
         select: { id: true, storeName: true, slug: true, avatarUrl: true, rating: true, status: true }
       },
+      productImages: { orderBy: { createdAt: "asc" } },
       reviews: { where: { hidden: false }, select: { rating: true } }
     },
     orderBy,
@@ -59,6 +60,7 @@ export async function getProduct(req: Request, res: Response) {
     include: {
       category: true,
       seller: true,
+      productImages: { orderBy: { createdAt: "asc" } },
       reviews: {
         where: { hidden: false },
         include: { author: { select: { id: true, name: true, avatarUrl: true } } },
@@ -78,7 +80,7 @@ export async function getProduct(req: Request, res: Response) {
       status: ProductStatus.ACTIVE
     },
     take: 8,
-    include: { seller: true, category: true }
+    include: { seller: true, category: true, productImages: { orderBy: { createdAt: "asc" } } }
   });
 
   res.json({
@@ -98,7 +100,7 @@ export async function autocomplete(req: Request, res: Response) {
       status: ProductStatus.ACTIVE,
       name: { contains: q, mode: "insensitive" }
     },
-    select: { id: true, name: true, slug: true, images: true },
+    select: { id: true, name: true, slug: true, images: true, productImages: { orderBy: { createdAt: "asc" } } },
     take: 8
   });
 
@@ -131,6 +133,7 @@ export async function autocomplete(req: Request, res: Response) {
         personalizationPrompt: null,
         rating: 0,
         salesCount: 0,
+        productImages: product.productImages,
         createdAt: new Date(),
         updatedAt: new Date()
       }).images

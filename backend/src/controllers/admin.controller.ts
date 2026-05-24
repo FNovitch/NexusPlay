@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
 import type { Request, Response } from "express";
-import { OrderStatus, PaymentStatus, ProductStatus, SellerStatus, UserRole } from "@prisma/client";
+import { ArtisanSubscriptionStatus, OrderStatus, PaymentStatus, ProductStatus, SellerPayoutStatus, SellerStatus, UserRole } from "@prisma/client";
 import { prisma } from "../lib/prisma.js";
 import { signToken } from "../middlewares/auth.js";
 import { AppError } from "../middlewares/error.js";
@@ -28,6 +28,7 @@ export async function adminLogin(req: Request, res: Response) {
   if (!user || user.role !== UserRole.ADMIN || user.isDeleted || !user.adminProfile?.active || !(await bcrypt.compare(password, user.passwordHash))) {
     throw new AppError("E-mail ou senha invalidos.", 401);
   }
+  await prisma.admin.update({ where: { userId: user.id }, data: { lastLogin: new Date() } });
   const token = signToken({ sub: user.id, role: user.role });
   res.json({ success: true, message: "Login administrativo realizado.", data: { token, user: adminUser(user) }, token, user: adminUser(user) });
 }
@@ -196,14 +197,14 @@ export async function listAdminProducts(req: Request, res: Response) {
   const status = req.query.status ? String(req.query.status).toUpperCase() as ProductStatus : undefined;
   const where = { status, name: contains(req.query.q), categoryId: req.query.categoryId ? String(req.query.categoryId) : undefined, sellerId: req.query.sellerId ? String(req.query.sellerId) : undefined };
   const [items, total] = await Promise.all([
-    prisma.product.findMany({ where, include: { seller: true, category: true }, skip: skipFrom(req), take: takeFrom(req), orderBy: { createdAt: "desc" } }),
+    prisma.product.findMany({ where, include: { seller: true, category: true, productImages: { orderBy: { createdAt: "asc" } } }, skip: skipFrom(req), take: takeFrom(req), orderBy: { createdAt: "desc" } }),
     prisma.product.count({ where })
   ]);
   success(res, { items, total });
 }
 
 export async function getAdminProduct(req: Request, res: Response) {
-  const item = await prisma.product.findUnique({ where: { id: paramId(req) }, include: { seller: true, category: true, reviews: true } });
+  const item = await prisma.product.findUnique({ where: { id: paramId(req) }, include: { seller: true, category: true, productImages: { orderBy: { createdAt: "asc" } }, reviews: true } });
   if (!item) throw new AppError("Produto nao encontrado", 404);
   success(res, item);
 }
@@ -299,4 +300,63 @@ export async function deleteAdminCategory(req: Request, res: Response) {
   }
   await prisma.category.delete({ where: { id: paramId(req) } });
   success(res, null, "Categoria excluida.");
+}
+
+export async function listAdminSubscriptions(req: Request, res: Response) {
+  const status = req.query.status ? String(req.query.status).toUpperCase() as ArtisanSubscriptionStatus : undefined;
+  const items = await prisma.artisanSubscription.findMany({
+    where: { status },
+    include: { artisan: { include: { user: { select: { email: true, name: true } } } }, plan: true },
+    skip: skipFrom(req),
+    take: takeFrom(req),
+    orderBy: { createdAt: "desc" }
+  });
+  success(res, { items, total: await prisma.artisanSubscription.count({ where: { status } }) });
+}
+
+export async function activateAdminSubscription(req: Request, res: Response) {
+  const subscription = await prisma.artisanSubscription.findUnique({ where: { id: paramId(req) }, include: { plan: true } });
+  if (!subscription || !subscription.plan) throw new AppError("Assinatura nao encontrada", 404);
+  const startDate = new Date();
+  const expirationDate = new Date(startDate);
+  expirationDate.setDate(expirationDate.getDate() + subscription.plan.durationDays);
+  const item = await prisma.$transaction(async (tx) => {
+    const updated = await tx.artisanSubscription.update({ where: { id: subscription.id }, data: { status: ArtisanSubscriptionStatus.ACTIVE, startDate, expirationDate } });
+    await tx.artisan.update({ where: { id: subscription.artisanId }, data: { subscriptionActive: true, subscriptionExpiresAt: expirationDate } });
+    return updated;
+  });
+  success(res, item, "Assinatura ativada manualmente.");
+}
+
+export async function cancelAdminSubscription(req: Request, res: Response) {
+  const subscription = await prisma.artisanSubscription.update({ where: { id: paramId(req) }, data: { status: ArtisanSubscriptionStatus.CANCELED } });
+  await prisma.artisan.update({ where: { id: subscription.artisanId }, data: { subscriptionActive: false, subscriptionExpiresAt: null } });
+  success(res, subscription, "Assinatura cancelada.");
+}
+
+export async function listAdminPayouts(req: Request, res: Response) {
+  const status = req.query.status ? String(req.query.status).toUpperCase() as SellerPayoutStatus : undefined;
+  const items = await prisma.sellerPayout.findMany({
+    where: { status },
+    include: { artisan: { include: { user: { select: { email: true, name: true } } } }, order: true },
+    skip: skipFrom(req),
+    take: takeFrom(req),
+    orderBy: { createdAt: "desc" }
+  });
+  success(res, { items, total: await prisma.sellerPayout.count({ where: { status } }) });
+}
+
+export async function markPayoutPaid(req: Request, res: Response) {
+  const item = await prisma.sellerPayout.update({ where: { id: paramId(req) }, data: { status: SellerPayoutStatus.PAID, paidAt: new Date(), note: req.body.note ?? "Repasse marcado como pago pelo administrador." } });
+  success(res, item, "Repasse marcado como pago.");
+}
+
+export async function listAdminPaymentHistory(req: Request, res: Response) {
+  const items = await prisma.paymentHistory.findMany({
+    include: { artisan: true, customer: true, order: true, subscription: { include: { plan: true } } },
+    skip: skipFrom(req),
+    take: takeFrom(req),
+    orderBy: { createdAt: "desc" }
+  });
+  success(res, { items, total: await prisma.paymentHistory.count() });
 }

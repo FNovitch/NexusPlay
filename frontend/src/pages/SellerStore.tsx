@@ -10,10 +10,16 @@ import type { Product, Seller } from "../types";
 export function SellerStore() {
   const { slug = "" } = useParams();
   const [seller, setSeller] = useState<(Seller & { products: Product[] }) | null>(null);
+  const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
-    getSeller(slug).then(setSeller);
+    setNotFound(false);
+    getSeller(slug).then(setSeller).catch(() => setNotFound(true));
   }, [slug]);
+
+  if (notFound) {
+    return <main className="app-shell py-16 text-kriar-muted">Loja nao encontrada.</main>;
+  }
 
   if (!seller) {
     return <main className="app-shell py-16 text-kriar-muted">Carregando loja...</main>;

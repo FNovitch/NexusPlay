@@ -3,6 +3,7 @@ import { Prisma, ProductStatus } from "@prisma/client";
 import { prisma } from "../lib/prisma.js";
 import { AppError } from "../middlewares/error.js";
 import type { CreateProductDTO, UpdateProductDTO } from "../modules/products/product.types.js";
+import { deleteImageFromCloudinary, uploadImageToCloudinary, type StoredImage } from "../services/storage.service.js";
 import { slugify } from "../utils/slugify.js";
 
 function parseJsonField<T>(value: unknown, fallback: T): T {
@@ -14,11 +15,17 @@ function parseJsonField<T>(value: unknown, fallback: T): T {
   }
 }
 
-function uploadedImages(req: Request, name: string) {
+function requestFiles(req: Request) {
   const files = Array.isArray(req.files) ? req.files : [];
-  return files.map((file) => ({
-    url: `/uploads/${file.filename}`,
-    filename: file.filename,
+  return files;
+}
+
+function imageJson(images: Array<StoredImage & { id?: string }>, name: string) {
+  return images.map((image) => ({
+    id: image.id,
+    url: image.url,
+    publicId: image.publicId,
+    filename: image.fileName,
     alt: name
   }));
 }
@@ -26,7 +33,7 @@ function uploadedImages(req: Request, name: string) {
 export async function myProducts(req: Request, res: Response) {
   const products = await prisma.product.findMany({
     where: { sellerId: req.user!.sellerId },
-    include: { category: true },
+    include: { category: true, productImages: { orderBy: { createdAt: "asc" } } },
     orderBy: { updatedAt: "desc" }
   });
 
@@ -60,51 +67,83 @@ export async function createProduct(req: Request, res: Response) {
     : null;
   const pickupAvailable = body.pickupAvailable ?? artisan?.acceptsLocalPickup ?? false;
 
-  const images = uploadedImages(req, body.name);
-  const bodyImages = images.length > 0 ? images : body.images;
-  if (!bodyImages || bodyImages.length === 0) {
+  const files = requestFiles(req);
+  const uploaded = files.length > 0 ? await Promise.all(files.map(uploadImageToCloudinary)) : [];
+  if (uploaded.length === 0) {
     throw new AppError("Envie pelo menos uma imagem do produto", 400, { images: "Envie de 1 a 3 imagens." });
   }
 
-  const product = await prisma.product.create({
-    data: {
-      categoryId: body.categoryId,
-      sellerId: req.user.sellerId,
-      name: body.name,
-      slug: slugify(body.name),
-      description: body.description,
-      price: body.price,
-      stock: body.stock,
-      categoryName: body.category,
-      images: bodyImages,
-      mainImage: bodyImages[0],
-      artisanId: seller.id,
-      artisanName: seller.storeName,
-      artisanSlug: seller.slug,
-      dimensions: body.dimensions ?? Prisma.JsonNull,
-      variations: parseJsonField(body.variations, []),
-      weight: body.weight ?? 0,
-      shippingAvailable: body.shippingAvailable ?? true,
-      pickupAvailable,
-      pickupAddress: pickupAvailable ? body.pickupAddress ?? defaultPickupAddress : null,
-      customizationAvailable: body.customizationAvailable ?? false,
-      personalizationPrompt: body.personalizationPrompt ?? null,
-      status: ProductStatus.PENDING
-    }
+  const product = await prisma.$transaction(async (tx) => {
+    const created = await tx.product.create({
+      data: {
+        categoryId: body.categoryId,
+        sellerId: req.user!.sellerId!,
+        name: body.name,
+        slug: slugify(body.name),
+        description: body.description,
+        price: body.price,
+        stock: body.stock,
+        categoryName: body.category,
+        images: [],
+        mainImage: Prisma.JsonNull,
+        artisanId: seller.id,
+        artisanName: seller.storeName,
+        artisanSlug: seller.slug,
+        dimensions: body.dimensions ?? Prisma.JsonNull,
+        variations: parseJsonField(body.variations, []),
+        weight: body.weight ?? 0,
+        shippingAvailable: body.shippingAvailable ?? true,
+        pickupAvailable,
+        pickupAddress: pickupAvailable ? body.pickupAddress ?? defaultPickupAddress : null,
+        customizationAvailable: body.customizationAvailable ?? false,
+        personalizationPrompt: body.personalizationPrompt ?? null,
+        status: ProductStatus.PENDING
+      }
+    });
+
+    const createdImages = await Promise.all(uploaded.map((image) => tx.productImage.create({
+      data: {
+        productId: created.id,
+        url: image.url,
+        publicId: image.publicId,
+        fileName: image.fileName
+      }
+    })));
+    const images = imageJson(createdImages.map((image) => ({ id: image.id, url: image.url, publicId: image.publicId, fileName: image.fileName })), created.name);
+
+    return tx.product.update({
+      where: { id: created.id },
+      data: { images, mainImage: images[0] },
+      include: { category: true, productImages: { orderBy: { createdAt: "asc" } }, seller: true }
+    });
   });
 
   res.status(201).json({ product });
 }
 
 export async function updateProduct(req: Request, res: Response) {
-  const product = await prisma.product.findUnique({ where: { id: String(req.params.id) } });
+  const product = await prisma.product.findUnique({ where: { id: String(req.params.id) }, include: { productImages: true } });
 
   if (!product || product.sellerId !== req.user?.sellerId) {
     throw new AppError("Produto nao encontrado", 404);
   }
 
-  const body = req.body as UpdateProductDTO & { categoryId?: string };
-  const images = uploadedImages(req, body.name ?? product.name);
+  const body = req.body as UpdateProductDTO & { categoryId?: string; removeImageIds?: string[] };
+  const files = requestFiles(req);
+  const removeImageIds = body.removeImageIds ?? [];
+  const remainingImageCount = product.productImages.filter((image) => !removeImageIds.includes(image.id)).length;
+  if (remainingImageCount + files.length > 3) {
+    throw new AppError("Limite de imagens excedido", 400, { images: "O produto pode ter no maximo 3 imagens." });
+  }
+
+  if (remainingImageCount + files.length === 0) {
+    throw new AppError("Envie pelo menos uma imagem do produto", 400, { images: "Mantenha pelo menos uma imagem." });
+  }
+
+  const uploaded = files.length > 0 ? await Promise.all(files.map(uploadImageToCloudinary)) : [];
+  const toRemove = product.productImages.filter((image) => removeImageIds.includes(image.id));
+  await Promise.all(toRemove.map((image) => deleteImageFromCloudinary(image.publicId)));
+
   const data: Prisma.ProductUpdateInput = {
     category: body.categoryId ? { connect: { id: body.categoryId } } : undefined,
     name: body.name,
@@ -113,8 +152,6 @@ export async function updateProduct(req: Request, res: Response) {
     price: body.price,
     stock: body.stock,
     categoryName: body.category,
-    images: images.length > 0 ? images : body.images,
-    mainImage: images.length > 0 ? images[0] : body.images?.[0],
     dimensions: body.dimensions === undefined ? undefined : body.dimensions ?? Prisma.JsonNull,
     variations: body.variations === undefined ? undefined : parseJsonField(body.variations, []),
     weight: body.weight,
@@ -122,13 +159,33 @@ export async function updateProduct(req: Request, res: Response) {
     pickupAvailable: body.pickupAvailable,
     pickupAddress: body.pickupAddress,
     customizationAvailable: body.customizationAvailable,
-    personalizationPrompt: body.personalizationPrompt,
-    status: body.status
+    personalizationPrompt: body.personalizationPrompt
   };
 
-  const updated = await prisma.product.update({
-    where: { id: product.id },
-    data
+  const updated = await prisma.$transaction(async (tx) => {
+    if (toRemove.length > 0) {
+      await tx.productImage.deleteMany({ where: { id: { in: toRemove.map((image) => image.id) }, productId: product.id } });
+    }
+
+    if (uploaded.length > 0) {
+      await Promise.all(uploaded.map((image) => tx.productImage.create({
+        data: {
+          productId: product.id,
+          url: image.url,
+          publicId: image.publicId,
+          fileName: image.fileName
+        }
+      })));
+    }
+
+    const allImages = await tx.productImage.findMany({ where: { productId: product.id }, orderBy: { createdAt: "asc" } });
+    const jsonImages = imageJson(allImages.map((image) => ({ id: image.id, url: image.url, publicId: image.publicId, fileName: image.fileName })), body.name ?? product.name);
+
+    return tx.product.update({
+      where: { id: product.id },
+      data: { ...data, images: jsonImages, mainImage: jsonImages[0] },
+      include: { category: true, productImages: { orderBy: { createdAt: "asc" } }, seller: true }
+    });
   });
 
   res.json({ product: updated });

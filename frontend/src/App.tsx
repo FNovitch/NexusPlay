@@ -7,16 +7,21 @@ import { AdminDashboard } from "./pages/AdminDashboard";
 import { AdminLogin } from "./pages/AdminLogin";
 import { ArtisanOrders } from "./pages/ArtisanOrders";
 import { ArtisanProfile } from "./pages/ArtisanProfile";
+import { ArtisanPlans } from "./pages/ArtisanPlans";
 import { ArtisanRegister } from "./pages/ArtisanRegister";
+import { ArtisanSubscription } from "./pages/ArtisanSubscription";
+import { ArtisanSubscriptionStatus } from "./pages/ArtisanSubscriptionStatus";
 import { Checkout } from "./pages/Checkout";
 import { CheckoutStatus } from "./pages/CheckoutStatus";
 import { CustomerDashboard } from "./pages/CustomerDashboard";
 import { CustomerRegister } from "./pages/CustomerRegister";
+import { ForgotPassword } from "./pages/ForgotPassword";
 import { Home } from "./pages/Home";
 import { Login } from "./pages/Login";
 import { MyOrders } from "./pages/MyOrders";
 import { OrderDetail } from "./pages/OrderDetail";
 import { ProductDetail } from "./pages/ProductDetail";
+import { ResetPassword } from "./pages/ResetPassword";
 import { SellerDashboard } from "./pages/SellerDashboard";
 import { Sellers } from "./pages/Sellers";
 import { SellerStore } from "./pages/SellerStore";
@@ -36,11 +41,18 @@ export function App() {
         <Route path="/meus-pedidos" element={<MyOrders />} />
         <Route path="/meus-pedidos/:id" element={<OrderDetail />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/cliente/login" element={<Login />} />
+        <Route path="/cadastro" element={<CustomerRegister />} />
         <Route path="/cliente/cadastro" element={<CustomerRegister />} />
+        <Route path="/esqueci-minha-senha" element={<ForgotPassword />} />
+        <Route path="/resetar-senha" element={<ResetPassword />} />
         <Route path="/cliente" element={<CustomerDashboard />} />
         <Route path="/artesao/login" element={<Login artisanMode />} />
         <Route path="/artesao/cadastro" element={<ArtisanRegister />} />
         <Route path="/artesao/perfil" element={<ArtisanProfile />} />
+        <Route path="/artesao/planos" element={<ArtisanPlans />} />
+        <Route path="/artesao/assinatura" element={<ArtisanSubscription />} />
+        <Route path="/artesao/assinatura/:status" element={<ArtisanSubscriptionStatus />} />
         <Route path="/artesao/pedidos" element={<ArtisanOrders />} />
         <Route path="/vendedor" element={<SellerDashboard />} />
         <Route path="/admin" element={<AdminDashboard />} />

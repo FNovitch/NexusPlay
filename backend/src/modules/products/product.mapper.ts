@@ -12,6 +12,7 @@ type ProductMapperInput = {
   categoryName: string;
   images: unknown;
   mainImage: unknown;
+  productImages?: Array<{ id: string; url: string; publicId: string; fileName: string }>;
   artisanId: string;
   artisanName: string;
   artisanSlug: string;
@@ -69,6 +70,8 @@ function normalizeImage(value: unknown, fallbackAlt: string): ProductImage | nul
 
   return {
     url: value.url,
+    id: typeof value.id === "string" ? value.id : undefined,
+    publicId: typeof value.publicId === "string" ? value.publicId : undefined,
     filename: typeof value.filename === "string" && value.filename.length > 0 ? value.filename : "product-image",
     alt: typeof value.alt === "string" && value.alt.length > 0 ? value.alt : fallbackAlt
   };
@@ -113,7 +116,14 @@ function normalizeVariations(value: unknown): ProductVariation[] {
 }
 
 export function mapProductToResponse(product: ProductMapperInput): ProductResponseDTO {
-  const images = normalizeProductImages(product.images, product.name);
+  const relationalImages = product.productImages?.map((image) => ({
+    id: image.id,
+    url: image.url,
+    publicId: image.publicId,
+    filename: image.fileName,
+    alt: product.name
+  })) ?? [];
+  const images = relationalImages.length > 0 ? relationalImages.slice(0, 3) : normalizeProductImages(product.images, product.name);
   const mainImage = normalizeImage(product.mainImage, product.name) ?? images[0] ?? null;
   const reviews = product.reviews ?? [];
   const reviewsAverage =

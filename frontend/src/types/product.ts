@@ -23,6 +23,8 @@ export type Seller = {
 
 export type ProductImage = {
   url: string;
+  id?: string;
+  publicId?: string;
   filename: string;
   alt: string;
 };

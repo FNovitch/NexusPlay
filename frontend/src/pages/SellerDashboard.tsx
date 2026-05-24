@@ -5,8 +5,9 @@ import { normalizeProduct, productImageUrl, productSalesCount, productSellerSlug
 import { products } from "../data/mock";
 import { api, getCategories } from "../lib/api";
 import { getMyArtisanProfile } from "../services/artisans";
+import { getSubscriptionStatus, type SubscriptionStatus } from "../services/subscriptions";
 import { useAuth } from "../store/auth";
-import type { Category, Product } from "../types";
+import type { Category, Product, ProductImage } from "../types";
 import { Link, Navigate } from "react-router-dom";
 
 const currency = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
@@ -18,6 +19,9 @@ export function SellerDashboard() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [imageError, setImageError] = useState("");
+  const [subscription, setSubscription] = useState<SubscriptionStatus | null>(null);
   const [form, setForm] = useState({
     name: "",
     description: "",
@@ -25,6 +29,12 @@ export function SellerDashboard() {
     stock: "1",
     categoryId: "",
     images: [] as File[],
+    existingImages: [] as ProductImage[],
+    removeImageIds: [] as string[],
+    weight: "",
+    width: "",
+    height: "",
+    length: "",
     variations: [] as Array<{ name: string; options: string }>
   });
   const [dashboard, setDashboard] = useState({
@@ -69,16 +79,83 @@ export function SellerDashboard() {
         }));
       })
       .catch(() => undefined);
+
+    getSubscriptionStatus().then(setSubscription).catch(() => undefined);
   }, [fallbackProducts]);
 
   if (!user || user.role !== "ARTISAN") {
     return <Navigate to="/artesao/login" replace />;
   }
 
+  function resetForm() {
+    setEditingProduct(null);
+    setImageError("");
+    setForm({ name: "", description: "", price: "", stock: "1", categoryId: categories[0]?.id || "", images: [], existingImages: [], removeImageIds: [], weight: "", width: "", height: "", length: "", variations: [] });
+  }
+
+  function startCreateProduct() {
+    resetForm();
+    setShowForm((current) => !current || Boolean(editingProduct));
+  }
+
+  function startEditProduct(product: Product) {
+    setEditingProduct(product);
+    setImageError("");
+    setForm({
+      name: product.name,
+      description: product.description,
+      price: String(product.price),
+      stock: String(product.stock),
+      categoryId: product.categoryId,
+      images: [],
+      existingImages: product.images,
+      removeImageIds: [],
+      weight: product.weight ? String(product.weight) : "",
+      width: product.dimensions?.width ? String(product.dimensions.width) : "",
+      height: product.dimensions?.height ? String(product.dimensions.height) : "",
+      length: product.dimensions?.length ? String(product.dimensions.length) : "",
+      variations: product.variations.map((variation) => ({ name: variation.name, options: variation.options.join(", ") }))
+    });
+    setShowForm(true);
+  }
+
+  function selectImages(files: FileList | null) {
+    const selected = Array.from(files ?? []);
+    const allowed = new Set(["image/jpeg", "image/jpg", "image/png", "image/webp"]);
+    const visibleExisting = form.existingImages.length - form.removeImageIds.length;
+
+    if (selected.some((file) => !allowed.has(file.type))) {
+      setImageError("Envie apenas imagens jpg, jpeg, png ou webp.");
+      return;
+    }
+
+    if (selected.some((file) => file.size > 5 * 1024 * 1024)) {
+      setImageError("Cada imagem deve ter no maximo 5MB.");
+      return;
+    }
+
+    if (visibleExisting + selected.length > 3) {
+      setImageError("Selecione no maximo 3 imagens por produto.");
+      return;
+    }
+
+    setImageError("");
+    setForm({ ...form, images: selected });
+  }
+
+  function removeExistingImage(image: ProductImage) {
+    if (!image.id) return;
+    setForm({ ...form, removeImageIds: [...form.removeImageIds, image.id] });
+  }
+
   async function submitProduct(event: React.FormEvent) {
     event.preventDefault();
     const category = categories.find((item) => item.id === form.categoryId);
     if (!category) {
+      return;
+    }
+    if (form.existingImages.length - form.removeImageIds.length + form.images.length === 0) {
+      setImageError("Mantenha pelo menos uma imagem do produto.");
       return;
     }
 
@@ -92,17 +169,23 @@ export function SellerDashboard() {
       payload.append("category", category.name);
       payload.append("categoryId", category.id);
       payload.append("shippingAvailable", "true");
+      payload.append("weight", form.weight);
+      payload.append("dimensions", JSON.stringify({ width: Number(form.width), height: Number(form.height), length: Number(form.length) }));
+      payload.append("removeImageIds", JSON.stringify(form.removeImageIds));
       payload.append("variations", JSON.stringify(form.variations.map((variation) => ({
         name: variation.name,
         options: variation.options.split(",").map((option) => option.trim()).filter(Boolean)
       })).filter((variation) => variation.name.trim() && variation.options.length > 0)));
       form.images.forEach((image) => payload.append("images", image));
 
-      const { data } = await api.post("/seller/products", payload, { headers: { "Content-Type": "multipart/form-data" } });
+      const { data } = editingProduct
+        ? await api.patch(`/seller/products/${editingProduct.id}`, payload, { headers: { "Content-Type": "multipart/form-data" } })
+        : await api.post("/seller/products", payload, { headers: { "Content-Type": "multipart/form-data" } });
 
-      setMyProducts((current) => [normalizeProduct(data.product), ...current]);
+      const savedProduct = normalizeProduct(data.product);
+      setMyProducts((current) => editingProduct ? current.map((product) => product.id === savedProduct.id ? savedProduct : product) : [savedProduct, ...current]);
       setShowForm(false);
-      setForm({ name: "", description: "", price: "", stock: "1", categoryId: categories[0]?.id || "", images: [], variations: [] });
+      resetForm();
     } finally {
       setSaving(false);
     }
@@ -130,14 +213,20 @@ export function SellerDashboard() {
                 : "Seu cadastro esta pendente de aprovacao. Voce pode preparar o perfil e produtos enquanto aguarda."}
             </p>
           )}
+          {subscription && !subscription.canSell && (
+            <p className="mt-2 max-w-2xl rounded-xl border border-kriar-line bg-red-50 px-4 py-3 text-sm font-bold text-red-700">
+              Seu periodo gratis terminou. Escolha um plano para continuar vendendo no Kriar.
+            </p>
+          )}
         </div>
         <div className="flex flex-wrap gap-3">
           <Link to="/artesao/perfil" className="btn-secondary">
             <Settings className="h-5 w-5" /> Perfil
           </Link>
           <Link to="/artesao/pedidos" className="btn-secondary">Pedidos</Link>
-          <button className="btn-primary" onClick={() => setShowForm((current) => !current)}>
-            <ImagePlus className="h-5 w-5" /> Cadastrar produto
+          <Link to="/artesao/assinatura" className="btn-secondary">Assinatura</Link>
+          <button className="btn-primary" onClick={startCreateProduct} disabled={subscription ? !subscription.canSell : false}>
+            <ImagePlus className="h-5 w-5" /> {showForm && !editingProduct ? "Fechar cadastro" : "Cadastrar produto"}
           </button>
         </div>
       </div>
@@ -152,14 +241,31 @@ export function SellerDashboard() {
           </select>
           <input className="input-field" required type="number" min="0.01" step="0.01" placeholder="Preco" value={form.price} onChange={(event) => setForm({ ...form, price: event.target.value })} />
           <input className="input-field" required type="number" min="0" step="1" placeholder="Estoque" value={form.stock} onChange={(event) => setForm({ ...form, stock: event.target.value })} />
+          <input className="input-field" required type="number" min="0.001" step="0.001" placeholder="Peso (kg)" value={form.weight} onChange={(event) => setForm({ ...form, weight: event.target.value })} />
+          <div className="grid gap-3 sm:grid-cols-3">
+            <input className="input-field" required type="number" min="1" step="0.1" placeholder="Largura (cm)" value={form.width} onChange={(event) => setForm({ ...form, width: event.target.value })} />
+            <input className="input-field" required type="number" min="1" step="0.1" placeholder="Altura (cm)" value={form.height} onChange={(event) => setForm({ ...form, height: event.target.value })} />
+            <input className="input-field" required type="number" min="1" step="0.1" placeholder="Comprimento (cm)" value={form.length} onChange={(event) => setForm({ ...form, length: event.target.value })} />
+          </div>
           <input
             className="input-field md:col-span-2"
-            required
+            required={!editingProduct}
             type="file"
             accept="image/jpeg,image/jpg,image/png,image/webp"
             multiple
-            onChange={(event) => setForm({ ...form, images: Array.from(event.target.files ?? []).slice(0, 3) })}
+            onChange={(event) => selectImages(event.target.files)}
           />
+          {imageError && <p className="md:col-span-2 text-sm font-bold text-red-700">{imageError}</p>}
+          {form.existingImages.filter((image) => !image.id || !form.removeImageIds.includes(image.id)).length > 0 && (
+            <div className="grid gap-3 md:col-span-2 sm:grid-cols-3">
+              {form.existingImages.filter((image) => !image.id || !form.removeImageIds.includes(image.id)).map((image) => (
+                <div key={image.id ?? image.url} className="rounded-xl border border-kriar-line p-2">
+                  <img src={image.url} alt="" className="aspect-video w-full rounded-lg object-cover" />
+                  {image.id && <button type="button" className="mt-2 text-xs font-bold text-kriar-secondary" onClick={() => removeExistingImage(image)}>Remover imagem</button>}
+                </div>
+              ))}
+            </div>
+          )}
           {form.images.length > 0 && (
             <div className="grid gap-3 md:col-span-2 sm:grid-cols-3">
               {form.images.map((image) => (
@@ -186,7 +292,8 @@ export function SellerDashboard() {
             </div>
           </div>
           <textarea className="text-field min-h-28 md:col-span-2" required minLength={10} placeholder="Descricao" value={form.description} onChange={(event) => setForm({ ...form, description: event.target.value })} />
-          <button className="btn-primary md:w-max" disabled={saving || categories.length === 0}>{saving ? "Salvando..." : "Cadastrar produto"}</button>
+          <button className="btn-primary md:w-max" disabled={saving || categories.length === 0}>{saving ? "Salvando..." : editingProduct ? "Salvar produto" : "Cadastrar produto"}</button>
+          {editingProduct && <button type="button" className="btn-secondary md:w-max" onClick={() => { setShowForm(false); resetForm(); }}>Cancelar edicao</button>}
         </form>
       )}
 
@@ -218,6 +325,7 @@ export function SellerDashboard() {
                 <th>Vendas</th>
                 <th>Preco</th>
                 <th>Status</th>
+                <th>Acoes</th>
               </tr>
             </thead>
             <tbody>
@@ -233,6 +341,7 @@ export function SellerDashboard() {
                   <td>{productSalesCount(product)}</td>
                   <td className="font-bold text-kriar-primary">{currency.format(product.price)}</td>
                   <td><span className="badge-soft">{product.status}</span></td>
+                  <td><button className="btn-secondary px-3 py-1 text-xs" onClick={() => startEditProduct(product)}>Editar</button></td>
                 </tr>
               ))}
             </tbody>

@@ -1,7 +1,7 @@
 import { LogIn, ShieldCheck, Store, UserRound } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { parseApiError } from "../lib/artisanForm";
 import { loginArtisan } from "../services/artisans";
 import { useAuth } from "../store/auth";
@@ -12,8 +12,8 @@ type LoginProps = {
 };
 
 export function Login({ artisanMode = false }: LoginProps) {
-  const [email, setEmail] = useState(artisanMode ? "atelie@kriar.com" : "cliente@kriar.com");
-  const [password, setPassword] = useState("Kriar@12345");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const login = useAuth((state) => state.login);
@@ -66,12 +66,12 @@ export function Login({ artisanMode = false }: LoginProps) {
       <section className="flex flex-col justify-center">
         <p className="eyebrow mb-3">{artisanMode ? "Sou artesao" : "Conta KRIAR"}</p>
         <h1 className="max-w-2xl text-4xl font-black leading-tight tracking-tight text-kriar-contrast md:text-5xl">
-          {artisanMode ? "Entre para gerenciar sua loja, produtos e pedidos." : "Entre para comprar, vender e acompanhar pedidos."}
+          {artisanMode ? "Entre para gerenciar sua loja, produtos e pedidos." : "Entre para comprar e acompanhar seus pedidos."}
         </h1>
         <p className="mt-5 max-w-xl text-lg leading-8 text-kriar-muted">
           {artisanMode
             ? "Use o acesso exclusivo de artesao para entrar no dashboard da sua loja."
-            : "A conta KRIAR usa JWT no backend, senhas com bcrypt e permissoes para cliente, artesao e admin."}
+            : "Use o acesso de cliente para comprar, acompanhar pedidos, confirmar recebimento e avaliar produtos."}
         </p>
         <div className="mt-8 grid max-w-xl gap-3 sm:grid-cols-3">
           {accountTypes.map(([Icon, label]) => (
@@ -83,7 +83,7 @@ export function Login({ artisanMode = false }: LoginProps) {
         </div>
       </section>
       <form onSubmit={submit} className="panel h-max p-6">
-        <h2 className="mb-5 text-2xl font-black tracking-tight text-kriar-primary">{artisanMode ? "Entrar como artesao" : "Acessar conta"}</h2>
+        <h2 className="mb-5 text-2xl font-black tracking-tight text-kriar-primary">{artisanMode ? "Entrar como artesao" : "Entrar como cliente"}</h2>
         {message && <div className="mb-4 rounded-xl border border-kriar-line bg-kriar-background px-4 py-3 text-sm font-bold text-kriar-contrast">{message}</div>}
         <label className="mb-4 block">
           <span className="mb-1.5 block text-sm font-black text-kriar-contrast">E-mail</span>
@@ -93,21 +93,18 @@ export function Login({ artisanMode = false }: LoginProps) {
           <span className="mb-1.5 block text-sm font-black text-kriar-contrast">Senha</span>
           <input type="password" value={password} onChange={(event) => setPassword(event.target.value)} className="input-field w-full" />
         </label>
+        {!artisanMode && <Link to="/esqueci-minha-senha" className="mb-4 block text-right text-sm font-bold text-kriar-primary">Esqueci minha senha</Link>}
         <button disabled={loading} className="btn-primary w-full">
           <LogIn className="h-5 w-5" /> {loading ? "Entrando..." : "Entrar"}
         </button>
         <div className="mt-4 grid gap-2 text-sm">
-          <button type="button" className="min-h-11 rounded-full px-4 py-2 text-left font-bold text-kriar-muted transition duration-[250ms] hover:bg-kriar-primary/10 hover:text-kriar-primary" onClick={() => setEmail("atelie@kriar.com")}>
-            Usar demo artesao
-          </button>
-          {!artisanMode && (
-            <button type="button" className="min-h-11 rounded-full px-4 py-2 text-left font-bold text-kriar-muted transition duration-[250ms] hover:bg-kriar-primary/10 hover:text-kriar-primary" onClick={() => setEmail("admin@kriar.com")}>
-              Usar demo admin
-            </button>
-          )}
-          {artisanMode && (
+          {artisanMode ? (
             <button type="button" className="min-h-11 rounded-full px-4 py-2 text-left font-bold text-kriar-primary transition duration-[250ms] hover:bg-kriar-primary/10" onClick={() => navigate("/artesao/cadastro")}>
               Cadastrar como artesao
+            </button>
+          ) : (
+            <button type="button" className="min-h-11 rounded-full px-4 py-2 text-left font-bold text-kriar-primary transition duration-[250ms] hover:bg-kriar-primary/10" onClick={() => navigate("/cliente/cadastro")}>
+              Criar conta de cliente
             </button>
           )}
         </div>

@@ -24,20 +24,9 @@ export const useAuth = create<AuthState>()(
   persist(
     (set) => ({
       login: async (email, password) => {
-        try {
-          const data = await loginCustomer(email, password);
-          localStorage.setItem("kriar-token", data.token);
-          set({ token: data.token, user: data.user });
-        } catch {
-          const demoUser = {
-            id: "demo",
-            name: email.includes("admin") ? "Admin KRIAR" : email.includes("atelie") ? "Lia Carvalho" : "Cliente KRIAR",
-            email,
-            role: email.includes("admin") ? "ADMIN" : email.includes("atelie") ? "ARTISAN" : "CUSTOMER"
-          } as User;
-          localStorage.setItem("kriar-token", "demo-token");
-          set({ token: "demo-token", user: demoUser });
-        }
+        const data = await loginCustomer(email, password);
+        localStorage.setItem("kriar-token", data.token);
+        set({ token: data.token, user: data.user });
       },
       setSession: (token, user) => {
         localStorage.setItem("kriar-token", token);

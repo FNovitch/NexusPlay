@@ -1,13 +1,27 @@
 import type { Request, Response } from "express";
-import { OrderStatus, PaymentStatus, Prisma, ProductStatus } from "@prisma/client";
+import { OrderStatus, PaymentHistoryType, PaymentStatus, Prisma, ProductStatus, SellerPayoutStatus } from "@prisma/client";
 import { prisma } from "../lib/prisma.js";
 import { AppError } from "../middlewares/error.js";
-import { consultarPagamento, criarPreferenciaPagamento, validarAssinaturaMercadoPago } from "../services/mercado-pago.service.js";
+import { consultarPagamento, criarPreferenciaPagamento, getMercadoPagoInitPoint, getMercadoPagoWebhookPaymentId, getMercadoPagoWebhookTopic, validarAssinaturaMercadoPago } from "../services/mercado-pago.service.js";
+import { calcularFrete, normalizarCep } from "../services/melhorEnvio.service.js";
 
 type CartPayloadItem = { productId: string; quantity: number; customizationNotes?: string; selectedVariations?: Record<string, string> };
+type ShippingSelection = {
+  groupId: string;
+  sellerId?: string;
+  artesaoId?: string | null;
+  cepOrigem: string;
+  cepDestino: string;
+  transportadora: string;
+  servico: string;
+  servicoId: string;
+  valor: number;
+  prazo: number;
+  melhorEnvioId?: string;
+};
 
 const addressString = (address: unknown) => JSON.stringify(address ?? {});
-const orderInclude = { items: { include: { product: true, seller: true } }, buyer: { select: { id: true, name: true, email: true } }, history: { orderBy: { createdAt: "asc" as const } } };
+const orderInclude = { items: { include: { product: true, seller: true } }, buyer: { select: { id: true, name: true, email: true } }, history: { orderBy: { createdAt: "asc" as const } }, shippingQuotes: true };
 
 function orderCode() {
   return `KRIAR-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
@@ -23,7 +37,9 @@ function mapPaymentStatus(status: string): PaymentStatus {
 
 function mapOrderStatusFromPayment(status: string): OrderStatus {
   if (status === "approved") return OrderStatus.PAID;
-  if (status === "rejected" || status === "cancelled" || status === "canceled") return OrderStatus.CANCELED;
+  if (status === "rejected") return OrderStatus.PAYMENT_REJECTED;
+  if (status === "refunded") return OrderStatus.REFUNDED;
+  if (status === "cancelled" || status === "canceled") return OrderStatus.CANCELED;
   return OrderStatus.AWAITING_PAYMENT;
 }
 
@@ -31,18 +47,61 @@ async function addHistory(orderId: string, previousStatus: OrderStatus | null, n
   await prisma.orderHistory.create({ data: { orderId, previousStatus: previousStatus ?? undefined, newStatus, note } });
 }
 
-function checkoutInitPoint(preference: { init_point?: string | null; sandbox_init_point?: string | null }) {
-  if (process.env.NODE_ENV === "production") {
-    return preference.init_point ?? preference.sandbox_init_point;
+async function createBlockedPayouts(orderId: string) {
+  const order = await prisma.order.findUnique({
+    where: { id: orderId },
+    include: { items: true, buyer: { include: { customer: true } } }
+  });
+  if (!order) return;
+
+  const itemsBySeller = order.items.reduce<Record<string, typeof order.items>>((acc, item) => {
+    acc[item.sellerId] = [...(acc[item.sellerId] ?? []), item];
+    return acc;
+  }, {});
+
+  const existingHistory = order.mpPaymentId
+    ? await prisma.paymentHistory.findFirst({ where: { type: PaymentHistoryType.CUSTOMER_PURCHASE, mpPaymentId: order.mpPaymentId, status: "APPROVED" } })
+    : null;
+  if (!existingHistory) {
+    await prisma.paymentHistory.create({
+      data: {
+        customerId: order.buyer.customer?.id,
+        orderId: order.id,
+        type: PaymentHistoryType.CUSTOMER_PURCHASE,
+        amount: order.total,
+        status: "APPROVED",
+        mpPaymentId: order.mpPaymentId,
+        mpPreferenceId: order.mpPreferenceId,
+        description: `Compra ${order.orderCode}`
+      }
+    });
   }
 
-  return preference.sandbox_init_point ?? preference.init_point;
+  for (const [sellerId, items] of Object.entries(itemsBySeller)) {
+    const artisan = await prisma.artisan.findFirst({ where: { storeId: sellerId } });
+    if (!artisan) continue;
+    const saleAmount = items.reduce((sum, item) => sum + Number(item.total), 0);
+    await prisma.sellerPayout.upsert({
+      where: { orderId_artisanId: { orderId: order.id, artisanId: artisan.id } },
+      update: { status: SellerPayoutStatus.BLOCKED, saleAmount, totalAmount: saleAmount, availableAmount: saleAmount },
+      create: {
+        orderId: order.id,
+        artisanId: artisan.id,
+        saleAmount,
+        shippingAmount: 0,
+        totalAmount: saleAmount,
+        availableAmount: saleAmount,
+        status: SellerPayoutStatus.BLOCKED,
+        note: "Valor bloqueado ate confirmacao de recebimento pelo cliente."
+      }
+    });
+  }
 }
 
 export async function createOrder(req: Request, res: Response) {
   const items = (req.body.items ?? []) as CartPayloadItem[];
   const shippingAddress = req.body.shippingAddress ?? req.body.enderecoEntrega;
-  const shippingTotal = Number(req.body.shippingTotal ?? req.body.valorFrete ?? 0);
+  const shippingSelections = (req.body.shippingSelections ?? []) as ShippingSelection[];
 
   if (!Array.isArray(items) || items.length === 0) throw new AppError("Nao foi possivel concluir o pedido.", 400, { carrinho: "Carrinho vazio." });
   if (!shippingAddress) throw new AppError("Nao foi possivel concluir o pedido.", 400, { enderecoEntrega: "Informe o endereco de entrega." });
@@ -63,6 +122,38 @@ export async function createOrder(req: Request, res: Response) {
   });
 
   const productsTotal = orderItems.reduce((sum, item) => sum + item.subtotal, 0);
+  const destinationZipCode = normalizarCep((shippingAddress as { zipCode?: string; cep?: string }).zipCode ?? (shippingAddress as { zipCode?: string; cep?: string }).cep ?? "");
+  const recalculatedFreight = await calcularFrete({
+    cepDestino: destinationZipCode,
+    itens: items.map((item) => ({ produtoId: item.productId, quantidade: item.quantity, variacaoSelecionada: item.selectedVariations }))
+  });
+  if (shippingSelections.length !== recalculatedFreight.grupos.length) {
+    throw new AppError("Nao foi possivel concluir o pedido.", 400, { frete: "Selecione uma opcao de frete para cada artesao." });
+  }
+  const validatedShipping = recalculatedFreight.grupos.map((grupo) => {
+    const selected = shippingSelections.find((item) => item.groupId === grupo.groupId || item.sellerId === grupo.sellerId);
+    if (!selected) {
+      throw new AppError("Nao foi possivel concluir o pedido.", 400, { frete: `Selecione o frete de ${grupo.loja}.` });
+    }
+    const option = grupo.opcoes.find((current) => String(current.melhorEnvioServiceId) === String(selected.servicoId) || current.id === selected.servicoId);
+    if (!option) {
+      throw new AppError("Nao foi possivel concluir o pedido.", 400, { frete: `Opcao de frete invalida para ${grupo.loja}.` });
+    }
+    return {
+      groupId: grupo.groupId,
+      sellerId: grupo.sellerId,
+      artisanId: grupo.artesaoId,
+      originZipCode: grupo.cepOrigem,
+      destinationZipCode: grupo.cepDestino,
+      carrier: option.empresa,
+      service: option.nome,
+      serviceId: String(option.melhorEnvioServiceId),
+      price: option.preco,
+      deliveryTime: option.prazo,
+      melhorEnvioId: option.id
+    };
+  });
+  const shippingTotal = validatedShipping.reduce((sum, item) => sum + item.price, 0);
   const total = productsTotal + shippingTotal;
   const buyer = await prisma.user.findUnique({ where: { id: req.user!.id } });
   if (!buyer) throw new AppError("Comprador nao encontrado", 404);
@@ -91,6 +182,20 @@ export async function createOrder(req: Request, res: Response) {
             customizationNotes: item.customizationNotes,
             selectedVariations: item.selectedVariations ?? Prisma.JsonNull
           }))
+        },
+        shippingQuotes: {
+          create: validatedShipping.map((freight) => ({
+            artisanId: freight.artisanId,
+            sellerId: freight.sellerId,
+            originZipCode: freight.originZipCode,
+            destinationZipCode: freight.destinationZipCode,
+            carrier: freight.carrier,
+            service: freight.service,
+            serviceId: freight.serviceId,
+            price: freight.price,
+            deliveryTime: freight.deliveryTime,
+            melhorEnvioId: freight.melhorEnvioId
+          }))
         }
       },
       include: orderInclude
@@ -103,10 +208,13 @@ export async function createOrder(req: Request, res: Response) {
     pedidoId: pedido.id,
     codigoPedido: pedido.orderCode,
     comprador: { nome: buyer.name, email: buyer.email },
-    items: pedido.items.map((item) => ({ title: item.productName || item.product.name, quantity: item.quantity, unit_price: Number(item.unitPrice) }))
+    items: [
+      ...pedido.items.map((item) => ({ title: item.productName || item.product.name, quantity: item.quantity, unit_price: Number(item.unitPrice) })),
+      ...(shippingTotal > 0 ? [{ title: "Frete", quantity: 1, unit_price: shippingTotal }] : [])
+    ]
   });
 
-  const initPoint = checkoutInitPoint(preference);
+  const initPoint = getMercadoPagoInitPoint(preference);
   if (!initPoint) throw new AppError("Nao foi possivel criar o link de pagamento.", 500, { pagamento: "Mercado Pago nao retornou init_point." });
 
   const updated = await prisma.order.update({ where: { id: pedido.id }, data: { mpPreferenceId: preference.id }, include: orderInclude });
@@ -142,6 +250,39 @@ export async function cancelMyOrder(req: Request, res: Response) {
   res.json({ success: true, message: "Pedido cancelado.", data: { pedido: updated } });
 }
 
+export async function confirmReceipt(req: Request, res: Response) {
+  const order = await prisma.order.findUnique({ where: { id: String(req.params.id) }, include: orderInclude });
+  if (!order || order.buyerId !== req.user!.id) throw new AppError("Pedido nao encontrado", 404);
+  if (order.paymentStatus !== PaymentStatus.APPROVED) {
+    throw new AppError("Pagamento ainda nao aprovado.", 400, { payment: "A confirmacao de recebimento exige pagamento aprovado." });
+  }
+  if (order.status === OrderStatus.CANCELED) {
+    throw new AppError("Pedido cancelado.", 400, { status: "Pedido cancelado nao pode ser confirmado." });
+  }
+  if (order.customerConfirmedDelivery) {
+    return res.json({ success: true, message: "Recebimento ja confirmado.", data: { pedido: order } });
+  }
+
+  const now = new Date();
+  const updated = await prisma.$transaction(async (tx) => {
+    const pedido = await tx.order.update({
+      where: { id: order.id },
+      data: {
+        status: OrderStatus.DELIVERED,
+        customerConfirmedDelivery: true,
+        deliveryConfirmedAt: now,
+        paymentReleasedToArtisan: true
+      },
+      include: orderInclude
+    });
+    await tx.orderHistory.create({ data: { orderId: order.id, previousStatus: order.status, newStatus: OrderStatus.DELIVERED, note: "Recebimento confirmado pelo cliente." } });
+    await tx.sellerPayout.updateMany({ where: { orderId: order.id, status: SellerPayoutStatus.BLOCKED }, data: { status: SellerPayoutStatus.AVAILABLE, releasedAt: now, note: "Valor disponivel apos confirmacao de recebimento." } });
+    return pedido;
+  });
+
+  res.json({ success: true, message: "Recebimento confirmado. Avaliacao liberada.", data: { pedido: updated } });
+}
+
 export async function artisanOrders(req: Request, res: Response) {
   const orders = await prisma.order.findMany({
     where: { items: { some: { sellerId: req.user!.sellerId } } },
@@ -170,27 +311,79 @@ export async function updateArtisanOrderStatus(req: Request, res: Response) {
 
 export async function paymentWebhook(req: Request, res: Response) {
   try {
-    const paymentId = String(req.query["data.id"] ?? req.query.id ?? req.body?.data?.id ?? req.body?.id ?? "");
-    if (!paymentId) return res.status(200).json({ received: true });
-    if (!validarAssinaturaMercadoPago(req.headers, paymentId)) return res.status(401).json({ received: false });
-    const payment = await consultarPagamento(paymentId);
+    const topic = getMercadoPagoWebhookTopic(req.body, req.query);
+    const paymentId = getMercadoPagoWebhookPaymentId({ query: req.query, body: req.body });
+    if (!paymentId) return res.status(200).json({ success: true, message: "Evento ignorado." });
+    if (topic && topic.includes("merchant_order")) {
+      console.info("[mercado-pago:webhook:merchant-order:ignored]", { topic, paymentId });
+      return res.status(200).json({ success: true, message: "Evento ignorado." });
+    }
+    if (topic && !topic.includes("payment")) {
+      console.info("[mercado-pago:webhook:ignored]", { topic, paymentId });
+      return res.status(200).json({ success: true, message: "Evento ignorado." });
+    }
+    if (!validarAssinaturaMercadoPago(req.headers, paymentId)) return res.status(401).json({ success: false, message: "Assinatura do webhook invalida." });
+    const payment = await consultarPagamento(paymentId) as {
+      id?: string | number;
+      status?: string;
+      status_detail?: string;
+      external_reference?: string;
+      transaction_amount?: number;
+      preference_id?: string;
+      payment_method_id?: string;
+      payment_type_id?: string;
+    };
     const orderId = "external_reference" in payment ? String(payment.external_reference) : undefined;
     const status = "status" in payment ? String(payment.status) : "pending";
-    if (!orderId) return res.status(200).json({ received: true });
-    const current = await prisma.order.findUnique({ where: { id: orderId }, include: { items: true } });
-    if (!current) return res.status(200).json({ received: true });
+    console.info("[mercado-pago:webhook:payment]", { topic, paymentId, externalReference: orderId, status, statusDetail: payment.status_detail });
+    if (!orderId || orderId.startsWith("subscription:")) return res.status(200).json({ success: true, message: "Evento ignorado." });
+    const current = await prisma.order.findUnique({ where: { id: orderId }, include: { items: true, buyer: { include: { customer: true } } } });
+    if (!current) {
+      console.info("[mercado-pago:webhook:order:not-found]", { paymentId, externalReference: orderId });
+      return res.status(200).json({ success: true, message: "Evento ignorado." });
+    }
     const newOrderStatus = mapOrderStatusFromPayment(status);
-    const updated = await prisma.order.update({
-      where: { id: current.id },
-      data: { status: newOrderStatus, paymentStatus: mapPaymentStatus(status), mpPaymentId: String(payment.id), mpStatus: status },
-      include: { items: true }
+    const newPaymentStatus = mapPaymentStatus(status);
+    const sameStatusAlreadyProcessed = current.mpPaymentId === String(payment.id) && current.paymentStatus === newPaymentStatus && current.status === newOrderStatus;
+    const updated = sameStatusAlreadyProcessed
+      ? current
+      : await prisma.order.update({
+          where: { id: current.id },
+          data: {
+            status: newOrderStatus,
+            paymentStatus: newPaymentStatus,
+            mpPaymentId: String(payment.id),
+            mpStatus: status,
+            mpPreferenceId: payment.preference_id ?? current.mpPreferenceId
+          },
+          include: { items: true }
+        });
+    if (!sameStatusAlreadyProcessed && current.status !== newOrderStatus) {
+      await addHistory(current.id, current.status, newOrderStatus, `Webhook Mercado Pago: ${status}`);
+    }
+    const existingPaymentHistory = await prisma.paymentHistory.findFirst({
+      where: { type: PaymentHistoryType.CUSTOMER_PURCHASE, mpPaymentId: String(payment.id), status: newPaymentStatus }
     });
-    await addHistory(current.id, current.status, newOrderStatus, `Webhook Mercado Pago: ${status}`);
+    if (!existingPaymentHistory) {
+      await prisma.paymentHistory.create({
+        data: {
+          customerId: current.buyer.customer?.id,
+          orderId: current.id,
+          type: PaymentHistoryType.CUSTOMER_PURCHASE,
+          amount: payment.transaction_amount ?? current.total,
+          status: newPaymentStatus,
+          mpPaymentId: String(payment.id),
+          mpPreferenceId: payment.preference_id ?? current.mpPreferenceId,
+          description: `Compra ${current.orderCode} - Mercado Pago ${status}`
+        }
+      });
+    }
     if (status === "approved" && current.paymentStatus !== PaymentStatus.APPROVED) {
       await Promise.all(updated.items.map((item) => prisma.product.update({ where: { id: item.productId }, data: { stock: { decrement: item.quantity }, salesCount: { increment: item.quantity }, seller: { update: { salesCount: { increment: item.quantity } } } } })));
+      await createBlockedPayouts(current.id);
     }
   } catch (error) {
-    if (process.env.NODE_ENV === "development") console.error("[mercado-pago:webhook]", error);
+    console.error("[mercado-pago:webhook:error]", error instanceof Error ? { message: error.message, name: error.name } : { message: "unknown" });
   }
-  res.status(200).json({ received: true });
+  res.status(200).json({ success: true, message: "Webhook processado com sucesso." });
 }

@@ -76,7 +76,7 @@ export function CustomerRegister() {
         }
       });
       showToast({ title: "Conta criada", description: "Entre para continuar.", variant: "success" });
-      navigate("/login");
+      navigate("/cliente/login");
     } catch (error) {
       const parsed = parseApiError(error);
       setMessage(parsed.message);

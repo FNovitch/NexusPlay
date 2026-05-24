@@ -1,7 +1,7 @@
 import { Minus, Plus, ShoppingBag, Trash2, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import { productImageUrl } from "../api/products";
-import { cartTotal, groupedBySeller, useCart } from "../store/cart";
+import { cartItemKey, cartTotal, groupedBySeller, useCart } from "../store/cart";
 import { useToast } from "../store/toast";
 
 const currency = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
@@ -13,8 +13,8 @@ export function CartDrawer() {
 
   if (!isOpen) return null;
 
-  function handleRemove(productId: string, productName: string) {
-    removeItem(productId);
+  function handleRemove(productId: string, productName: string, selectedVariations?: Record<string, string>) {
+    removeItem(productId, selectedVariations);
     showToast({ title: "Item removido", description: productName, variant: "info" });
   }
 
@@ -48,7 +48,7 @@ export function CartDrawer() {
                   <h3 className="mb-3 text-xs font-black uppercase tracking-[0.14em] text-kriar-secondary">{seller}</h3>
                   <div className="space-y-3">
                     {sellerItems.map((item) => (
-                      <div key={item.product.id} className="panel flex gap-3 p-3 shadow-none">
+                      <div key={cartItemKey(item.product.id, item.selectedVariations)} className="panel flex gap-3 p-3 shadow-none">
                         <img src={productImageUrl(item.product)} alt="" className="h-20 w-20 rounded-xl object-cover" />
                         <div className="min-w-0 flex-1">
                           <p className="truncate font-black text-kriar-contrast">{item.product.name}</p>
@@ -59,14 +59,14 @@ export function CartDrawer() {
                             </p>
                           )}
                           <div className="mt-3 flex items-center gap-2">
-                            <button className="grid h-8 w-8 place-items-center rounded-lg border border-kriar-line text-kriar-muted transition hover:bg-kriar-primary/10 hover:text-kriar-primary" onClick={() => updateQuantity(item.product.id, item.quantity - 1)} aria-label="Diminuir">
+                            <button className="grid h-8 w-8 place-items-center rounded-lg border border-kriar-line text-kriar-muted transition hover:bg-kriar-primary/10 hover:text-kriar-primary" onClick={() => updateQuantity(item.product.id, item.quantity - 1, item.selectedVariations)} aria-label="Diminuir">
                               <Minus className="h-3 w-3" />
                             </button>
                             <span className="w-6 text-center text-sm font-black">{item.quantity}</span>
-                            <button className="grid h-8 w-8 place-items-center rounded-lg border border-kriar-line text-kriar-muted transition hover:bg-kriar-primary/10 hover:text-kriar-primary" onClick={() => updateQuantity(item.product.id, item.quantity + 1)} aria-label="Aumentar">
+                            <button className="grid h-8 w-8 place-items-center rounded-lg border border-kriar-line text-kriar-muted transition hover:bg-kriar-primary/10 hover:text-kriar-primary" onClick={() => updateQuantity(item.product.id, item.quantity + 1, item.selectedVariations)} aria-label="Aumentar">
                               <Plus className="h-3 w-3" />
                             </button>
-                            <button className="ml-auto grid h-8 w-8 place-items-center rounded-lg text-kriar-muted transition hover:bg-kriar-secondary/10 hover:text-kriar-secondary" onClick={() => handleRemove(item.product.id, item.product.name)} aria-label="Remover">
+                            <button className="ml-auto grid h-8 w-8 place-items-center rounded-lg text-kriar-muted transition hover:bg-kriar-secondary/10 hover:text-kriar-secondary" onClick={() => handleRemove(item.product.id, item.product.name, item.selectedVariations)} aria-label="Remover">
                               <Trash2 className="h-4 w-4" />
                             </button>
                           </div>

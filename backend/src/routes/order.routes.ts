@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { artisanOrders, cancelMyOrder, checkout, getArtisanOrder, getMyOrder, myOrders, paymentWebhook, updateArtisanOrderStatus } from "../controllers/order.controller.js";
+import { artisanOrders, cancelMyOrder, checkout, confirmReceipt, getArtisanOrder, getMyOrder, myOrders, paymentWebhook, updateArtisanOrderStatus } from "../controllers/order.controller.js";
 import { asyncHandler } from "../middlewares/async-handler.js";
 import { authenticate, requireArtisan, requireCustomer } from "../middlewares/auth.js";
 import { validate } from "../middlewares/validate.js";
@@ -14,6 +14,7 @@ orderRoutes.get("/pedidos/meus-pedidos", authenticate, requireCustomer, asyncHan
 orderRoutes.get("/orders", authenticate, requireCustomer, asyncHandler(myOrders));
 orderRoutes.get("/pedidos/:id", authenticate, requireCustomer, asyncHandler(getMyOrder));
 orderRoutes.put("/pedidos/:id/cancelar", authenticate, requireCustomer, asyncHandler(cancelMyOrder));
+orderRoutes.put("/pedidos/:id/confirmar-recebimento", authenticate, requireCustomer, asyncHandler(confirmReceipt));
 
 orderRoutes.get("/artesao/pedidos", authenticate, requireArtisan, asyncHandler(artisanOrders));
 orderRoutes.get("/artesao/pedidos/:id", authenticate, requireArtisan, asyncHandler(getArtisanOrder));

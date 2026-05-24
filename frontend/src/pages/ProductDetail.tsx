@@ -17,6 +17,7 @@ export function ProductDetail() {
   const { slug = "" } = useParams();
   const [product, setProduct] = useState<Product>();
   const [related, setRelated] = useState<Product[]>([]);
+  const [notFound, setNotFound] = useState(false);
   const [notes, setNotes] = useState("");
   const [selectedVariations, setSelectedVariations] = useState<Record<string, string>>({});
   const addItem = useCart((state) => state.addItem);
@@ -25,11 +26,18 @@ export function ProductDetail() {
   const showToast = useToast((state) => state.show);
 
   useEffect(() => {
-    getProduct(slug).then((data) => {
-      setProduct(data.product);
-      setRelated(data.related);
-    });
+    setNotFound(false);
+    getProduct(slug)
+      .then((data) => {
+        setProduct(data.product);
+        setRelated(data.related);
+      })
+      .catch(() => setNotFound(true));
   }, [slug]);
+
+  if (notFound) {
+    return <main className="app-shell py-16 text-kriar-muted">Produto nao encontrado.</main>;
+  }
 
   if (!product) {
     return <main className="app-shell py-16 text-kriar-muted">Carregando produto...</main>;

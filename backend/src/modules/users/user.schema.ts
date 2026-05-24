@@ -204,6 +204,30 @@ export const loginSchema = z.object({
   })
 });
 
+export const forgotPasswordSchema = z.object({
+  body: z.object({
+    email: z.string().email().transform((value) => value.toLowerCase())
+  })
+});
+
+export const resetPasswordSchema = z.object({
+  body: z
+    .object({
+      token: z.string().min(32, "Token invalido"),
+      password: passwordSchema,
+      confirmPassword: z.string().min(1, "Confirme a nova senha")
+    })
+    .superRefine((data, ctx) => {
+      if (data.password !== data.confirmPassword) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "A confirmacao deve ser igual a nova senha",
+          path: ["confirmPassword"]
+        });
+      }
+    })
+});
+
 export const createCustomerSchema = z.object({ body: createCustomerDTOSchema });
 export const createArtisanSchema = z.object({ body: createArtisanDTOSchema });
 export const createAdminSchema = z.object({ body: createAdminDTOSchema });

@@ -32,6 +32,23 @@ const envSchema = z.object({
   MERCADO_PAGO_ACCESS_TOKEN: z.string().optional(),
   MERCADO_PAGO_PUBLIC_KEY: z.string().optional(),
   MERCADO_PAGO_WEBHOOK_SECRET: z.string().optional(),
+  SMTP_HOST: z.string().optional(),
+  SMTP_PORT: z.coerce.number().optional(),
+  SMTP_USER: z.string().optional(),
+  SMTP_PASS: z.string().optional(),
+  SMTP_FROM: z.string().optional(),
+  CLOUDINARY_CLOUD_NAME: z.string().optional(),
+  CLOUDINARY_API_KEY: z.string().optional(),
+  CLOUDINARY_API_SECRET: z.string().optional(),
+  CLOUDINARY_FOLDER: z.string().default("kriar/products"),
+  MELHOR_ENVIO_BASE_URL: z.string().url().default("https://sandbox.melhorenvio.com.br/api"),
+  MELHOR_ENVIO_TOKEN: z.string().optional(),
+  MELHOR_ENVIO_CLIENT_ID: z.string().optional(),
+  MELHOR_ENVIO_CLIENT_SECRET: z.string().optional(),
+  MELHOR_ENVIO_REDIRECT_URL: z.string().url().optional(),
+  MELHOR_ENVIO_SANDBOX: z.coerce.boolean().default(true),
+  MELHOR_ENVIO_USER_AGENT: z.string().default("Kriar Marketplace (suporte@kriar.com)"),
+  MELHOR_ENVIO_CEP_ORIGEM: z.string().default("55900000"),
 });
 
 const parsedEnv = envSchema.safeParse(process.env);

@@ -9,6 +9,9 @@ import { slugify } from "../utils/slugify.js";
 
 export async function register(req: Request, res: Response) {
   const { name, email, password, role = UserRole.CUSTOMER, seller, artisan, customer, admin } = req.body;
+  if (role === UserRole.ADMIN) {
+    throw new AppError("Administradores devem ser criados pelo processo seguro de CLI.", 403);
+  }
   const existing = await prisma.user.findUnique({ where: { email } });
 
   if (existing) {

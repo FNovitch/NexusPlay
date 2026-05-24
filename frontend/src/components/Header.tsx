@@ -72,16 +72,22 @@ export function Header() {
           <NavLink className={navClass} to="/artesaos">
             Artesãos
           </NavLink>
-          <NavLink className={navClass} to={user?.role === "CUSTOMER" ? "/cliente" : "/cliente/cadastro"}>
-            Cliente
+          <NavLink className={navClass} to={user?.role === "CUSTOMER" ? "/cliente" : "/cliente/login"}>
+            {user?.role === "CUSTOMER" ? "Area do cliente" : "Entrar como cliente"}
           </NavLink>
           {user?.role === "CUSTOMER" && <NavLink className={navClass} to="/meus-pedidos">Pedidos</NavLink>}
+          {!user && (
+            <NavLink className={navClass} to="/cliente/cadastro">
+              Criar conta
+            </NavLink>
+          )}
           <NavLink className={navClass} to="/artesao/cadastro">
             Sou artesao
           </NavLink>
           <NavLink className={navClass} to={user?.role === "ARTISAN" ? "/vendedor" : "/artesao/login"}>
             {user?.role === "ARTISAN" ? "Dashboard do artesao" : "Entrar como artesao"}
           </NavLink>
+          {user?.role === "ARTISAN" && <NavLink className={navClass} to="/artesao/assinatura">Assinatura</NavLink>}
           <NavLink className={navClass} to={user?.role === "ADMIN" ? "/admin/dashboard" : "/admin/login"}>
             Admin
           </NavLink>
@@ -95,7 +101,7 @@ export function Header() {
           <ShoppingBag className="h-5 w-5" />
           {cartCount > 0 && <span className="absolute -right-1 -top-1 grid min-h-5 min-w-5 place-items-center rounded-full bg-kriar-secondary px-1 text-[11px] font-black text-white">{cartCount}</span>}
         </button>
-        <Link to="/login" className="btn-icon hidden md:grid" aria-label="Minha conta">
+        <Link to={user?.role === "CUSTOMER" ? "/cliente" : "/cliente/login"} className="btn-icon hidden md:grid" aria-label="Minha conta">
           <UserRound className="h-5 w-5" />
         </Link>
         <button onClick={() => setMenu((open) => !open)} className="btn-icon md:hidden" aria-label="Menu">
@@ -118,9 +124,11 @@ export function Header() {
           </form>
           <div className="grid gap-1 text-sm font-bold">
             <Link className="flex min-h-11 items-center rounded-full px-4 py-2 text-kriar-muted transition duration-[250ms] hover:bg-kriar-primary/10 hover:text-kriar-primary" onClick={() => setMenu(false)} to="/artesaos">Artesãos</Link>
+            <Link className="flex min-h-11 items-center rounded-full px-4 py-2 text-kriar-muted transition duration-[250ms] hover:bg-kriar-primary/10 hover:text-kriar-primary" onClick={() => setMenu(false)} to={user?.role === "CUSTOMER" ? "/cliente" : "/cliente/login"}>{user?.role === "CUSTOMER" ? "Area do cliente" : "Entrar como cliente"}</Link>
+            {!user && <Link className="flex min-h-11 items-center rounded-full px-4 py-2 text-kriar-muted transition duration-[250ms] hover:bg-kriar-primary/10 hover:text-kriar-primary" onClick={() => setMenu(false)} to="/cliente/cadastro">Cadastrar como cliente</Link>}
             <Link className="flex min-h-11 items-center rounded-full px-4 py-2 text-kriar-muted transition duration-[250ms] hover:bg-kriar-primary/10 hover:text-kriar-primary" onClick={() => setMenu(false)} to="/artesao/cadastro">Cadastrar como artesao</Link>
             <Link className="flex min-h-11 items-center rounded-full px-4 py-2 text-kriar-muted transition duration-[250ms] hover:bg-kriar-primary/10 hover:text-kriar-primary" onClick={() => setMenu(false)} to={user?.role === "ARTISAN" ? "/vendedor" : "/artesao/login"}>{user?.role === "ARTISAN" ? "Dashboard do artesao" : "Entrar como artesao"}</Link>
-            <Link className="flex min-h-11 items-center rounded-full px-4 py-2 text-kriar-muted transition duration-[250ms] hover:bg-kriar-primary/10 hover:text-kriar-primary" onClick={() => setMenu(false)} to="/login">{user ? user.name : "Entrar"}</Link>
+            <Link className="flex min-h-11 items-center rounded-full px-4 py-2 text-kriar-muted transition duration-[250ms] hover:bg-kriar-primary/10 hover:text-kriar-primary" onClick={() => setMenu(false)} to={user?.role === "CUSTOMER" ? "/cliente" : "/cliente/login"}>{user ? user.name : "Minha conta"}</Link>
           </div>
         </div>
       )}

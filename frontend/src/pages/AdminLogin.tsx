@@ -6,8 +6,8 @@ import { useAuth } from "../store/auth";
 import { useToast } from "../store/toast";
 
 export function AdminLogin() {
-  const [email, setEmail] = useState("admin@kriar.com");
-  const [password, setPassword] = useState("Admin@123456");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const setSession = useAuth((state) => state.setSession);

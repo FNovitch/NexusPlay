@@ -1,6 +1,6 @@
 import type { NextFunction, Request, Response } from "express";
 import jwt, { type SignOptions } from "jsonwebtoken";
-import { UserRole } from "@prisma/client";
+import { ArtisanSubscriptionStatus, UserRole } from "@prisma/client";
 import { env } from "../config/env.js";
 import { prisma } from "../lib/prisma.js";
 import { AppError } from "./error.js";
@@ -84,6 +84,43 @@ export async function requireArtisan(req: Request, _res: Response, next: NextFun
   next();
 }
 
+export async function requireActiveSubscription(req: Request, _res: Response, next: NextFunction) {
+  if (!req.user?.sellerId) {
+    return next(new AppError("Acesso exclusivo para artesoes", 403));
+  }
+
+  const now = new Date();
+  const artisan = await prisma.artisan.findUnique({
+    where: { userId: req.user.id },
+    include: {
+      subscriptions: {
+        where: { status: ArtisanSubscriptionStatus.ACTIVE },
+        orderBy: { expirationDate: "desc" },
+        take: 1
+      }
+    }
+  });
+
+  if (!artisan || artisan.isDeleted || !artisan.active || artisan.blocked) {
+    return next(new AppError("Artesao sem permissao para esta acao", 403));
+  }
+
+  const trialActive = Boolean(artisan.trialEnd && artisan.trialEnd >= now);
+  const subscriptionActive = Boolean(
+    artisan.subscriptionActive &&
+    artisan.subscriptionExpiresAt &&
+    artisan.subscriptionExpiresAt >= now
+  ) || Boolean(artisan.subscriptions[0]?.expirationDate && artisan.subscriptions[0].expirationDate >= now);
+
+  if (!trialActive && !subscriptionActive) {
+    return next(new AppError("Assinatura necessaria para continuar vendendo.", 403, {
+      subscription: "Seu periodo gratis terminou. Escolha um plano para continuar vendendo no Kriar."
+    }));
+  }
+
+  next();
+}
+
 export async function requireCustomer(req: Request, _res: Response, next: NextFunction) {
   if (!req.user) {
     return next(new AppError("Autenticacao obrigatoria", 401));
@@ -102,9 +139,9 @@ export async function requireCustomer(req: Request, _res: Response, next: NextFu
 }
 
 export async function requireAdmin(req: Request, _res: Response, next: NextFunction) {
-  if (!req.user) return next(new AppError("Autenticacao obrigatoria", 401));
-  if (req.user.role !== UserRole.ADMIN) return next(new AppError("Acesso exclusivo para administradores", 403));
+  if (!req.user) return next(new AppError("Acesso nao autorizado.", 401));
+  if (req.user.role !== UserRole.ADMIN) return next(new AppError("Acesso nao autorizado.", 403));
   const admin = await prisma.admin.findUnique({ where: { userId: req.user.id } });
-  if (!admin || admin.isDeleted || !admin.active) return next(new AppError("Administrador inativo", 403));
+  if (!admin || admin.isDeleted || !admin.active) return next(new AppError("Acesso nao autorizado.", 403));
   next();
 }

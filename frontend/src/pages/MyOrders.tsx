@@ -16,7 +16,7 @@ export function MyOrders() {
     api.get("/pedidos/meus-pedidos").then(({ data }) => setOrders(data.data?.pedidos ?? data.orders ?? [])).catch(() => setOrders([]));
   }, []);
 
-  if (!user) return <Navigate to="/login" replace />;
+  if (!user) return <Navigate to="/cliente/login" replace />;
 
   return (
     <main className="app-shell section-y">

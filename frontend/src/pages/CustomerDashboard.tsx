@@ -13,7 +13,7 @@ export function CustomerDashboard() {
   }, []);
 
   if (!user || user.role !== "CUSTOMER") {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/cliente/login" replace />;
   }
 
   return (
@@ -26,7 +26,7 @@ export function CustomerDashboard() {
       <div className="grid gap-4 md:grid-cols-3">
         <div className="panel p-5"><ClipboardList className="mb-3 h-5 w-5 text-kriar-primary" /><strong>{orders.length}</strong><p className="text-sm text-kriar-muted">pedidos</p></div>
         <div className="panel p-5"><Star className="mb-3 h-5 w-5 text-kriar-primary" /><strong>Avaliacoes</strong><p className="text-sm text-kriar-muted">Disponiveis apos entrega.</p></div>
-        <Link to="/login" className="panel p-5"><UserRound className="mb-3 h-5 w-5 text-kriar-primary" /><strong>Perfil</strong><p className="text-sm text-kriar-muted">Dados da conta.</p></Link>
+        <Link to="/cliente" className="panel p-5"><UserRound className="mb-3 h-5 w-5 text-kriar-primary" /><strong>Perfil</strong><p className="text-sm text-kriar-muted">Dados da conta.</p></Link>
       </div>
       <section className="panel mt-8 p-5">
         <h2 className="mb-4 text-xl font-black text-kriar-primary">Pedidos</h2>

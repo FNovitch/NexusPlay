@@ -1,4 +1,4 @@
-import { Boxes, ClipboardList, FolderTree, LayoutDashboard, LogOut, MessageSquare, PackageCheck, ShieldCheck, Store, Users } from "lucide-react";
+import { Boxes, ClipboardList, CreditCard, FolderTree, LayoutDashboard, LogOut, MessageSquare, PackageCheck, ShieldCheck, Store, Users, WalletCards } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type React from "react";
 import { useEffect, useMemo, useState } from "react";
@@ -8,7 +8,7 @@ import { adminDelete, adminGet, adminPost, adminPut } from "../services/admin";
 import { useAuth } from "../store/auth";
 import { useToast } from "../store/toast";
 
-type AdminSection = "dashboard" | "clientes" | "artesaos" | "produtos" | "pedidos" | "avaliacoes" | "categorias" | "configuracoes";
+type AdminSection = "dashboard" | "clientes" | "artesaos" | "produtos" | "pedidos" | "avaliacoes" | "categorias" | "assinaturas" | "repasses" | "pagamentos" | "configuracoes";
 type ListData<T> = { items: T[]; total?: number };
 
 const currency = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
@@ -21,6 +21,9 @@ const menu: Array<[AdminSection, LucideIcon, string]> = [
   ["pedidos", ClipboardList, "Pedidos"],
   ["avaliacoes", MessageSquare, "Avaliacoes"],
   ["categorias", FolderTree, "Categorias"],
+  ["assinaturas", CreditCard, "Assinaturas"],
+  ["repasses", WalletCards, "Repasses"],
+  ["pagamentos", ShieldCheck, "Pagamentos"],
   ["configuracoes", ShieldCheck, "Configuracoes"]
 ];
 
@@ -163,6 +166,16 @@ export function AdminDashboard() {
               )} />
             </>
           )}
+          {section === "assinaturas" && <AdminTable items={items} loading={loading} columns={["status", "startDate", "expirationDate"]} renderActions={(item) => (
+            <>
+              <button className="btn-secondary px-3 py-1 text-xs" onClick={() => action(`/admin/assinaturas/${item.id}/ativar`)}>Ativar</button>
+              <button className="btn-secondary px-3 py-1 text-xs" onClick={() => action(`/admin/assinaturas/${item.id}/cancelar`)}>Cancelar</button>
+            </>
+          )} />}
+          {section === "repasses" && <AdminTable items={items} loading={loading} columns={["status", "saleAmount", "availableAmount"]} renderActions={(item) => (
+            <button className="btn-secondary px-3 py-1 text-xs" onClick={() => action(`/admin/repasses/${item.id}/pagar`)}>Marcar pago</button>
+          )} />}
+          {section === "pagamentos" && <AdminTable items={items} loading={loading} columns={["type", "status", "amount", "description"]} renderActions={() => null} />}
           {section === "configuracoes" && <div className="panel p-5 text-kriar-muted">Use esta area para atualizar perfil e senha do administrador via API `/admin/perfil` e `/admin/alterar-senha`.</div>}
         </section>
       </div>

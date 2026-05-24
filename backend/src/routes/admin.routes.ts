@@ -1,5 +1,7 @@
 import { Router } from "express";
+import rateLimit from "express-rate-limit";
 import {
+  activateAdminSubscription,
   activateProduct,
   adminDashboard,
   adminLogin,
@@ -8,6 +10,7 @@ import {
   approveProduct,
   blockArtisan,
   blockCustomer,
+  cancelAdminSubscription,
   changeAdminPassword,
   createAdminCategory,
   deactivateProduct,
@@ -25,8 +28,12 @@ import {
   listAdminCategories,
   listAdminCustomers,
   listAdminOrders,
+  listAdminPaymentHistory,
+  listAdminPayouts,
   listAdminProducts,
   listAdminReviews,
+  listAdminSubscriptions,
+  markPayoutPaid,
   rejectArtisan,
   rejectProduct,
   showReview,
@@ -41,7 +48,15 @@ import { authenticate, requireAdmin } from "../middlewares/auth.js";
 
 export const adminRoutes = Router();
 
-adminRoutes.post("/admin/login", asyncHandler(adminLogin));
+const adminLoginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 8,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, message: "Muitas tentativas. Tente novamente em alguns minutos." }
+});
+
+adminRoutes.post("/admin/login", adminLoginLimiter, asyncHandler(adminLogin));
 
 adminRoutes.use("/admin", authenticate, requireAdmin);
 adminRoutes.get("/admin/perfil", asyncHandler(adminProfile));
@@ -85,3 +100,10 @@ adminRoutes.get("/admin/categorias", asyncHandler(listAdminCategories));
 adminRoutes.post("/admin/categorias", asyncHandler(createAdminCategory));
 adminRoutes.put("/admin/categorias/:id", asyncHandler(updateAdminCategory));
 adminRoutes.delete("/admin/categorias/:id", asyncHandler(deleteAdminCategory));
+
+adminRoutes.get("/admin/assinaturas", asyncHandler(listAdminSubscriptions));
+adminRoutes.put("/admin/assinaturas/:id/ativar", asyncHandler(activateAdminSubscription));
+adminRoutes.put("/admin/assinaturas/:id/cancelar", asyncHandler(cancelAdminSubscription));
+adminRoutes.get("/admin/repasses", asyncHandler(listAdminPayouts));
+adminRoutes.put("/admin/repasses/:id/pagar", asyncHandler(markPayoutPaid));
+adminRoutes.get("/admin/pagamentos", asyncHandler(listAdminPaymentHistory));
