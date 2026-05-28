@@ -1,18 +1,33 @@
 import { Store } from "lucide-react";
 import { Link } from "react-router-dom";
 import type { Seller } from "../types";
+import { handleImageError, resolveImageUrl } from "../utils/media";
 import { Stars } from "./Stars";
 
 export function SellerCard({ seller }: { seller: Seller }) {
   return (
     <Link to={`/loja/${seller.slug}`} className="group panel block overflow-hidden card-hover">
       <div className="relative h-36 overflow-hidden bg-kriar-paper">
-        <img src={seller.coverUrl ?? ""} alt="" className="h-full w-full object-cover transition duration-500 ease-out group-hover:scale-[1.035]" />
+        <img
+          src={resolveImageUrl(seller.coverUrl)}
+          alt=""
+          loading="lazy"
+          decoding="async"
+          onError={handleImageError}
+          className="h-full w-full object-cover transition duration-500 ease-out group-hover:scale-[1.035]"
+        />
         <div className="absolute inset-0 bg-gradient-to-t from-kriar-contrast/30 to-transparent" />
       </div>
       <div className="p-4">
         <div className="-mt-12 mb-4 flex items-end justify-between gap-3">
-          <img src={seller.avatarUrl ?? ""} alt={seller.storeName} className="relative h-16 w-16 rounded-2xl border-4 border-white object-cover shadow-soft" />
+          <img
+            src={resolveImageUrl(seller.avatarUrl)}
+            alt={seller.storeName}
+            loading="lazy"
+            decoding="async"
+            onError={handleImageError}
+            className="relative h-16 w-16 rounded-2xl border-4 border-white object-cover shadow-soft"
+          />
           <span className="badge-primary shadow-sm">
             <Store className="h-3 w-3" />
             Feito à mão

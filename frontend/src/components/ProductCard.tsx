@@ -2,6 +2,7 @@ import { Heart, ShoppingBag, Sparkle } from "lucide-react";
 import { Link } from "react-router-dom";
 import { productImageUrl, productRating, productSalesCount, productSellerName, productSellerSlug } from "../api/products";
 import type { Product } from "../types";
+import { handleImageError } from "../utils/media";
 import { useCart } from "../store/cart";
 import { useToast } from "../store/toast";
 import { useWishlist } from "../store/wishlist";
@@ -37,7 +38,14 @@ export function ProductCard({ product }: { product: Product }) {
     <article className="group panel overflow-hidden card-hover">
       <Link to={`/produto/${product.slug}`} className="block">
         <div className="relative aspect-[4/3] overflow-hidden bg-kriar-paper">
-          <img src={productImageUrl(product)} alt={product.name} className="h-full w-full object-cover transition duration-500 ease-out group-hover:scale-[1.035]" />
+          <img
+            src={productImageUrl(product)}
+            alt={product.name}
+            loading="lazy"
+            decoding="async"
+            onError={handleImageError}
+            className="h-full w-full object-cover transition duration-500 ease-out group-hover:scale-[1.035]"
+          />
           <div className="absolute inset-0 bg-gradient-to-t from-kriar-contrast/20 via-transparent to-transparent opacity-0 transition group-hover:opacity-100" />
           {product.customizationAvailable && (
             <span className="badge bg-kriar-surface/95 text-kriar-primary shadow-sm backdrop-blur absolute left-3 top-3">

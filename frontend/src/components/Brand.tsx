@@ -6,6 +6,7 @@ export function Brand() {
       <img
         src="/brand/kriar-logo.png"
         alt="KRIAR - Onde a arte encontra o futuro"
+        decoding="async"
         className="h-11 w-auto max-w-[156px] object-contain sm:h-12 sm:max-w-[188px]"
       />
     </Link>

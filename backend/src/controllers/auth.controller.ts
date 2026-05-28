@@ -15,7 +15,7 @@ export async function register(req: Request, res: Response) {
   const existing = await prisma.user.findUnique({ where: { email } });
 
   if (existing) {
-    throw new AppError("E-mail ja cadastrado", 409);
+    throw new AppError("E-mail já cadastrado.", 409);
   }
 
   const passwordHash = await bcrypt.hash(password, 12);
@@ -40,7 +40,7 @@ export async function register(req: Request, res: Response) {
         acceptsLocalPickup: false,
         pickupInstructions: null,
         address: {
-          street: "Endereco pendente",
+          street: "Endereço pendente",
           number: "0",
           neighborhood: "Pendente",
           city: "Pendente",
@@ -131,11 +131,27 @@ export async function login(req: Request, res: Response) {
   const { email, password } = req.body;
   const user = await prisma.user.findUnique({
     where: { email },
-    include: { seller: true }
+    include: { seller: true, customer: true, artisan: true, adminProfile: true }
   });
 
   if (!user || user.isDeleted || !(await bcrypt.compare(password, user.passwordHash))) {
-    throw new AppError("Credenciais invalidas", 401);
+    throw new AppError("E-mail ou senha inválidos.", 401);
+  }
+
+  if (user.role === UserRole.CUSTOMER && (!user.customer || user.customer.isDeleted || !user.customer.active || user.customer.blocked)) {
+    throw new AppError("Esta conta de cliente não está disponível para acesso.", 403);
+  }
+
+  if (user.role === UserRole.ARTISAN && (!user.artisan || user.artisan.isDeleted)) {
+    throw new AppError("Perfil de vendedor não encontrado.", 404);
+  }
+
+  if (user.role === UserRole.ADMIN && (!user.adminProfile || user.adminProfile.isDeleted || !user.adminProfile.active)) {
+    throw new AppError("Acesso administrativo não autorizado.", 403);
+  }
+
+  if (user.role === UserRole.ADMIN) {
+    await prisma.admin.update({ where: { userId: user.id }, data: { lastLogin: new Date() } });
   }
 
   const token = signToken({ sub: user.id, role: user.role });
@@ -149,7 +165,7 @@ export async function me(req: Request, res: Response) {
   });
 
   if (!user || user.isDeleted) {
-    throw new AppError("Usuario nao encontrado", 404);
+    throw new AppError("Usuário não encontrado.", 404);
   }
 
   res.json({ user: sanitizeUser(user) });

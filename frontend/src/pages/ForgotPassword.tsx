@@ -1,4 +1,5 @@
 import { MailCheck } from "lucide-react";
+import type React from "react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { parseApiError } from "../lib/artisanForm";
@@ -17,7 +18,7 @@ export function ForgotPassword() {
     setError("");
     setMessage("");
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setError("Informe um e-mail valido.");
+      setError("Informe um e-mail válido.");
       return;
     }
     if (loading) return;

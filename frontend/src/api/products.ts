@@ -1,4 +1,5 @@
 import type { Category, Product, ProductImage, Seller } from "../types";
+import { resolveImageUrl } from "../utils/media";
 
 type RawProductImage = ProductImage | string;
 
@@ -88,10 +89,7 @@ export function normalizeProduct(product: RawProduct): Product {
 
 export function productImageUrl(product: Product) {
   const url = product.mainImage?.url ?? product.images[0]?.url ?? "";
-  if (url.startsWith("/uploads")) {
-    return `${new URL(import.meta.env.VITE_API_URL ?? "http://localhost:4000/api/v1").origin}${url}`;
-  }
-  return url;
+  return resolveImageUrl(url);
 }
 
 export function productCategorySlug(product: Product) {

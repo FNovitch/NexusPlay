@@ -10,6 +10,7 @@ import { useCart } from "../store/cart";
 import { useToast } from "../store/toast";
 import { useWishlist } from "../store/wishlist";
 import type { Product } from "../types";
+import { handleImageError } from "../utils/media";
 
 const currency = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
 
@@ -36,7 +37,7 @@ export function ProductDetail() {
   }, [slug]);
 
   if (notFound) {
-    return <main className="app-shell py-16 text-kriar-muted">Produto nao encontrado.</main>;
+    return <main className="app-shell py-16 text-kriar-muted">Produto não encontrado.</main>;
   }
 
   if (!product) {
@@ -48,7 +49,7 @@ export function ProductDetail() {
   function handleAdd() {
     const missing = currentProduct.variations.find((variation) => !selectedVariations[variation.name]);
     if (missing) {
-      showToast({ title: "Escolha uma variacao", description: `Selecione ${missing.name}.`, variant: "warning" });
+      showToast({ title: "Escolha uma variação", description: `Selecione ${missing.name}.`, variant: "warning" });
       return;
     }
     addItem(currentProduct, 1, notes, selectedVariations);
@@ -64,7 +65,13 @@ export function ProductDetail() {
     <main className="app-shell py-8 sm:py-12">
       <div className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr]">
         <div className="overflow-hidden rounded-[28px] bg-kriar-background shadow-card">
-          <img src={productImageUrl(product)} alt={product.name} className="aspect-[4/3] w-full object-cover" />
+          <img
+            src={productImageUrl(product)}
+            alt={product.name}
+            decoding="async"
+            onError={handleImageError}
+            className="aspect-[4/3] w-full object-cover"
+          />
         </div>
         <section className="panel p-5 sm:p-7">
           <Link to={`/loja/${productSellerSlug(product)}`} className="text-sm font-black text-kriar-secondary transition hover:text-kriar-primary">
@@ -116,7 +123,7 @@ export function ProductDetail() {
 
           {product.reviews && product.reviews.length > 0 && (
             <div className="mt-7 border-t border-kriar-line pt-5">
-              <h2 className="text-xl font-black text-kriar-primary">Avaliacoes</h2>
+              <h2 className="text-xl font-black text-kriar-primary">Avaliações</h2>
               <div className="mt-3 grid gap-3">
                 {product.reviews.map((review, index) => (
                   <div key={`${review.createdAt}-${index}`} className="rounded-xl bg-kriar-background/70 p-3">
@@ -146,11 +153,11 @@ export function ProductDetail() {
             </div>
             <div className="rounded-[20px] border border-kriar-line bg-kriar-background/70 p-4">
               <PackageCheck className="mb-2 h-5 w-5 text-kriar-primary" />
-              <strong className="text-kriar-contrast">{product.pickupAvailable ? "Retirada local disponivel" : "Pedido por vendedor"}</strong>
+              <strong className="text-kriar-contrast">{product.pickupAvailable ? "Retirada local disponível" : "Pedido por vendedor"}</strong>
               <p className="mt-1 text-sm leading-6 text-kriar-muted">
                 {product.pickupAvailable
-                  ? product.pickupAddress ?? "O artesao combina a retirada apos a compra."
-                  : "O carrinho separa itens por loja para producao e entrega."}
+                  ? product.pickupAddress ?? "O vendedor combina a retirada após a compra."
+                  : "O carrinho separa itens por loja para produção e entrega."}
               </p>
             </div>
           </div>

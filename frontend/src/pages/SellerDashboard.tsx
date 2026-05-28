@@ -1,5 +1,6 @@
 import { ClipboardList, ImagePlus, Package, Settings, ShieldCheck, TrendingUp, WalletCards } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import type React from "react";
 import { useEffect, useMemo, useState } from "react";
 import { normalizeProduct, productImageUrl, productSalesCount, productSellerSlug } from "../api/products";
 import { products } from "../data/mock";
@@ -8,6 +9,7 @@ import { getMyArtisanProfile } from "../services/artisans";
 import { getSubscriptionStatus, type SubscriptionStatus } from "../services/subscriptions";
 import { useAuth } from "../store/auth";
 import type { Category, Product, ProductImage } from "../types";
+import { handleImageError } from "../utils/media";
 import { Link, Navigate } from "react-router-dom";
 
 const currency = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
@@ -42,7 +44,7 @@ export function SellerDashboard() {
     orders: 38,
     rating: "4.9",
     status: "pendente",
-    artisanName: user?.name ?? "Artesao",
+    artisanName: user?.name ?? "Vendedor",
     storeName: "Sua loja"
   });
 
@@ -60,7 +62,7 @@ export function SellerDashboard() {
           orders: data.metrics?.orders ?? 0,
           rating: data.seller?.rating?.toFixed?.(1) ?? "0.0",
           status: data.seller?.status === "APPROVED" ? "aprovado" : data.seller?.status === "REJECTED" ? "recusado" : "pendente",
-          artisanName: data.seller?.user?.name ?? user?.name ?? "Artesao",
+          artisanName: data.seller?.user?.name ?? user?.name ?? "Vendedor",
           storeName: data.seller?.storeName ?? "Sua loja"
         });
         setMyProducts((data.topProducts ?? []).map(normalizeProduct));
@@ -130,12 +132,12 @@ export function SellerDashboard() {
     }
 
     if (selected.some((file) => file.size > 5 * 1024 * 1024)) {
-      setImageError("Cada imagem deve ter no maximo 5MB.");
+      setImageError("Cada imagem deve ter no máximo 5 MB.");
       return;
     }
 
     if (visibleExisting + selected.length > 3) {
-      setImageError("Selecione no maximo 3 imagens por produto.");
+      setImageError("Selecione no máximo 3 imagens por produto.");
       return;
     }
 
@@ -195,7 +197,7 @@ export function SellerDashboard() {
     [WalletCards, currency.format(dashboard.revenue), "faturamento"],
     [Package, myProducts.length, "produtos ativos"],
     [ClipboardList, dashboard.orders, "pedidos"],
-    [TrendingUp, dashboard.rating, "avaliacao"],
+    [TrendingUp, dashboard.rating, "avaliação"],
     [ShieldCheck, dashboard.status, "status da conta"]
   ];
 
@@ -203,19 +205,19 @@ export function SellerDashboard() {
     <main className="app-shell section-y">
       <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <p className="eyebrow mb-2">Operacao</p>
-          <h1 className="text-3xl font-black tracking-tight text-kriar-contrast">Dashboard do artesao</h1>
+          <p className="eyebrow mb-2">Operação</p>
+          <h1 className="text-3xl font-black tracking-tight text-kriar-contrast">Painel do vendedor</h1>
           <p className="mt-2 text-kriar-muted">{dashboard.artisanName} · {dashboard.storeName}</p>
           {dashboard.status !== "aprovado" && (
             <p className="mt-2 max-w-2xl rounded-xl border border-kriar-line bg-kriar-background px-4 py-3 text-sm font-bold text-kriar-contrast">
               {dashboard.status === "recusado"
                 ? "Seu cadastro foi recusado. Atualize o perfil ou fale com o suporte antes de vender."
-                : "Seu cadastro esta pendente de aprovacao. Voce pode preparar o perfil e produtos enquanto aguarda."}
+                : "Seu cadastro está pendente de aprovação. Você pode preparar o perfil e os produtos enquanto aguarda."}
             </p>
           )}
           {subscription && !subscription.canSell && (
             <p className="mt-2 max-w-2xl rounded-xl border border-kriar-line bg-red-50 px-4 py-3 text-sm font-bold text-red-700">
-              Seu periodo gratis terminou. Escolha um plano para continuar vendendo no Kriar.
+              Seu período grátis terminou. Escolha um plano para continuar vendendo na KRIAR.
             </p>
           )}
         </div>
@@ -239,7 +241,7 @@ export function SellerDashboard() {
               <option key={category.id} value={category.id}>{category.name}</option>
             ))}
           </select>
-          <input className="input-field" required type="number" min="0.01" step="0.01" placeholder="Preco" value={form.price} onChange={(event) => setForm({ ...form, price: event.target.value })} />
+          <input className="input-field" required type="number" min="0.01" step="0.01" placeholder="Preço" value={form.price} onChange={(event) => setForm({ ...form, price: event.target.value })} />
           <input className="input-field" required type="number" min="0" step="1" placeholder="Estoque" value={form.stock} onChange={(event) => setForm({ ...form, stock: event.target.value })} />
           <input className="input-field" required type="number" min="0.001" step="0.001" placeholder="Peso (kg)" value={form.weight} onChange={(event) => setForm({ ...form, weight: event.target.value })} />
           <div className="grid gap-3 sm:grid-cols-3">
@@ -260,7 +262,7 @@ export function SellerDashboard() {
             <div className="grid gap-3 md:col-span-2 sm:grid-cols-3">
               {form.existingImages.filter((image) => !image.id || !form.removeImageIds.includes(image.id)).map((image) => (
                 <div key={image.id ?? image.url} className="rounded-xl border border-kriar-line p-2">
-                  <img src={image.url} alt="" className="aspect-video w-full rounded-lg object-cover" />
+                  <img src={image.url} alt="" loading="lazy" decoding="async" onError={handleImageError} className="aspect-video w-full rounded-lg object-cover" />
                   {image.id && <button type="button" className="mt-2 text-xs font-bold text-kriar-secondary" onClick={() => removeExistingImage(image)}>Remover imagem</button>}
                 </div>
               ))}
@@ -270,7 +272,7 @@ export function SellerDashboard() {
             <div className="grid gap-3 md:col-span-2 sm:grid-cols-3">
               {form.images.map((image) => (
                 <div key={image.name} className="rounded-xl border border-kriar-line p-2">
-                  <img src={URL.createObjectURL(image)} alt="" className="aspect-video w-full rounded-lg object-cover" />
+                  <img src={URL.createObjectURL(image)} alt="" loading="lazy" decoding="async" onError={handleImageError} className="aspect-video w-full rounded-lg object-cover" />
                   <button type="button" className="mt-2 text-xs font-bold text-kriar-secondary" onClick={() => setForm({ ...form, images: form.images.filter((item) => item !== image) })}>Remover imagem</button>
                 </div>
               ))}
@@ -278,22 +280,22 @@ export function SellerDashboard() {
           )}
           <div className="md:col-span-2">
             <div className="mb-2 flex items-center justify-between">
-              <strong className="text-sm text-kriar-contrast">Variacoes</strong>
-              <button type="button" className="btn-secondary px-3 py-1 text-xs" onClick={() => setForm({ ...form, variations: [...form.variations, { name: "", options: "" }] })}>Adicionar variacao</button>
+              <strong className="text-sm text-kriar-contrast">Variações</strong>
+              <button type="button" className="btn-secondary px-3 py-1 text-xs" onClick={() => setForm({ ...form, variations: [...form.variations, { name: "", options: "" }] })}>Adicionar variação</button>
             </div>
             <div className="grid gap-2">
               {form.variations.map((variation, index) => (
                 <div key={index} className="grid gap-2 sm:grid-cols-[1fr_2fr_auto]">
                   <input className="input-field" placeholder="Cor, tamanho..." value={variation.name} onChange={(event) => setForm({ ...form, variations: form.variations.map((item, current) => current === index ? { ...item, name: event.target.value } : item) })} />
-                  <input className="input-field" placeholder="Opcoes separadas por virgula" value={variation.options} onChange={(event) => setForm({ ...form, variations: form.variations.map((item, current) => current === index ? { ...item, options: event.target.value } : item) })} />
+                  <input className="input-field" placeholder="Opções separadas por vírgula" value={variation.options} onChange={(event) => setForm({ ...form, variations: form.variations.map((item, current) => current === index ? { ...item, options: event.target.value } : item) })} />
                   <button type="button" className="btn-secondary px-3" onClick={() => setForm({ ...form, variations: form.variations.filter((_, current) => current !== index) })}>Remover</button>
                 </div>
               ))}
             </div>
           </div>
-          <textarea className="text-field min-h-28 md:col-span-2" required minLength={10} placeholder="Descricao" value={form.description} onChange={(event) => setForm({ ...form, description: event.target.value })} />
+          <textarea className="text-field min-h-28 md:col-span-2" required minLength={10} placeholder="Descrição" value={form.description} onChange={(event) => setForm({ ...form, description: event.target.value })} />
           <button className="btn-primary md:w-max" disabled={saving || categories.length === 0}>{saving ? "Salvando..." : editingProduct ? "Salvar produto" : "Cadastrar produto"}</button>
-          {editingProduct && <button type="button" className="btn-secondary md:w-max" onClick={() => { setShowForm(false); resetForm(); }}>Cancelar edicao</button>}
+          {editingProduct && <button type="button" className="btn-secondary md:w-max" onClick={() => { setShowForm(false); resetForm(); }}>Cancelar edição</button>}
         </form>
       )}
 
@@ -313,7 +315,7 @@ export function SellerDashboard() {
         <div className="mb-5 flex items-center justify-between gap-4">
           <div>
             <h2 className="text-xl font-black tracking-tight text-kriar-primary">Produtos mais vendidos</h2>
-            <p className="mt-1 text-sm text-kriar-muted">Visao rapida de estoque, vendas e status.</p>
+            <p className="mt-1 text-sm text-kriar-muted">Visão rápida de estoque, vendas e status.</p>
           </div>
         </div>
         <div className="overflow-x-auto">
@@ -323,9 +325,9 @@ export function SellerDashboard() {
                 <th>Produto</th>
                 <th>Estoque</th>
                 <th>Vendas</th>
-                <th>Preco</th>
+                <th>Preço</th>
                 <th>Status</th>
-                <th>Acoes</th>
+                <th>Ações</th>
               </tr>
             </thead>
             <tbody>
@@ -333,7 +335,7 @@ export function SellerDashboard() {
                 <tr key={product.id}>
                   <td>
                     <div className="flex items-center gap-3">
-                      <img src={productImageUrl(product)} alt="" className="h-12 w-12 rounded-xl object-cover" />
+                      <img src={productImageUrl(product)} alt="" loading="lazy" decoding="async" onError={handleImageError} className="h-12 w-12 rounded-xl object-cover" />
                       <strong className="text-kriar-contrast">{product.name}</strong>
                     </div>
                   </td>

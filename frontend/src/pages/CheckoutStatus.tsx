@@ -5,8 +5,8 @@ import { useCart } from "../store/cart";
 import { useEffect } from "react";
 
 const copy = {
-  sucesso: ["Pedido recebido", "O Mercado Pago confirmou ou esta processando seu retorno. Acompanhe em Meus pedidos.", CheckCircle2],
-  falha: ["Pagamento nao concluido", "Nao foi possivel concluir o pagamento. Voce pode tentar novamente.", AlertCircle],
+  sucesso: ["Pedido recebido", "O Mercado Pago confirmou ou está processando seu retorno. Acompanhe em Meus pedidos.", CheckCircle2],
+  falha: ["Pagamento não concluído", "Não foi possível concluir o pagamento. Você pode tentar novamente.", AlertCircle],
   pendente: ["Pagamento pendente", "Assim que o Mercado Pago confirmar, atualizaremos seu pedido.", Clock]
 } as const;
 

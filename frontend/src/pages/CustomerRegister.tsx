@@ -1,4 +1,5 @@
 import { UserPlus } from "lucide-react";
+import type React from "react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { fetchAddressByCep, isStrongPassword, isValidCpf, isValidPhone, maskCep, maskDocument, maskPhone, onlyDigits, parseApiError, type FieldErrors } from "../lib/artisanForm";
@@ -31,18 +32,18 @@ export function CustomerRegister() {
   function validate() {
     const next: FieldErrors = {};
     if (form.name.trim().length < 3) next.name = "Informe seu nome completo.";
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) next.email = "Informe um e-mail valido.";
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) next.email = "Informe um e-mail válido.";
     if (!isStrongPassword(form.password)) next.password = "Use uma senha forte.";
-    if (form.password !== form.confirmPassword) next.confirmPassword = "A confirmacao deve ser igual a senha.";
-    if (!isValidCpf(form.cpf)) next.cpf = "CPF invalido.";
-    if (!isValidPhone(form.phone)) next.phone = "Telefone invalido.";
+    if (form.password !== form.confirmPassword) next.confirmPassword = "A confirmação deve ser igual à senha.";
+    if (!isValidCpf(form.cpf)) next.cpf = "CPF inválido.";
+    if (!isValidPhone(form.phone)) next.phone = "Telefone inválido.";
     if (!form.birthDate) next.birthDate = "Informe a data de nascimento.";
-    if (onlyDigits(form.zipCode).length !== 8) next["address.zipCode"] = "CEP invalido.";
+    if (onlyDigits(form.zipCode).length !== 8) next["address.zipCode"] = "CEP inválido.";
     if (!form.street.trim()) next["address.street"] = "Informe a rua.";
-    if (!form.number.trim()) next["address.number"] = "Informe o numero.";
+    if (!form.number.trim()) next["address.number"] = "Informe o número.";
     if (!form.neighborhood.trim()) next["address.neighborhood"] = "Informe o bairro.";
     if (!form.city.trim()) next["address.city"] = "Informe a cidade.";
-    if (!/^[A-Z]{2}$/.test(form.state)) next["address.state"] = "UF invalida.";
+    if (!/^[A-Z]{2}$/.test(form.state)) next["address.state"] = "UF inválida.";
     setErrors(next);
     return Object.keys(next).length === 0;
   }
@@ -53,7 +54,7 @@ export function CustomerRegister() {
       const address = await fetchAddressByCep(form.zipCode);
       setForm((current) => ({ ...current, street: address.street || current.street, neighborhood: address.neighborhood || current.neighborhood, city: address.city || current.city, state: address.state || current.state }));
     } catch (error) {
-      setErrors((current) => ({ ...current, "address.zipCode": error instanceof Error ? error.message : "CEP invalido." }));
+      setErrors((current) => ({ ...current, "address.zipCode": error instanceof Error ? error.message : "CEP inválido." }));
     }
   }
 
@@ -105,7 +106,7 @@ export function CustomerRegister() {
         <label><input className="input-field w-full" type="date" value={form.birthDate} onChange={(e) => update("birthDate", e.target.value)} />{errorText("birthDate")}</label>
         <label><input className="input-field w-full" placeholder="CEP" value={form.zipCode} onBlur={lookupCep} onChange={(e) => update("zipCode", maskCep(e.target.value))} />{errorText("address.zipCode")}</label>
         <label><input className="input-field w-full" placeholder="Rua" value={form.street} onChange={(e) => update("street", e.target.value)} />{errorText("address.street")}</label>
-        <label><input className="input-field w-full" placeholder="Numero" value={form.number} onChange={(e) => update("number", e.target.value)} />{errorText("address.number")}</label>
+        <label><input className="input-field w-full" placeholder="Número" value={form.number} onChange={(e) => update("number", e.target.value)} />{errorText("address.number")}</label>
         <input className="input-field" placeholder="Complemento" value={form.complement} onChange={(e) => update("complement", e.target.value)} />
         <label><input className="input-field w-full" placeholder="Bairro" value={form.neighborhood} onChange={(e) => update("neighborhood", e.target.value)} />{errorText("address.neighborhood")}</label>
         <label><input className="input-field w-full" placeholder="Cidade" value={form.city} onChange={(e) => update("city", e.target.value)} />{errorText("address.city")}</label>

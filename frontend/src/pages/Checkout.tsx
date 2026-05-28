@@ -8,6 +8,7 @@ import { api } from "../lib/api";
 import { cartTotal, groupedBySeller, useCart } from "../store/cart";
 import { useAuth } from "../store/auth";
 import { useToast } from "../store/toast";
+import { handleImageError, resolveImageUrl } from "../utils/media";
 
 const currency = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
 
@@ -56,7 +57,7 @@ export function Checkout() {
       setFreightGroups([]);
       setSelectedFreight({});
     } catch {
-      setError("CEP invalido ou inexistente.");
+      setError("CEP inválido ou inexistente.");
     }
   }
 
@@ -66,7 +67,7 @@ export function Checkout() {
       return;
     }
     if (onlyDigits(address.zipCode).length !== 8) {
-      setError("Informe um CEP valido para calcular o frete.");
+      setError("Informe um CEP válido para calcular o frete.");
       return;
     }
     setFreightLoading(true);
@@ -79,12 +80,12 @@ export function Checkout() {
       });
       setFreightGroups(data.data.grupos);
       if (data.data.grupos.some((group) => group.opcoes.length === 0)) {
-        setError("Nao encontramos frete para um dos artesãos do carrinho.");
+        setError("Não encontramos frete para um dos vendedores do carrinho.");
       }
     } catch (requestError: unknown) {
       const response = requestError && typeof requestError === "object" && "response" in requestError ? requestError.response as { data?: { message?: string; errors?: Record<string, string> } } : undefined;
       const message = response?.data?.errors ? Object.values(response.data.errors)[0] : response?.data?.message;
-      setError(message ?? "Nao foi possivel calcular o frete.");
+      setError(message ?? "Não foi possível calcular o frete.");
     } finally {
       setFreightLoading(false);
     }
@@ -96,11 +97,11 @@ export function Checkout() {
       return;
     }
     if (!address.zipCode || !address.street || !address.number || !address.neighborhood || !address.city || !address.state) {
-      setError("Informe o endereco de entrega completo.");
+      setError("Informe o endereço de entrega completo.");
       return;
     }
     if (freightGroups.length === 0 || freightGroups.some((group) => !selectedFreight[group.groupId])) {
-      setError("Calcule e selecione uma opcao de frete para cada artesao.");
+      setError("Calcule e selecione uma opção de frete para cada vendedor.");
       return;
     }
     setLoading(true);
@@ -128,12 +129,12 @@ export function Checkout() {
         items: items.map((item) => ({ productId: item.product.id, quantity: item.quantity, customizationNotes: item.customizationNotes, selectedVariations: item.selectedVariations }))
       });
       const initPoint = data.data?.initPoint ?? data.initPoint;
-      if (!initPoint) throw new Error("Link de pagamento nao retornado.");
+      if (!initPoint) throw new Error("Link de pagamento não retornado.");
       window.location.href = initPoint;
     } catch (requestError: unknown) {
       const response = requestError && typeof requestError === "object" && "response" in requestError ? requestError.response as { data?: { message?: string; errors?: Record<string, string> } } : undefined;
       const message = response?.data?.errors ? Object.values(response.data.errors)[0] : response?.data?.message;
-      setError(message ?? "Nao foi possivel concluir o pedido.");
+      setError(message ?? "Não foi possível concluir o pedido.");
       showToast({ title: "Erro no pedido", description: message ?? "Confira os dados e tente novamente.", variant: "warning" });
     } finally {
       setLoading(false);
@@ -143,7 +144,7 @@ export function Checkout() {
   if (items.length === 0) {
     return (
       <main className="app-shell grid min-h-[60vh] place-items-center py-16">
-        <EmptyState icon={<PackageCheck className="h-6 w-6" />} title="Seu carrinho esta vazio" description="Explore a vitrine para encontrar pecas artesanais selecionadas." action={<Link to="/" className="btn-primary">Ver produtos</Link>} />
+        <EmptyState icon={<PackageCheck className="h-6 w-6" />} title="Seu carrinho está vazio" description="Explore a vitrine para encontrar peças artesanais selecionadas." action={<Link to="/" className="btn-primary">Ver produtos</Link>} />
       </main>
     );
   }
@@ -153,14 +154,14 @@ export function Checkout() {
       <section>
         <p className="eyebrow mb-2">Checkout Pro</p>
         <h1 className="text-3xl font-black tracking-tight text-kriar-contrast">Finalizar pedido</h1>
-        <p className="mt-2 max-w-2xl text-kriar-muted">Revise itens, endereco e siga para o ambiente seguro do Mercado Pago.</p>
+        <p className="mt-2 max-w-2xl text-kriar-muted">Revise itens, endereço e siga para o ambiente seguro do Mercado Pago.</p>
         {error && <div className="mt-4 rounded-xl bg-red-50 p-3 text-sm font-bold text-red-700">{error}</div>}
 
         <section className="panel mt-7 grid gap-3 p-5 md:grid-cols-2">
-          <h2 className="text-xl font-black text-kriar-primary md:col-span-2">Endereco de entrega</h2>
+          <h2 className="text-xl font-black text-kriar-primary md:col-span-2">Endereço de entrega</h2>
           <input className="input-field" placeholder="CEP" value={address.zipCode} onBlur={lookupCep} onChange={(e) => setAddress({ ...address, zipCode: maskCep(e.target.value) })} />
           <input className="input-field" placeholder="Rua" value={address.street} onChange={(e) => setAddress({ ...address, street: e.target.value })} />
-          <input className="input-field" placeholder="Numero" value={address.number} onChange={(e) => setAddress({ ...address, number: e.target.value })} />
+          <input className="input-field" placeholder="Número" value={address.number} onChange={(e) => setAddress({ ...address, number: e.target.value })} />
           <input className="input-field" placeholder="Complemento" value={address.complement} onChange={(e) => setAddress({ ...address, complement: e.target.value })} />
           <input className="input-field" placeholder="Bairro" value={address.neighborhood} onChange={(e) => setAddress({ ...address, neighborhood: e.target.value })} />
           <input className="input-field" placeholder="Cidade" value={address.city} onChange={(e) => setAddress({ ...address, city: e.target.value })} />
@@ -186,10 +187,19 @@ export function Checkout() {
                           checked={selectedFreight[group.groupId]?.id === option.id}
                           onChange={() => setSelectedFreight((current) => ({ ...current, [group.groupId]: option }))}
                         />
-                        {option.imagem && <img src={option.imagem} alt="" className="h-8 w-8 object-contain" />}
+                        {option.imagem && (
+                          <img
+                            src={resolveImageUrl(option.imagem)}
+                            alt=""
+                            loading="lazy"
+                            decoding="async"
+                            onError={handleImageError}
+                            className="h-8 w-8 object-contain"
+                          />
+                        )}
                         <span className="min-w-0 flex-1">
                           <span className="block font-black text-kriar-contrast">{option.empresa} - {option.nome}</span>
-                          <span className="text-sm text-kriar-muted">Prazo: {option.prazo} dias uteis</span>
+                          <span className="text-sm text-kriar-muted">Prazo: {option.prazo} dias úteis</span>
                         </span>
                         <span className="font-black text-kriar-primary">{currency.format(option.preco)}</span>
                       </label>
@@ -208,7 +218,14 @@ export function Checkout() {
               <div className="space-y-3">
                 {sellerItems.map((item) => (
                   <div key={`${item.product.id}-${JSON.stringify(item.selectedVariations ?? {})}`} className="flex items-center gap-3 rounded-[20px] bg-kriar-background/70 p-3">
-                    <img src={productImageUrl(item.product)} alt="" className="h-16 w-16 rounded-xl object-cover" />
+                    <img
+                      src={productImageUrl(item.product)}
+                      alt=""
+                      loading="lazy"
+                      decoding="async"
+                      onError={handleImageError}
+                      className="h-16 w-16 rounded-xl object-cover"
+                    />
                     <div className="min-w-0 flex-1">
                       <strong className="line-clamp-1 text-kriar-contrast">{item.product.name}</strong>
                       <p className="text-sm text-kriar-muted">Quantidade: {item.quantity}</p>

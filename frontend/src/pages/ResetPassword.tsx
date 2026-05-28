@@ -1,4 +1,5 @@
 import { KeyRound } from "lucide-react";
+import type React from "react";
 import { useMemo, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { isStrongPassword, parseApiError } from "../lib/artisanForm";
@@ -21,15 +22,15 @@ export function ResetPassword() {
     setError("");
     setMessage("");
     if (!token) {
-      setError("Token de recuperacao ausente.");
+      setError("Token de recuperação ausente.");
       return;
     }
     if (!isStrongPassword(password)) {
-      setError("Use uma senha com 8 caracteres, maiuscula, minuscula, numero e caractere especial.");
+      setError("Use uma senha com 8 caracteres, maiúscula, minúscula, número e caractere especial.");
       return;
     }
     if (password !== confirmPassword) {
-      setError("A confirmacao deve ser igual a nova senha.");
+      setError("A confirmação deve ser igual à nova senha.");
       return;
     }
     if (loading) return;
@@ -52,7 +53,7 @@ export function ResetPassword() {
       <form onSubmit={submit} className="panel w-full max-w-md p-6">
         <p className="eyebrow mb-2">Cliente</p>
         <h1 className="text-3xl font-black tracking-tight text-kriar-contrast">Criar nova senha</h1>
-        <p className="mt-3 text-sm leading-6 text-kriar-muted">Sua nova senha precisa ser forte para proteger compras, pedidos e avaliacoes.</p>
+        <p className="mt-3 text-sm leading-6 text-kriar-muted">Sua nova senha precisa ser forte para proteger compras, pedidos e avaliações.</p>
         {message && <div className="mt-5 rounded-xl bg-emerald-50 px-4 py-3 text-sm font-bold text-emerald-800">{message}</div>}
         {error && <div className="mt-5 rounded-xl bg-red-50 px-4 py-3 text-sm font-bold text-red-800">{error}</div>}
         <label className="mt-5 block">

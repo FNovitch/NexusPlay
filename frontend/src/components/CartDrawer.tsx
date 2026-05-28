@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { productImageUrl } from "../api/products";
 import { cartItemKey, cartTotal, groupedBySeller, useCart } from "../store/cart";
 import { useToast } from "../store/toast";
+import { handleImageError } from "../utils/media";
 
 const currency = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
 
@@ -49,7 +50,14 @@ export function CartDrawer() {
                   <div className="space-y-3">
                     {sellerItems.map((item) => (
                       <div key={cartItemKey(item.product.id, item.selectedVariations)} className="panel flex gap-3 p-3 shadow-none">
-                        <img src={productImageUrl(item.product)} alt="" className="h-20 w-20 rounded-xl object-cover" />
+                        <img
+                          src={productImageUrl(item.product)}
+                          alt=""
+                          loading="lazy"
+                          decoding="async"
+                          onError={handleImageError}
+                          className="h-20 w-20 rounded-xl object-cover"
+                        />
                         <div className="min-w-0 flex-1">
                           <p className="truncate font-black text-kriar-contrast">{item.product.name}</p>
                           <p className="text-sm font-bold text-kriar-primary">{currency.format(item.product.price)}</p>

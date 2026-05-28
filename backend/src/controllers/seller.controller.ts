@@ -9,7 +9,18 @@ export async function listSellers(_req: Request, res: Response) {
   const sellers = await prisma.seller.findMany({
     where: { status: SellerStatus.APPROVED },
     orderBy: [{ salesCount: "desc" }, { rating: "desc" }],
-    include: { _count: { select: { products: true, reviews: true } } },
+    select: {
+      id: true,
+      storeName: true,
+      slug: true,
+      bio: true,
+      avatarUrl: true,
+      coverUrl: true,
+      rating: true,
+      salesCount: true,
+      status: true,
+      _count: { select: { products: true, reviews: true } }
+    },
     take: 24
   });
 

@@ -1,4 +1,5 @@
 import { Store, UserPlus } from "lucide-react";
+import type React from "react";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
@@ -64,20 +65,20 @@ export function ArtisanRegister() {
 
     if (form.name.trim().length < 3 || !/[A-Za-zÀ-ÿ]/.test(form.name)) next.name = "Informe seu nome completo.";
     if (form.storeName.trim().length < 3) next.storeName = "Informe o nome da loja.";
-    if (!isValidDocument(form.document)) next.document = "Informe um CPF ou CNPJ valido.";
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) next.email = "Informe um e-mail valido.";
-    if (!isValidPhone(form.phone)) next.phone = "Informe um telefone com DDD valido.";
-    if (!isStrongPassword(form.password)) next.password = "Use maiuscula, minuscula, numero e caractere especial.";
-    if (form.password !== form.confirmPassword) next.confirmPassword = "A confirmacao precisa ser igual a senha.";
+    if (!isValidDocument(form.document)) next.document = "Informe um CPF ou CNPJ válido.";
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) next.email = "Informe um e-mail válido.";
+    if (!isValidPhone(form.phone)) next.phone = "Informe um telefone com DDD válido.";
+    if (!isStrongPassword(form.password)) next.password = "Use maiúscula, minúscula, número e caractere especial.";
+    if (form.password !== form.confirmPassword) next.confirmPassword = "A confirmação precisa ser igual à senha.";
     if (form.storeDescription.trim().length < 10) next.storeDescription = "Descreva sua loja com pelo menos 10 caracteres.";
     if (categories.length === 0) next.craftCategories = "Informe pelo menos uma categoria.";
-    if (onlyDigits(form.zipCode).length !== 8) next["address.zipCode"] = "Informe um CEP com 8 digitos.";
+    if (onlyDigits(form.zipCode).length !== 8) next["address.zipCode"] = "Informe um CEP com 8 dígitos.";
     if (form.street.trim().length < 2) next["address.street"] = "Informe a rua.";
-    if (!form.number.trim()) next["address.number"] = "Informe o numero.";
+    if (!form.number.trim()) next["address.number"] = "Informe o número.";
     if (form.neighborhood.trim().length < 2) next["address.neighborhood"] = "Informe o bairro.";
     if (form.city.trim().length < 2) next["address.city"] = "Informe a cidade.";
-    if (!/^[A-Z]{2}$/.test(form.state)) next["address.state"] = "Informe uma UF valida.";
-    if (form.acceptsLocalPickup && !form.pickupInstructions.trim()) next.pickupInstructions = "Informe as instrucoes de retirada.";
+    if (!/^[A-Z]{2}$/.test(form.state)) next["address.state"] = "Informe uma UF válida.";
+    if (form.acceptsLocalPickup && !form.pickupInstructions.trim()) next.pickupInstructions = "Informe as instruções de retirada.";
 
     setErrors(next);
     return { ok: Object.keys(next).length === 0, categories };
@@ -101,7 +102,7 @@ export function ArtisanRegister() {
         return next;
       });
     } catch (error) {
-      setErrors((current) => ({ ...current, "address.zipCode": error instanceof Error ? error.message : "CEP invalido." }));
+      setErrors((current) => ({ ...current, "address.zipCode": error instanceof Error ? error.message : "CEP inválido." }));
     } finally {
       setCepLoading(false);
     }
@@ -139,8 +140,8 @@ export function ArtisanRegister() {
         acceptsLocalPickup: form.acceptsLocalPickup,
         pickupInstructions: form.acceptsLocalPickup ? form.pickupInstructions.trim() : null
       });
-      showToast({ title: "Cadastro enviado", description: "Aguarde aprovacao para vender na KRIAR.", variant: "success" });
-      setMessage("Cadastro de artesao realizado com sucesso. Aguarde aprovacao.");
+      showToast({ title: "Cadastro enviado", description: "Aguarde aprovação para vender na KRIAR.", variant: "success" });
+      setMessage("Cadastro de vendedor realizado com sucesso. Aguarde aprovação.");
       window.setTimeout(() => navigate("/artesao/login"), 1200);
     } catch (requestError: unknown) {
       const parsed = parseApiError(requestError);
@@ -156,8 +157,8 @@ export function ArtisanRegister() {
   return (
     <main className="app-shell section-y">
       <div className="mb-8 max-w-3xl">
-        <p className="eyebrow mb-2">Cadastrar como artesao</p>
-        <h1 className="text-3xl font-black tracking-tight text-kriar-contrast md:text-5xl">Venda suas pecas na KRIAR</h1>
+        <p className="eyebrow mb-2">Cadastrar como vendedor</p>
+        <h1 className="text-3xl font-black tracking-tight text-kriar-contrast md:text-5xl">Venda suas peças na KRIAR</h1>
         <p className="mt-4 text-lg leading-8 text-kriar-muted">Crie o cadastro da sua loja para publicar produtos, receber pedidos e preparar retirada local.</p>
       </div>
 
@@ -173,7 +174,7 @@ export function ArtisanRegister() {
             {errorText("name")}
           </label>
           <label>
-            <input required className={`input-field w-full ${fieldClass(errors.storeName)}`} placeholder="Nome da loja/atelie" value={form.storeName} onChange={(event) => update("storeName", event.target.value)} />
+            <input required className={`input-field w-full ${fieldClass(errors.storeName)}`} placeholder="Nome da loja/ateliê" value={form.storeName} onChange={(event) => update("storeName", event.target.value)} />
             {errorText("storeName")}
           </label>
           <label>
@@ -189,7 +190,7 @@ export function ArtisanRegister() {
             {errorText("phone")}
           </label>
           <label>
-            <input required className={`input-field w-full ${fieldClass(errors.craftCategories)}`} placeholder="Categorias: ceramica, textil..." value={form.craftCategories} onChange={(event) => update("craftCategories", event.target.value)} />
+            <input required className={`input-field w-full ${fieldClass(errors.craftCategories)}`} placeholder="Categorias: cerâmica, têxtil..." value={form.craftCategories} onChange={(event) => update("craftCategories", event.target.value)} />
             {errorText("craftCategories")}
           </label>
           <label>
@@ -201,13 +202,13 @@ export function ArtisanRegister() {
             {errorText("confirmPassword")}
           </label>
           <label className="md:col-span-2">
-            <textarea required className={`text-field min-h-28 w-full ${fieldClass(errors.storeDescription)}`} placeholder="Descricao da loja" value={form.storeDescription} onChange={(event) => update("storeDescription", event.target.value)} />
+            <textarea required className={`text-field min-h-28 w-full ${fieldClass(errors.storeDescription)}`} placeholder="Descrição da loja" value={form.storeDescription} onChange={(event) => update("storeDescription", event.target.value)} />
             {errorText("storeDescription")}
           </label>
         </section>
 
         <section className="grid gap-4 md:grid-cols-6">
-          <h2 className="text-xl font-black text-kriar-primary md:col-span-6">Endereco de origem</h2>
+          <h2 className="text-xl font-black text-kriar-primary md:col-span-6">Endereço de origem</h2>
           <label className="md:col-span-2">
             <input required className={`input-field w-full ${fieldClass(errors["address.zipCode"])}`} placeholder={cepLoading ? "Buscando CEP..." : "CEP"} value={form.zipCode} onBlur={lookupCep} onChange={(event) => update("zipCode", maskCep(event.target.value))} />
             {errorText("address.zipCode")}
@@ -217,7 +218,7 @@ export function ArtisanRegister() {
             {errorText("address.street")}
           </label>
           <label>
-            <input required className={`input-field w-full ${fieldClass(errors["address.number"])}`} placeholder="Numero" value={form.number} onChange={(event) => update("number", event.target.value)} />
+            <input required className={`input-field w-full ${fieldClass(errors["address.number"])}`} placeholder="Número" value={form.number} onChange={(event) => update("number", event.target.value)} />
             {errorText("address.number")}
           </label>
           <input className="input-field md:col-span-2" placeholder="Complemento" value={form.complement} onChange={(event) => update("complement", event.target.value)} />
@@ -241,16 +242,16 @@ export function ArtisanRegister() {
             Aceito retirada local
           </label>
           <label>
-            <textarea className={`text-field min-h-24 w-full ${fieldClass(errors.pickupInstructions)}`} placeholder="Instrucoes de retirada" value={form.pickupInstructions} onChange={(event) => update("pickupInstructions", event.target.value)} />
+            <textarea className={`text-field min-h-24 w-full ${fieldClass(errors.pickupInstructions)}`} placeholder="Instruções de retirada" value={form.pickupInstructions} onChange={(event) => update("pickupInstructions", event.target.value)} />
             {errorText("pickupInstructions")}
           </label>
         </section>
 
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <button className="btn-primary" disabled={loading}>
-            <UserPlus className="h-5 w-5" /> {loading ? "Enviando..." : "Cadastrar como artesao"}
+            <UserPlus className="h-5 w-5" /> {loading ? "Enviando..." : "Cadastrar como vendedor"}
           </button>
-          <Link to="/artesao/login" className="btn-secondary">Entrar como artesao</Link>
+          <Link to="/artesao/login" className="btn-secondary">Entrar como vendedor</Link>
         </div>
       </form>
     </main>

@@ -17,7 +17,7 @@ export function ArtisanOrders() {
 
   return (
     <main className="app-shell section-y">
-      <p className="eyebrow mb-2">Artesao</p>
+      <p className="eyebrow mb-2">Vendedor</p>
       <h1 className="mb-8 text-3xl font-black text-kriar-contrast">Pedidos recebidos</h1>
       <div className="panel overflow-x-auto p-4">
         <table className="table-modern">

@@ -3,9 +3,9 @@ import { Link, useParams } from "react-router-dom";
 import { EmptyState } from "../components/EmptyState";
 
 const copy = {
-  sucesso: ["Assinatura recebida", "Assim que o Mercado Pago confirmar o pagamento, sua assinatura ficara ativa.", CheckCircle2],
-  falha: ["Pagamento nao concluido", "Nao foi possivel concluir a assinatura. Escolha um plano e tente novamente.", AlertCircle],
-  pendente: ["Pagamento pendente", "Aguardando confirmacao do Mercado Pago.", Clock]
+  sucesso: ["Assinatura recebida", "Assim que o Mercado Pago confirmar o pagamento, sua assinatura ficará ativa.", CheckCircle2],
+  falha: ["Pagamento não concluído", "Não foi possível concluir a assinatura. Escolha um plano e tente novamente.", AlertCircle],
+  pendente: ["Pagamento pendente", "Aguardando confirmação do Mercado Pago.", Clock]
 } as const;
 
 export function ArtisanSubscriptionStatus() {

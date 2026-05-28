@@ -10,6 +10,8 @@ export function Footer() {
             <img
               src="/brand/kriar-logo.png"
               alt="KRIAR - Onde a arte encontra o futuro"
+              loading="lazy"
+              decoding="async"
               className="h-16 w-auto max-w-[240px] object-contain"
             />
           </Link>

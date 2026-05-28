@@ -1,4 +1,5 @@
-import { Heart, Menu, Search, ShoppingBag, UserRound, X } from "lucide-react";
+import { Heart, LogOut, Menu, Search, ShoppingBag, UserRound, X } from "lucide-react";
+import type React from "react";
 import { useMemo, useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { productImageUrl } from "../api/products";
@@ -6,15 +7,18 @@ import { products } from "../data/mock";
 import { useAuth } from "../store/auth";
 import { useCart } from "../store/cart";
 import { useWishlist } from "../store/wishlist";
+import { handleImageError } from "../utils/media";
 import { Brand } from "./Brand";
 
 export function Header() {
   const [query, setQuery] = useState("");
   const [menu, setMenu] = useState(false);
+  const [accountOpen, setAccountOpen] = useState(false);
   const openCart = useCart((state) => state.open);
   const cartCount = useCart((state) => state.items.reduce((sum, item) => sum + item.quantity, 0));
   const wishlistCount = useWishlist((state) => state.ids.length);
   const user = useAuth((state) => state.user);
+  const logout = useAuth((state) => state.logout);
   const navigate = useNavigate();
 
   const suggestions = useMemo(() => {
@@ -22,37 +26,46 @@ export function Header() {
     return products.filter((item) => item.name.toLowerCase().includes(query.toLowerCase())).slice(0, 5);
   }, [query]);
 
+  const accountPath = user?.role === "ADMIN" ? "/admin/dashboard" : user?.role === "ARTISAN" ? "/vendedor" : user?.role === "CUSTOMER" ? "/cliente" : "/login";
+  const accountLabel = user ? "Minha conta" : "Entrar";
+
   function submitSearch(event: React.FormEvent) {
     event.preventDefault();
-    if (query.trim()) {
-      navigate(`/?q=${encodeURIComponent(query.trim())}`);
-    } else {
-      navigate("/");
-    }
+    navigate(query.trim() ? `/?q=${encodeURIComponent(query.trim())}` : "/");
     setQuery("");
     setMenu(false);
   }
 
+  function goToProducts() {
+    setMenu(false);
+    if (window.location.pathname !== "/") {
+      navigate("/#produtos");
+      return;
+    }
+    window.history.replaceState(null, "", "/#produtos");
+    document.getElementById("produtos")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
   const navClass = ({ isActive }: { isActive: boolean }) =>
-    `flex min-h-11 items-center rounded-full px-4 py-2 text-sm font-bold transition duration-[250ms] ${
+    `inline-flex min-h-10 items-center rounded-full px-4 text-sm font-black transition duration-[250ms] ${
       isActive ? "bg-kriar-primary text-kriar-light" : "text-kriar-muted hover:bg-kriar-primary/10 hover:text-kriar-primary"
     }`;
 
   return (
-    <header className="sticky top-0 z-40 border-b border-kriar-line/80 bg-kriar-paper/90 backdrop-blur-xl">
-      <div className="app-shell flex items-center gap-4 py-3">
+    <header className="sticky top-0 z-40 border-b border-kriar-line/90 bg-kriar-paper/95 backdrop-blur-xl">
+      <div className="app-shell flex items-center gap-3 py-3 lg:gap-5">
         <Brand />
 
-        <form onSubmit={submitSearch} className="relative hidden flex-1 md:block">
+        <form onSubmit={submitSearch} className="relative hidden min-w-0 flex-1 md:block">
           <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-kriar-muted" />
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             className="input-field w-full pl-11"
-            placeholder="Buscar cerâmica, joias, decoração..."
+            placeholder="Buscar produtos artesanais"
           />
           {suggestions.length > 0 && (
-            <div className="absolute mt-2 w-full overflow-hidden rounded-[20px] border border-kriar-line bg-kriar-surface shadow-lift">
+            <div className="absolute left-0 right-0 mt-2 overflow-hidden rounded-[20px] border border-kriar-line bg-kriar-surface shadow-lift">
               {suggestions.map((item) => (
                 <Link
                   key={item.id}
@@ -60,7 +73,14 @@ export function Header() {
                   className="flex items-center gap-3 px-3 py-2.5 text-sm transition hover:bg-kriar-primary/5"
                   onClick={() => setQuery("")}
                 >
-                  <img src={productImageUrl(item)} alt="" className="h-11 w-11 rounded-xl object-cover" />
+                  <img
+                    src={productImageUrl(item)}
+                    alt=""
+                    loading="lazy"
+                    decoding="async"
+                    onError={handleImageError}
+                    className="h-11 w-11 rounded-xl object-cover"
+                  />
                   <span className="font-semibold text-kriar-contrast">{item.name}</span>
                 </Link>
               ))}
@@ -68,70 +88,111 @@ export function Header() {
           )}
         </form>
 
-        <nav className="hidden items-center gap-1 md:flex">
-          <NavLink className={navClass} to="/artesaos">
-            Artesãos
-          </NavLink>
-          <NavLink className={navClass} to={user?.role === "CUSTOMER" ? "/cliente" : "/cliente/login"}>
-            {user?.role === "CUSTOMER" ? "Area do cliente" : "Entrar como cliente"}
-          </NavLink>
-          {user?.role === "CUSTOMER" && <NavLink className={navClass} to="/meus-pedidos">Pedidos</NavLink>}
-          {!user && (
-            <NavLink className={navClass} to="/cliente/cadastro">
-              Criar conta
-            </NavLink>
-          )}
-          <NavLink className={navClass} to="/artesao/cadastro">
-            Sou artesao
-          </NavLink>
-          <NavLink className={navClass} to={user?.role === "ARTISAN" ? "/vendedor" : "/artesao/login"}>
-            {user?.role === "ARTISAN" ? "Dashboard do artesao" : "Entrar como artesao"}
-          </NavLink>
-          {user?.role === "ARTISAN" && <NavLink className={navClass} to="/artesao/assinatura">Assinatura</NavLink>}
-          <NavLink className={navClass} to={user?.role === "ADMIN" ? "/admin/dashboard" : "/admin/login"}>
-            Admin
-          </NavLink>
+        <nav className="hidden items-center gap-1 lg:flex">
+          <button type="button" className={navClass({ isActive: false })} onClick={goToProducts}>Produtos</button>
+          <NavLink className={navClass} to="/artesaos">Artesãos</NavLink>
+          <NavLink className={navClass} to={user?.role === "ARTISAN" ? "/vendedor" : "/artesao/cadastro"}>Vender</NavLink>
         </nav>
 
-        <button className="btn-icon relative" aria-label="Favoritos">
-          <Heart className="h-5 w-5" />
-          {wishlistCount > 0 && <span className="absolute -right-1 -top-1 grid min-h-5 min-w-5 place-items-center rounded-full bg-kriar-secondary px-1 text-[11px] font-black text-white">{wishlistCount}</span>}
-        </button>
-        <button onClick={openCart} className="btn-icon relative" aria-label="Carrinho">
-          <ShoppingBag className="h-5 w-5" />
-          {cartCount > 0 && <span className="absolute -right-1 -top-1 grid min-h-5 min-w-5 place-items-center rounded-full bg-kriar-secondary px-1 text-[11px] font-black text-white">{cartCount}</span>}
-        </button>
-        <Link to={user?.role === "CUSTOMER" ? "/cliente" : "/cliente/login"} className="btn-icon hidden md:grid" aria-label="Minha conta">
-          <UserRound className="h-5 w-5" />
-        </Link>
-        <button onClick={() => setMenu((open) => !open)} className="btn-icon md:hidden" aria-label="Menu">
-          {menu ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-        </button>
+        <div className="ml-auto flex items-center gap-1 md:ml-0">
+          <button className="btn-icon relative" aria-label="Favoritos">
+            <Heart className="h-5 w-5" />
+            {wishlistCount > 0 && <Counter value={wishlistCount} />}
+          </button>
+          <button onClick={openCart} className="btn-icon relative" aria-label="Carrinho">
+            <ShoppingBag className="h-5 w-5" />
+            {cartCount > 0 && <Counter value={cartCount} />}
+          </button>
+          <div className="relative">
+            <button onClick={() => setAccountOpen((open) => !open)} className="btn-icon" aria-label={accountLabel} aria-expanded={accountOpen}>
+              <UserRound className="h-5 w-5" />
+            </button>
+            {accountOpen && (
+              <div className="absolute right-0 mt-2 w-64 overflow-hidden rounded-[20px] border border-kriar-line bg-kriar-surface p-2 shadow-lift">
+                <div className="border-b border-kriar-line px-3 py-3">
+                  <p className="text-xs font-black uppercase tracking-[0.12em] text-kriar-secondary">{user ? "Conta conectada" : "Conta KRIAR"}</p>
+                  <strong className="mt-1 block truncate text-sm text-kriar-contrast">{user?.name ?? "Entre para continuar"}</strong>
+                </div>
+                <div className="grid py-2 text-sm font-bold">
+                  <AccountLink to={accountPath} onClick={() => setAccountOpen(false)}>{user ? "Minha conta" : "Entrar"}</AccountLink>
+                  {!user && <AccountLink to="/cliente/cadastro" onClick={() => setAccountOpen(false)}>Cadastrar</AccountLink>}
+                  {user?.role === "CUSTOMER" && <AccountLink to="/meus-pedidos" onClick={() => setAccountOpen(false)}>Meus pedidos</AccountLink>}
+                  {user?.role === "ARTISAN" && <AccountLink to="/vendedor" onClick={() => setAccountOpen(false)}>Meus produtos</AccountLink>}
+                  {user?.role === "ADMIN" && <AccountLink to="/admin/dashboard" onClick={() => setAccountOpen(false)}>Painel administrativo</AccountLink>}
+                  {user && (
+                    <button
+                      className="flex min-h-10 items-center gap-2 rounded-xl px-3 text-left text-kriar-secondary transition hover:bg-kriar-secondary/10"
+                      onClick={() => {
+                        logout();
+                        setAccountOpen(false);
+                        navigate("/");
+                      }}
+                    >
+                      <LogOut className="h-4 w-4" /> Sair
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+          <button onClick={() => setMenu((open) => !open)} className="btn-icon lg:hidden" aria-label="Menu">
+            {menu ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
+        </div>
       </div>
 
       {menu && (
-        <div className="border-t border-kriar-line bg-kriar-surface/95 px-4 py-4 shadow-soft md:hidden">
-          <form onSubmit={submitSearch} className="mb-3 flex gap-2">
-            <input
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              className="input-field flex-1"
-              placeholder="Buscar produtos"
-            />
-            <button className="btn-primary px-4" aria-label="Buscar">
-              <Search className="h-4 w-4" />
-            </button>
-          </form>
-          <div className="grid gap-1 text-sm font-bold">
-            <Link className="flex min-h-11 items-center rounded-full px-4 py-2 text-kriar-muted transition duration-[250ms] hover:bg-kriar-primary/10 hover:text-kriar-primary" onClick={() => setMenu(false)} to="/artesaos">Artesãos</Link>
-            <Link className="flex min-h-11 items-center rounded-full px-4 py-2 text-kriar-muted transition duration-[250ms] hover:bg-kriar-primary/10 hover:text-kriar-primary" onClick={() => setMenu(false)} to={user?.role === "CUSTOMER" ? "/cliente" : "/cliente/login"}>{user?.role === "CUSTOMER" ? "Area do cliente" : "Entrar como cliente"}</Link>
-            {!user && <Link className="flex min-h-11 items-center rounded-full px-4 py-2 text-kriar-muted transition duration-[250ms] hover:bg-kriar-primary/10 hover:text-kriar-primary" onClick={() => setMenu(false)} to="/cliente/cadastro">Cadastrar como cliente</Link>}
-            <Link className="flex min-h-11 items-center rounded-full px-4 py-2 text-kriar-muted transition duration-[250ms] hover:bg-kriar-primary/10 hover:text-kriar-primary" onClick={() => setMenu(false)} to="/artesao/cadastro">Cadastrar como artesao</Link>
-            <Link className="flex min-h-11 items-center rounded-full px-4 py-2 text-kriar-muted transition duration-[250ms] hover:bg-kriar-primary/10 hover:text-kriar-primary" onClick={() => setMenu(false)} to={user?.role === "ARTISAN" ? "/vendedor" : "/artesao/login"}>{user?.role === "ARTISAN" ? "Dashboard do artesao" : "Entrar como artesao"}</Link>
-            <Link className="flex min-h-11 items-center rounded-full px-4 py-2 text-kriar-muted transition duration-[250ms] hover:bg-kriar-primary/10 hover:text-kriar-primary" onClick={() => setMenu(false)} to={user?.role === "CUSTOMER" ? "/cliente" : "/cliente/login"}>{user ? user.name : "Minha conta"}</Link>
+        <div className="border-t border-kriar-line bg-kriar-surface/95 shadow-soft">
+          <div className="app-shell grid gap-4 py-4 lg:grid-cols-[1fr_auto]">
+            <form onSubmit={submitSearch} className="flex gap-2 md:hidden">
+              <input
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                className="input-field min-w-0 flex-1"
+                placeholder="Buscar produtos"
+              />
+              <button className="btn-primary px-4" aria-label="Buscar">
+                <Search className="h-4 w-4" />
+              </button>
+            </form>
+            <nav className="grid gap-1 text-sm font-bold sm:grid-cols-2 lg:flex lg:items-center">
+              <MenuLink to="/artesaos" onClick={() => setMenu(false)}>Artesãos</MenuLink>
+              <button type="button" className="flex min-h-11 items-center rounded-full px-4 py-2 text-left text-kriar-muted transition duration-[250ms] hover:bg-kriar-primary/10 hover:text-kriar-primary" onClick={goToProducts}>Produtos</button>
+              <MenuLink to={accountPath} onClick={() => setMenu(false)}>{accountLabel}</MenuLink>
+              <button className="flex min-h-11 items-center rounded-full px-4 py-2 text-left text-kriar-muted transition duration-[250ms] hover:bg-kriar-primary/10 hover:text-kriar-primary" onClick={() => { openCart(); setMenu(false); }}>Carrinho</button>
+              <span className="flex min-h-11 items-center rounded-full px-4 py-2 text-kriar-muted">Favoritos</span>
+              {user?.role === "CUSTOMER" && <MenuLink to="/meus-pedidos" onClick={() => setMenu(false)}>Meus pedidos</MenuLink>}
+              {!user && <MenuLink to="/cliente/cadastro" onClick={() => setMenu(false)}>Criar conta</MenuLink>}
+              <MenuLink to={user?.role === "ARTISAN" ? "/vendedor" : "/artesao/cadastro"} onClick={() => setMenu(false)}>
+                {user?.role === "ARTISAN" ? "Meus produtos" : "Vender na KRIAR"}
+              </MenuLink>
+              {user?.role === "ARTISAN" && <MenuLink to="/artesao/assinatura" onClick={() => setMenu(false)}>Assinatura</MenuLink>}
+              {user?.role === "ADMIN" && <MenuLink to="/admin/dashboard" onClick={() => setMenu(false)}>Painel administrativo</MenuLink>}
+              {user && <button className="flex min-h-11 items-center rounded-full px-4 py-2 text-left text-kriar-secondary transition duration-[250ms] hover:bg-kriar-secondary/10" onClick={() => { logout(); setMenu(false); navigate("/"); }}>Sair</button>}
+            </nav>
           </div>
         </div>
       )}
     </header>
+  );
+}
+
+function Counter({ value }: { value: number }) {
+  return <span className="absolute -right-1 -top-1 grid min-h-5 min-w-5 place-items-center rounded-full bg-kriar-secondary px-1 text-[11px] font-black text-white">{value}</span>;
+}
+
+function MenuLink({ to, onClick, children }: { to: string; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <Link className="flex min-h-11 items-center rounded-full px-4 py-2 text-kriar-muted transition duration-[250ms] hover:bg-kriar-primary/10 hover:text-kriar-primary" onClick={onClick} to={to}>
+      {children}
+    </Link>
+  );
+}
+
+function AccountLink({ to, onClick, children }: { to: string; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <Link className="rounded-xl px-3 py-2 text-kriar-muted transition hover:bg-kriar-primary/10 hover:text-kriar-primary" onClick={onClick} to={to}>
+      {children}
+    </Link>
   );
 }

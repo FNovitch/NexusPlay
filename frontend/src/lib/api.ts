@@ -7,6 +7,17 @@ export const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL ?? "http://localhost:4000/api/v1"
 });
 
+const cache = new Map<string, unknown>();
+
+function cached<T>(key: string, loader: () => Promise<T>) {
+  const current = cache.get(key);
+  if (current) return Promise.resolve(current as T);
+  return loader().then((data) => {
+    cache.set(key, data);
+    return data;
+  });
+}
+
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("kriar-token");
   if (token) {
@@ -16,13 +27,16 @@ api.interceptors.request.use((config) => {
 });
 
 export async function getProducts(params?: Record<string, string>) {
-  try {
-    const { data } = await api.get<{ products: Product[] }>("/products", { params });
-    return data.products.map(normalizeProduct);
-  } catch {
-    if (!import.meta.env.DEV) return [];
-    return products;
-  }
+  const key = `products:${JSON.stringify(params ?? {})}`;
+  return cached(key, async () => {
+    try {
+      const { data } = await api.get<{ products: Product[] }>("/products", { params });
+      return data.products.map(normalizeProduct);
+    } catch {
+      if (!import.meta.env.DEV) return [];
+      return products;
+    }
+  });
 }
 
 export async function getProduct(slug: string) {
@@ -34,7 +48,7 @@ export async function getProduct(slug: string) {
     };
   } catch {
     if (!import.meta.env.DEV) {
-      throw new Error("Produto nao encontrado.");
+      throw new Error("Produto não encontrado.");
     }
 
     const product = products.find((item) => item.slug === slug) ?? products[0];
@@ -46,13 +60,15 @@ export async function getProduct(slug: string) {
 }
 
 export async function getSellers() {
-  try {
-    const { data } = await api.get<{ sellers: Seller[] }>("/sellers");
-    return data.sellers;
-  } catch {
-    if (!import.meta.env.DEV) return [];
-    return sellers;
-  }
+  return cached("sellers", async () => {
+    try {
+      const { data } = await api.get<{ sellers: Seller[] }>("/sellers");
+      return data.sellers;
+    } catch {
+      if (!import.meta.env.DEV) return [];
+      return sellers;
+    }
+  });
 }
 
 export async function getSeller(slug: string) {
@@ -61,7 +77,7 @@ export async function getSeller(slug: string) {
     return { ...data.seller, products: data.seller.products.map(normalizeProduct) };
   } catch {
     if (!import.meta.env.DEV) {
-      throw new Error("Loja nao encontrada.");
+      throw new Error("Loja não encontrada.");
     }
 
     const seller = sellers.find((item) => item.slug === slug) ?? sellers[0];
@@ -70,11 +86,13 @@ export async function getSeller(slug: string) {
 }
 
 export async function getCategories() {
-  try {
-    const { data } = await api.get<{ categories: typeof categories }>("/categories");
-    return data.categories;
-  } catch {
-    if (!import.meta.env.DEV) return [];
-    return categories;
-  }
+  return cached("categories", async () => {
+    try {
+      const { data } = await api.get<{ categories: typeof categories }>("/categories");
+      return data.categories;
+    } catch {
+      if (!import.meta.env.DEV) return [];
+      return categories;
+    }
+  });
 }

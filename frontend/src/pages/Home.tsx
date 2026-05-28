@@ -8,20 +8,53 @@ import { SellerCard } from "../components/SellerCard";
 import { productCategorySlug, productRating, productSalesCount } from "../api/products";
 import { getCategories, getProducts, getSellers } from "../lib/api";
 import type { Category, Product, Seller } from "../types";
+import { handleImageError } from "../utils/media";
 
 export function Home() {
   const [searchParams] = useSearchParams();
   const [products, setProducts] = useState<Product[]>([]);
   const [sellers, setSellers] = useState<Seller[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [productsLoading, setProductsLoading] = useState(true);
+  const [sellersLoading, setSellersLoading] = useState(true);
   const [category, setCategory] = useState("todos");
   const [sort, setSort] = useState("featured");
   const query = searchParams.get("q") ?? "";
 
   useEffect(() => {
-    getProducts().then(setProducts);
-    getSellers().then(setSellers);
-    getCategories().then(setCategories);
+    let active = true;
+    setProductsLoading(true);
+    setSellersLoading(true);
+
+    getProducts()
+      .then((items) => {
+        if (active) setProducts(items);
+      })
+      .finally(() => {
+        if (active) setProductsLoading(false);
+      });
+
+    getSellers()
+      .then((items) => {
+        if (active) setSellers(items);
+      })
+      .finally(() => {
+        if (active) setSellersLoading(false);
+      });
+
+    getCategories().then((items) => {
+      if (active) setCategories(items);
+    });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (window.location.hash === "#produtos") {
+      window.setTimeout(() => document.getElementById("produtos")?.scrollIntoView({ behavior: "smooth", block: "start" }), 0);
+    }
   }, []);
 
   const visibleProducts = useMemo(() => {
@@ -72,6 +105,7 @@ export function Home() {
           <img
             src="https://images.unsplash.com/photo-1610701596007-11502861dcfa?auto=format&fit=crop&w=1300&q=80"
             alt="Artesã trabalhando em cerâmica"
+            onError={handleImageError}
             className="absolute inset-0 h-full w-full object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-kriar-contrast/80 via-kriar-contrast/15 to-transparent" />
@@ -126,7 +160,9 @@ export function Home() {
             </div>
           }
         />
-        {visibleProducts.length === 0 ? (
+        {productsLoading ? (
+          <ProductSkeletonGrid />
+        ) : visibleProducts.length === 0 ? (
           <EmptyState title="Nenhum produto encontrado" description="Ajuste a busca ou remova os filtros para ver mais peças." />
         ) : (
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -149,13 +185,55 @@ export function Home() {
               </Link>
             }
           />
-          <div className="grid gap-5 md:grid-cols-3">
-            {sellers.slice(0, 3).map((seller) => (
-              <SellerCard key={seller.id} seller={seller} />
-            ))}
-          </div>
+          {sellersLoading ? (
+            <SellerSkeletonGrid />
+          ) : (
+            <div className="grid gap-5 md:grid-cols-3">
+              {sellers.slice(0, 3).map((seller) => (
+                <SellerCard key={seller.id} seller={seller} />
+              ))}
+            </div>
+          )}
         </div>
       </section>
     </main>
+  );
+}
+
+function ProductSkeletonGrid() {
+  return (
+    <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      {Array.from({ length: 8 }).map((_, index) => (
+        <div key={index} className="panel overflow-hidden">
+          <div className="aspect-[4/3] animate-pulse bg-kriar-paper" />
+          <div className="space-y-4 p-4">
+            <div className="h-5 w-4/5 animate-pulse rounded-full bg-kriar-paper" />
+            <div className="h-4 w-1/2 animate-pulse rounded-full bg-kriar-paper" />
+            <div className="flex justify-between border-t border-kriar-line/70 pt-4">
+              <div className="h-6 w-24 animate-pulse rounded-full bg-kriar-paper" />
+              <div className="h-11 w-24 animate-pulse rounded-full bg-kriar-paper" />
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function SellerSkeletonGrid() {
+  return (
+    <div className="grid gap-5 md:grid-cols-3">
+      {Array.from({ length: 3 }).map((_, index) => (
+        <div key={index} className="panel overflow-hidden">
+          <div className="h-36 animate-pulse bg-white/10" />
+          <div className="space-y-4 p-4">
+            <div className="-mt-12 h-16 w-16 animate-pulse rounded-2xl bg-white/20" />
+            <div className="h-5 w-2/3 animate-pulse rounded-full bg-white/20" />
+            <div className="h-4 w-full animate-pulse rounded-full bg-white/15" />
+            <div className="h-4 w-3/4 animate-pulse rounded-full bg-white/15" />
+          </div>
+        </div>
+      ))}
+    </div>
   );
 }

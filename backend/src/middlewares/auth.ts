@@ -32,7 +32,7 @@ export async function authenticate(req: Request, _res: Response, next: NextFunct
   const token = header?.startsWith("Bearer ") ? header.slice(7) : undefined;
 
   if (!token) {
-    return next(new AppError("Autenticacao obrigatoria", 401));
+    return next(new AppError("Autenticação obrigatória.", 401));
   }
 
   try {
@@ -43,7 +43,7 @@ export async function authenticate(req: Request, _res: Response, next: NextFunct
     });
 
     if (!user || user.isDeleted) {
-      return next(new AppError("Usuario nao encontrado", 401));
+      return next(new AppError("Usuário não encontrado.", 401));
     }
 
     req.user = {
@@ -53,14 +53,14 @@ export async function authenticate(req: Request, _res: Response, next: NextFunct
     };
     next();
   } catch {
-    next(new AppError("Token invalido ou expirado", 401));
+    next(new AppError("Token inválido ou expirado.", 401));
   }
 }
 
 export function requireRole(...roles: UserRole[]) {
   return (req: Request, _res: Response, next: NextFunction) => {
     if (!req.user || !roles.includes(req.user.role)) {
-      return next(new AppError("Permissao insuficiente", 403));
+      return next(new AppError("Permissão insuficiente.", 403));
     }
 
     next();
@@ -69,16 +69,16 @@ export function requireRole(...roles: UserRole[]) {
 
 export async function requireArtisan(req: Request, _res: Response, next: NextFunction) {
   if (!req.user) {
-    return next(new AppError("Autenticacao obrigatoria", 401));
+    return next(new AppError("Autenticação obrigatória.", 401));
   }
 
   if (req.user.role !== UserRole.ARTISAN || !req.user.sellerId) {
-    return next(new AppError("Acesso exclusivo para artesoes", 403));
+    return next(new AppError("Acesso exclusivo para vendedores.", 403));
   }
 
   const artisan = await prisma.artisan.findUnique({ where: { userId: req.user.id }, include: { store: true } });
   if (!artisan || artisan.isDeleted || !artisan.active || artisan.blocked || artisan.status !== "APPROVED" || artisan.store?.status !== "APPROVED") {
-    return next(new AppError("Artesao sem permissao para esta acao", 403));
+    return next(new AppError("Vendedor sem permissão para esta ação.", 403));
   }
 
   next();
@@ -86,7 +86,7 @@ export async function requireArtisan(req: Request, _res: Response, next: NextFun
 
 export async function requireActiveSubscription(req: Request, _res: Response, next: NextFunction) {
   if (!req.user?.sellerId) {
-    return next(new AppError("Acesso exclusivo para artesoes", 403));
+    return next(new AppError("Acesso exclusivo para vendedores.", 403));
   }
 
   const now = new Date();
@@ -102,7 +102,7 @@ export async function requireActiveSubscription(req: Request, _res: Response, ne
   });
 
   if (!artisan || artisan.isDeleted || !artisan.active || artisan.blocked) {
-    return next(new AppError("Artesao sem permissao para esta acao", 403));
+    return next(new AppError("Vendedor sem permissão para esta ação.", 403));
   }
 
   const trialActive = Boolean(artisan.trialEnd && artisan.trialEnd >= now);
@@ -114,7 +114,7 @@ export async function requireActiveSubscription(req: Request, _res: Response, ne
 
   if (!trialActive && !subscriptionActive) {
     return next(new AppError("Assinatura necessaria para continuar vendendo.", 403, {
-      subscription: "Seu periodo gratis terminou. Escolha um plano para continuar vendendo no Kriar."
+      subscription: "Seu período grátis terminou. Escolha um plano para continuar vendendo na KRIAR."
     }));
   }
 
@@ -123,7 +123,7 @@ export async function requireActiveSubscription(req: Request, _res: Response, ne
 
 export async function requireCustomer(req: Request, _res: Response, next: NextFunction) {
   if (!req.user) {
-    return next(new AppError("Autenticacao obrigatoria", 401));
+    return next(new AppError("Autenticação obrigatória.", 401));
   }
 
   if (req.user.role !== UserRole.CUSTOMER) {
@@ -139,9 +139,9 @@ export async function requireCustomer(req: Request, _res: Response, next: NextFu
 }
 
 export async function requireAdmin(req: Request, _res: Response, next: NextFunction) {
-  if (!req.user) return next(new AppError("Acesso nao autorizado.", 401));
-  if (req.user.role !== UserRole.ADMIN) return next(new AppError("Acesso nao autorizado.", 403));
+  if (!req.user) return next(new AppError("Acesso não autorizado.", 401));
+  if (req.user.role !== UserRole.ADMIN) return next(new AppError("Acesso não autorizado.", 403));
   const admin = await prisma.admin.findUnique({ where: { userId: req.user.id } });
-  if (!admin || admin.isDeleted || !admin.active) return next(new AppError("Acesso nao autorizado.", 403));
+  if (!admin || admin.isDeleted || !admin.active) return next(new AppError("Acesso não autorizado.", 403));
   next();
 }

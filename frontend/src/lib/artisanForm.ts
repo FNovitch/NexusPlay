@@ -86,12 +86,12 @@ export function parseApiError(error: unknown) {
   ) {
     const data = error.response.data as { message?: string; errors?: FieldErrors };
     return {
-      message: data.message ?? "Nao foi possivel concluir a operacao.",
+      message: data.message ?? "Não foi possível concluir a operação.",
       errors: data.errors ?? {}
     };
   }
 
-  return { message: "Nao foi possivel concluir a operacao.", errors: {} };
+  return { message: "Não foi possível concluir a operação.", errors: {} };
 }
 
 export async function fetchAddressByCep(cep: string) {
@@ -110,7 +110,7 @@ export async function fetchAddressByCep(cep: string) {
   };
 
   if (!response.ok || data.erro) {
-    throw new Error("CEP invalido ou inexistente.");
+    throw new Error("CEP inválido ou inexistente.");
   }
 
   return {

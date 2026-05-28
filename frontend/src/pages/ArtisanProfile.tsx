@@ -1,4 +1,5 @@
 import { Save } from "lucide-react";
+import type React from "react";
 import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import {
@@ -65,7 +66,7 @@ export function ArtisanProfile() {
           pickupInstructions: artisan.pickupInstructions ?? ""
         });
       })
-      .catch(() => setMessage("Nao foi possivel carregar o perfil do artesao."))
+      .catch(() => setMessage("Não foi possível carregar o perfil do vendedor."))
       .finally(() => setLoading(false));
   }, []);
 
@@ -88,17 +89,17 @@ export function ArtisanProfile() {
     const categories = form.craftCategories.split(",").map((category) => category.trim()).filter(Boolean);
     if (form.name.trim().length < 3 || !/[A-Za-zÀ-ÿ]/.test(form.name)) next.name = "Informe seu nome completo.";
     if (form.storeName.trim().length < 3) next.storeName = "Informe o nome da loja.";
-    if (!isValidDocument(form.document)) next.document = "Informe um CPF ou CNPJ valido.";
-    if (!isValidPhone(form.phone)) next.phone = "Informe um telefone com DDD valido.";
+    if (!isValidDocument(form.document)) next.document = "Informe um CPF ou CNPJ válido.";
+    if (!isValidPhone(form.phone)) next.phone = "Informe um telefone com DDD válido.";
     if (form.storeDescription.trim().length < 10) next.storeDescription = "Descreva sua loja.";
     if (categories.length === 0) next.craftCategories = "Informe pelo menos uma categoria.";
-    if (onlyDigits(form.zipCode).length !== 8) next["address.zipCode"] = "Informe um CEP com 8 digitos.";
+    if (onlyDigits(form.zipCode).length !== 8) next["address.zipCode"] = "Informe um CEP com 8 dígitos.";
     if (form.street.trim().length < 2) next["address.street"] = "Informe a rua.";
-    if (!form.number.trim()) next["address.number"] = "Informe o numero.";
+    if (!form.number.trim()) next["address.number"] = "Informe o número.";
     if (form.neighborhood.trim().length < 2) next["address.neighborhood"] = "Informe o bairro.";
     if (form.city.trim().length < 2) next["address.city"] = "Informe a cidade.";
-    if (!/^[A-Z]{2}$/.test(form.state)) next["address.state"] = "Informe uma UF valida.";
-    if (form.acceptsLocalPickup && !form.pickupInstructions.trim()) next.pickupInstructions = "Informe as instrucoes de retirada.";
+    if (!/^[A-Z]{2}$/.test(form.state)) next["address.state"] = "Informe uma UF válida.";
+    if (form.acceptsLocalPickup && !form.pickupInstructions.trim()) next.pickupInstructions = "Informe as instruções de retirada.";
     setErrors(next);
     return { ok: Object.keys(next).length === 0, categories };
   }
@@ -116,7 +117,7 @@ export function ArtisanProfile() {
         state: address.state || current.state
       }));
     } catch (error) {
-      setErrors((current) => ({ ...current, "address.zipCode": error instanceof Error ? error.message : "CEP invalido." }));
+      setErrors((current) => ({ ...current, "address.zipCode": error instanceof Error ? error.message : "CEP inválido." }));
     } finally {
       setCepLoading(false);
     }
@@ -171,8 +172,8 @@ export function ArtisanProfile() {
   return (
     <main className="app-shell section-y">
       <div className="mb-8">
-        <p className="eyebrow mb-2">Configuracoes</p>
-        <h1 className="text-3xl font-black tracking-tight text-kriar-contrast">Perfil do artesao</h1>
+        <p className="eyebrow mb-2">Configurações</p>
+        <h1 className="text-3xl font-black tracking-tight text-kriar-contrast">Perfil do vendedor</h1>
       </div>
 
       <form onSubmit={submit} className="panel grid gap-4 p-5 sm:p-7 md:grid-cols-2">
@@ -182,7 +183,7 @@ export function ArtisanProfile() {
           {errorText("name")}
         </label>
         <label>
-          <input required className="input-field w-full" placeholder="Nome da loja/atelie" value={form.storeName} onChange={(event) => update("storeName", event.target.value)} />
+          <input required className="input-field w-full" placeholder="Nome da loja/ateliê" value={form.storeName} onChange={(event) => update("storeName", event.target.value)} />
           {errorText("storeName")}
         </label>
         <label>
@@ -202,7 +203,7 @@ export function ArtisanProfile() {
           {errorText("address.zipCode")}
         </label>
         <label className="md:col-span-2">
-          <textarea required className="text-field min-h-28 w-full" placeholder="Descricao da loja" value={form.storeDescription} onChange={(event) => update("storeDescription", event.target.value)} />
+          <textarea required className="text-field min-h-28 w-full" placeholder="Descrição da loja" value={form.storeDescription} onChange={(event) => update("storeDescription", event.target.value)} />
           {errorText("storeDescription")}
         </label>
         <label>
@@ -210,7 +211,7 @@ export function ArtisanProfile() {
           {errorText("address.street")}
         </label>
         <label>
-          <input required className="input-field w-full" placeholder="Numero" value={form.number} onChange={(event) => update("number", event.target.value)} />
+          <input required className="input-field w-full" placeholder="Número" value={form.number} onChange={(event) => update("number", event.target.value)} />
           {errorText("address.number")}
         </label>
         <input className="input-field" placeholder="Complemento" value={form.complement} onChange={(event) => update("complement", event.target.value)} />
@@ -231,7 +232,7 @@ export function ArtisanProfile() {
           Aceito retirada local
         </label>
         <label className="md:col-span-2">
-          <textarea className="text-field min-h-24 w-full" placeholder="Instrucoes de retirada" value={form.pickupInstructions} onChange={(event) => update("pickupInstructions", event.target.value)} />
+          <textarea className="text-field min-h-24 w-full" placeholder="Instruções de retirada" value={form.pickupInstructions} onChange={(event) => update("pickupInstructions", event.target.value)} />
           {errorText("pickupInstructions")}
         </label>
 
