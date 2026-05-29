@@ -39,7 +39,15 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 if (env.NODE_ENV !== "production") {
-  app.use("/uploads", express.static(uploadRoot));
+  app.use(
+    "/uploads",
+    express.static(uploadRoot, {
+      setHeaders(res) {
+        res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
+        res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+      }
+    })
+  );
 }
 
 const limiter = rateLimit({
