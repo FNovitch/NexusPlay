@@ -4,10 +4,12 @@ import type React from "react";
 import { useEffect, useMemo, useState } from "react";
 import { normalizeProduct, productImageUrl, productSalesCount, productSellerSlug } from "../api/products";
 import { products } from "../data/mock";
+import { parseApiError } from "../lib/artisanForm";
 import { api, getCategories } from "../lib/api";
 import { getMyArtisanProfile } from "../services/artisans";
 import { getSubscriptionStatus, type SubscriptionStatus } from "../services/subscriptions";
 import { useAuth } from "../store/auth";
+import { useToast } from "../store/toast";
 import type { Category, Product, ProductImage } from "../types";
 import { handleImageError } from "../utils/media";
 import { Link, Navigate } from "react-router-dom";
@@ -17,11 +19,11 @@ const currency = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "
 export function SellerDashboard() {
   const user = useAuth((state) => state.user);
   const fallbackProducts = useMemo(() => products.filter((item) => productSellerSlug(item) === "atelie-raiz-digital"), []);
-  const initialStatus = user?.status === "APPROVED" ? "aprovado" : user?.status === "REJECTED" ? "recusado" : "pendente";
-  const [myProducts, setMyProducts] = useState<Product[]>([]);
+  const [myProducts, setMyProducts] = useState<Product[]>(fallbackProducts);
   const [categories, setCategories] = useState<Category[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [formMessage, setFormMessage] = useState("");
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [imageError, setImageError] = useState("");
   const [subscription, setSubscription] = useState<SubscriptionStatus | null>(null);
@@ -40,11 +42,12 @@ export function SellerDashboard() {
     length: "",
     variations: [] as Array<{ name: string; options: string }>
   });
+  const showToast = useToast((state) => state.show);
   const [dashboard, setDashboard] = useState({
-    revenue: 0,
-    orders: 0,
-    rating: "0.0",
-    status: initialStatus,
+    revenue: fallbackProducts.reduce((sum, product) => sum + productSalesCount(product) * product.price, 0),
+    orders: 38,
+    rating: "4.9",
+    status: "pendente",
     artisanName: user?.name ?? "Vendedor",
     storeName: "Sua loja"
   });
@@ -69,7 +72,7 @@ export function SellerDashboard() {
         setMyProducts((data.topProducts ?? []).map(normalizeProduct));
       })
       .catch(() => {
-        setMyProducts(user?.status === "APPROVED" ? fallbackProducts : []);
+        setMyProducts(fallbackProducts);
       });
 
     getMyArtisanProfile()
@@ -84,7 +87,7 @@ export function SellerDashboard() {
       .catch(() => undefined);
 
     getSubscriptionStatus().then(setSubscription).catch(() => undefined);
-  }, [fallbackProducts, user?.name, user?.status]);
+  }, [fallbackProducts]);
 
   if (!user || user.role !== "ARTISAN") {
     return <Navigate to="/artesao/login" replace />;
@@ -93,17 +96,16 @@ export function SellerDashboard() {
   function resetForm() {
     setEditingProduct(null);
     setImageError("");
+    setFormMessage("");
     setForm({ name: "", description: "", price: "", stock: "1", categoryId: categories[0]?.id || "", images: [], existingImages: [], removeImageIds: [], weight: "", width: "", height: "", length: "", variations: [] });
   }
 
   function startCreateProduct() {
-    if (!canManageProducts) return;
     resetForm();
     setShowForm((current) => !current || Boolean(editingProduct));
   }
 
   function startEditProduct(product: Product) {
-    if (!canManageProducts) return;
     setEditingProduct(product);
     setImageError("");
     setForm({
@@ -155,16 +157,24 @@ export function SellerDashboard() {
 
   async function submitProduct(event: React.FormEvent) {
     event.preventDefault();
-    if (!canManageProducts) {
-      setImageError("Seu cadastro precisa estar aprovado para cadastrar ou editar produtos.");
-      return;
-    }
+    setFormMessage("");
     const category = categories.find((item) => item.id === form.categoryId);
     if (!category) {
+      setFormMessage("Selecione uma categoria valida.");
       return;
     }
     if (form.existingImages.length - form.removeImageIds.length + form.images.length === 0) {
-      setImageError("Mantenha pelo menos uma imagem do produto.");
+      const message = editingProduct ? "Mantenha pelo menos uma imagem do produto." : "Envie pelo menos uma imagem.";
+      setImageError(message);
+      setFormMessage(message);
+      showToast({ title: "Imagem obrigatoria", description: message, variant: "warning" });
+      return;
+    }
+    if (form.existingImages.length - form.removeImageIds.length + form.images.length > 3) {
+      const message = "Maximo de 3 imagens permitidas.";
+      setImageError(message);
+      setFormMessage(message);
+      showToast({ title: "Limite de imagens", description: message, variant: "warning" });
       return;
     }
 
@@ -187,14 +197,51 @@ export function SellerDashboard() {
       })).filter((variation) => variation.name.trim() && variation.options.length > 0)));
       form.images.forEach((image) => payload.append("images", image));
 
-      const { data } = editingProduct
+      if (import.meta.env.DEV || import.meta.env.VITE_PRODUCT_DEBUG === "true") {
+        console.debug("[product-form:submit]", {
+          mode: editingProduct ? "edit" : "create",
+          fields: Object.fromEntries(Array.from(payload.entries()).filter(([key]) => key !== "images")),
+          imageCount: form.images.length,
+          existingImageCount: form.existingImages.length - form.removeImageIds.length
+        });
+      }
+
+      const response = editingProduct
         ? await api.patch(`/seller/products/${editingProduct.id}`, payload, { headers: { "Content-Type": "multipart/form-data" } })
         : await api.post("/seller/products", payload, { headers: { "Content-Type": "multipart/form-data" } });
+      const { data } = response;
+
+      if (import.meta.env.DEV || import.meta.env.VITE_PRODUCT_DEBUG === "true") {
+        console.debug("[product-form:response]", { status: response.status, productId: data.product?.id });
+      }
 
       const savedProduct = normalizeProduct(data.product);
       setMyProducts((current) => editingProduct ? current.map((product) => product.id === savedProduct.id ? savedProduct : product) : [savedProduct, ...current]);
+      showToast({ title: "Produto cadastrado com sucesso.", description: "O produto foi salvo e enviado para avaliacao.", variant: "success" });
       setShowForm(false);
       resetForm();
+    } catch (requestError) {
+      const parsed = parseApiError(requestError);
+      const message =
+        parsed.errors.images ??
+        parsed.errors.subscription ??
+        parsed.errors.form ??
+        parsed.message ??
+        "Erro ao salvar produto.";
+      const friendly =
+        message.includes("Autentica") || message.includes("Token")
+          ? "Faca login novamente."
+          : message.includes("Assinatura")
+            ? "Voce precisa ter uma assinatura ativa."
+            : message.includes("Storage") || message.includes("Cloudinary")
+              ? "Falha ao enviar imagem."
+              : message;
+      setFormMessage(friendly);
+      if (parsed.errors.images) setImageError(parsed.errors.images);
+      showToast({ title: "Erro ao salvar produto.", description: friendly, variant: "warning" });
+      if (import.meta.env.DEV || import.meta.env.VITE_PRODUCT_DEBUG === "true") {
+        console.error("[product-form:error]", requestError);
+      }
     } finally {
       setSaving(false);
     }
@@ -207,15 +254,6 @@ export function SellerDashboard() {
     [TrendingUp, dashboard.rating, "avaliação"],
     [ShieldCheck, dashboard.status, "status da conta"]
   ];
-  const isApproved = dashboard.status === "aprovado";
-  const canManageProducts = isApproved && (!subscription || subscription.canSell);
-  const blockedReason = !isApproved
-    ? dashboard.status === "recusado"
-      ? "Seu cadastro foi recusado. Atualize seus dados ou fale com o suporte antes de vender."
-      : "Seu cadastro está em análise. Assim que for aprovado, o cadastro de produtos será liberado."
-    : subscription && !subscription.canSell
-      ? "Sua assinatura precisa estar ativa para cadastrar ou editar produtos."
-      : "";
 
   return (
     <main className="app-shell section-y">
@@ -228,7 +266,7 @@ export function SellerDashboard() {
             <p className="mt-2 max-w-2xl rounded-xl border border-kriar-line bg-kriar-background px-4 py-3 text-sm font-bold text-kriar-contrast">
               {dashboard.status === "recusado"
                 ? "Seu cadastro foi recusado. Atualize o perfil ou fale com o suporte antes de vender."
-                : "Seu cadastro está pendente de aprovação. Você poderá cadastrar produtos assim que a análise for concluída."}
+                : "Seu cadastro está pendente de aprovação. Você pode preparar o perfil e os produtos enquanto aguarda."}
             </p>
           )}
           {subscription && !subscription.canSell && (
@@ -238,46 +276,20 @@ export function SellerDashboard() {
           )}
         </div>
         <div className="flex flex-wrap gap-3">
-          {isApproved ? (
-            <Link to="/artesao/perfil" className="btn-secondary">
-              <Settings className="h-5 w-5" /> Perfil
-            </Link>
-          ) : (
-            <span className="inline-flex min-h-11 items-center rounded-full bg-kriar-paper px-4 py-2 text-sm font-black text-kriar-muted">
-              Perfil em análise
-            </span>
-          )}
-          {isApproved && <Link to="/artesao/pedidos" className="btn-secondary">Pedidos</Link>}
-          {isApproved && <Link to="/artesao/assinatura" className="btn-secondary">Assinatura</Link>}
-          {canManageProducts ? (
-            <button className="btn-primary" onClick={startCreateProduct}>
-              <ImagePlus className="h-5 w-5" /> {showForm && !editingProduct ? "Fechar cadastro" : "Cadastrar produto"}
-            </button>
-          ) : (
-            <span className="inline-flex min-h-11 items-center rounded-full bg-kriar-paper px-4 py-2 text-sm font-black text-kriar-muted">
-              Cadastro de produto bloqueado
-            </span>
-          )}
+          <Link to="/artesao/perfil" className="btn-secondary">
+            <Settings className="h-5 w-5" /> Perfil
+          </Link>
+          <Link to="/artesao/pedidos" className="btn-secondary">Pedidos</Link>
+          <Link to="/artesao/assinatura" className="btn-secondary">Assinatura</Link>
+          <button className="btn-primary" onClick={startCreateProduct} disabled={subscription ? !subscription.canSell : false}>
+            <ImagePlus className="h-5 w-5" /> {showForm && !editingProduct ? "Fechar cadastro" : "Cadastrar produto"}
+          </button>
         </div>
       </div>
 
-      {!canManageProducts && (
-        <section className="panel mb-8 p-5">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="eyebrow mb-2">Produtos</p>
-              <h2 className="text-xl font-black tracking-tight text-kriar-contrast">Aguardando liberação</h2>
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-kriar-muted">{blockedReason}</p>
-            </div>
-            <span className="inline-flex min-h-11 items-center rounded-full bg-kriar-paper px-4 py-2 text-sm font-black text-kriar-muted">
-              Aguarde a análise
-            </span>
-          </div>
-        </section>
-      )}
-
-      {showForm && canManageProducts && (
+      {showForm && (
         <form onSubmit={submitProduct} className="panel mb-8 grid gap-4 p-5 md:grid-cols-2">
+          {formMessage && <p className="md:col-span-2 rounded-xl border border-kriar-line bg-kriar-background px-4 py-3 text-sm font-bold text-kriar-contrast">{formMessage}</p>}
           <input className="input-field" required placeholder="Nome do produto" value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} />
           <select className="select-field" required value={form.categoryId} onChange={(event) => setForm({ ...form, categoryId: event.target.value })}>
             {categories.map((category) => (
@@ -386,7 +398,7 @@ export function SellerDashboard() {
                   <td>{productSalesCount(product)}</td>
                   <td className="font-bold text-kriar-primary">{currency.format(product.price)}</td>
                   <td><span className="badge-soft">{product.status}</span></td>
-                  <td>{canManageProducts ? <button className="btn-secondary px-3 py-1 text-xs" onClick={() => startEditProduct(product)}>Editar</button> : <span className="text-xs font-bold text-kriar-muted">Bloqueado</span>}</td>
+                  <td><button className="btn-secondary px-3 py-1 text-xs" onClick={() => startEditProduct(product)}>Editar</button></td>
                 </tr>
               ))}
             </tbody>

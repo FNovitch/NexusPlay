@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { productImageUrl } from "../api/products";
 import { EmptyState } from "../components/EmptyState";
-import { fetchAddressByCep, maskCep, onlyDigits } from "../lib/artisanForm";
+import { fetchAddressByCep, maskCep, onlyDigits, parseApiError } from "../lib/artisanForm";
 import { api } from "../lib/api";
 import { cartTotal, groupedBySeller, useCart } from "../store/cart";
 import { useAuth } from "../store/auth";
@@ -22,6 +22,9 @@ type FreightOption = {
   prazo: number;
   imagem?: string | null;
   melhorEnvioServiceId: number;
+  tipo?: "SHIPPING" | "PICKUP";
+  enderecoRetirada?: string | null;
+  instrucoesRetirada?: string | null;
 };
 
 type FreightGroup = {
@@ -46,6 +49,9 @@ export function Checkout() {
   const [freightLoading, setFreightLoading] = useState(false);
   const shippingTotal = Object.values(selectedFreight).reduce((sum, option) => sum + Number(option.preco), 0);
   const groups = groupedBySeller(items);
+  const allSelectedForPickup =
+    freightGroups.length > 0 &&
+    freightGroups.every((group) => selectedFreight[group.groupId]?.tipo === "PICKUP" || selectedFreight[group.groupId]?.melhorEnvioServiceId === 0);
 
   if (!user) return <Navigate to="/cliente/login" replace />;
 
@@ -78,14 +84,34 @@ export function Checkout() {
         cepDestino: onlyDigits(address.zipCode),
         itens: items.map((item) => ({ produtoId: item.product.id, quantidade: item.quantity, variacaoSelecionada: item.selectedVariations }))
       });
-      setFreightGroups(data.data.grupos);
-      if (data.data.grupos.some((group) => group.opcoes.length === 0)) {
-        setError("Não encontramos frete para um dos vendedores do carrinho.");
+      const nextGroups = Array.isArray(data.data?.grupos) ? data.data.grupos : [];
+      if (nextGroups.length === 0) {
+        setFreightGroups([]);
+        setError("Nao encontramos opcoes de entrega ou retirada para este carrinho.");
+        return;
+      }
+
+      setFreightGroups(nextGroups);
+      setSelectedFreight(nextGroups.reduce<Record<string, FreightOption>>((acc, group) => {
+        if (group.opcoes.length === 1) acc[group.groupId] = group.opcoes[0];
+        return acc;
+      }, {}));
+
+      if (nextGroups.some((group) => group.opcoes.length === 0)) {
+        setError("Nao encontramos frete ou retirada para um dos vendedores do carrinho.");
+      } else {
+        showToast({ title: "Frete calculado", description: "Escolha a melhor opcao para cada vendedor.", variant: "success" });
       }
     } catch (requestError: unknown) {
-      const response = requestError && typeof requestError === "object" && "response" in requestError ? requestError.response as { data?: { message?: string; errors?: Record<string, string> } } : undefined;
-      const message = response?.data?.errors ? Object.values(response.data.errors)[0] : response?.data?.message;
-      setError(message ?? "Não foi possível calcular o frete.");
+      const parsed = parseApiError(requestError);
+      const message = parsed.errors.cepDestino ?? parsed.errors.frete ?? parsed.errors.produto ?? parsed.errors.itens ?? parsed.message ?? "Nao foi possivel calcular o frete.";
+      setFreightGroups([]);
+      setSelectedFreight({});
+      setError(message);
+      showToast({ title: "Erro no frete", description: message, variant: "warning" });
+      if (import.meta.env.DEV || import.meta.env.VITE_FREIGHT_DEBUG === "true") {
+        console.error("[checkout:freight:error]", requestError);
+      }
     } finally {
       setFreightLoading(false);
     }
@@ -96,7 +122,7 @@ export function Checkout() {
       setError("Carrinho vazio.");
       return;
     }
-    if (!address.zipCode || !address.street || !address.number || !address.neighborhood || !address.city || !address.state) {
+    if (!allSelectedForPickup && (!address.zipCode || !address.street || !address.number || !address.neighborhood || !address.city || !address.state)) {
       setError("Informe o endereço de entrega completo.");
       return;
     }
@@ -129,9 +155,7 @@ export function Checkout() {
         items: items.map((item) => ({ productId: item.product.id, quantity: item.quantity, customizationNotes: item.customizationNotes, selectedVariations: item.selectedVariations }))
       });
       const initPoint = data.data?.initPoint ?? data.initPoint;
-      const pedidoId = data.data?.pedidoId ?? data.pedidoId ?? data.data?.pedido?.id;
       if (!initPoint) throw new Error("Link de pagamento não retornado.");
-      if (pedidoId) sessionStorage.setItem("kriar-last-order-id", String(pedidoId));
       window.location.href = initPoint;
     } catch (requestError: unknown) {
       const response = requestError && typeof requestError === "object" && "response" in requestError ? requestError.response as { data?: { message?: string; errors?: Record<string, string> } } : undefined;
@@ -154,21 +178,13 @@ export function Checkout() {
   return (
     <main className="app-shell grid gap-8 py-10 lg:grid-cols-[1fr_390px]">
       <section>
-        <p className="eyebrow mb-2">Checkout seguro</p>
+        <p className="eyebrow mb-2">Checkout Pro</p>
         <h1 className="text-3xl font-black tracking-tight text-kriar-contrast">Finalizar pedido</h1>
         <p className="mt-2 max-w-2xl text-kriar-muted">Revise itens, endereço e siga para o ambiente seguro do Mercado Pago.</p>
-        <div className="mt-6 grid gap-2 sm:grid-cols-3">
-          <StepPill number="1" label="Endereço" active />
-          <StepPill number="2" label="Frete" active={freightGroups.length > 0} />
-          <StepPill number="3" label="Pagamento" active={Object.keys(selectedFreight).length > 0} />
-        </div>
         {error && <div className="mt-4 rounded-xl bg-red-50 p-3 text-sm font-bold text-red-700">{error}</div>}
 
         <section className="panel mt-7 grid gap-3 p-5 md:grid-cols-2">
-          <div className="md:col-span-2">
-            <p className="eyebrow mb-1">Etapa 1</p>
-            <h2 className="text-xl font-black text-kriar-primary">Endereço de entrega</h2>
-          </div>
+          <h2 className="text-xl font-black text-kriar-primary md:col-span-2">Endereço de entrega</h2>
           <input className="input-field" placeholder="CEP" value={address.zipCode} onBlur={lookupCep} onChange={(e) => setAddress({ ...address, zipCode: maskCep(e.target.value) })} />
           <input className="input-field" placeholder="Rua" value={address.street} onChange={(e) => setAddress({ ...address, street: e.target.value })} />
           <input className="input-field" placeholder="Número" value={address.number} onChange={(e) => setAddress({ ...address, number: e.target.value })} />
@@ -183,7 +199,6 @@ export function Checkout() {
 
         {freightGroups.length > 0 && (
           <section className="panel mt-7 p-5">
-            <p className="eyebrow mb-1">Etapa 2</p>
             <h2 className="mb-4 text-xl font-black text-kriar-primary">Escolha o frete</h2>
             <div className="grid gap-5">
               {freightGroups.map((group) => (
@@ -210,7 +225,14 @@ export function Checkout() {
                         )}
                         <span className="min-w-0 flex-1">
                           <span className="block font-black text-kriar-contrast">{option.empresa} - {option.nome}</span>
-                          <span className="text-sm text-kriar-muted">Prazo: {option.prazo} dias úteis</span>
+                          {option.tipo === "PICKUP" || option.melhorEnvioServiceId === 0 ? (
+                            <span className="block text-sm text-kriar-muted">
+                              Retirada sem custo{option.enderecoRetirada ? ` · ${option.enderecoRetirada}` : ""}
+                              {option.instrucoesRetirada ? ` · ${option.instrucoesRetirada}` : ""}
+                            </span>
+                          ) : (
+                            <span className="text-sm text-kriar-muted">Prazo: {option.prazo} dias úteis</span>
+                          )}
                         </span>
                         <span className="font-black text-kriar-primary">{currency.format(option.preco)}</span>
                       </label>
@@ -223,10 +245,6 @@ export function Checkout() {
         )}
 
         <div className="mt-7 space-y-5">
-          <div>
-            <p className="eyebrow mb-1">Revisão</p>
-            <h2 className="text-xl font-black text-kriar-primary">Itens por vendedor</h2>
-          </div>
           {Object.entries(groups).map(([seller, sellerItems]) => (
             <div key={seller} className="panel p-4 sm:p-5">
               <h2 className="mb-4 font-black text-kriar-primary">{seller}</h2>
@@ -256,24 +274,14 @@ export function Checkout() {
       </section>
 
       <aside className="panel h-max p-5 lg:sticky lg:top-24">
-        <div className="mb-5 flex items-center gap-3 text-kriar-primary"><Lock className="h-5 w-5" /><strong className="text-kriar-contrast">Pagamento protegido</strong></div>
+        <div className="mb-5 flex items-center gap-3 text-kriar-primary"><Lock className="h-5 w-5" /><strong className="text-kriar-contrast">Mercado Pago</strong></div>
         <div className="space-y-3 border-y border-kriar-line py-4 text-sm">
           <div className="flex justify-between"><span className="text-kriar-muted">Produtos</span><span className="font-bold">{currency.format(cartTotal(items))}</span></div>
           <div className="flex justify-between"><span className="text-kriar-muted">Frete</span><span className="font-bold">{currency.format(shippingTotal)}</span></div>
         </div>
         <div className="my-5 flex items-center justify-between text-xl font-black text-kriar-contrast"><span>Total</span><span>{currency.format(cartTotal(items) + shippingTotal)}</span></div>
         <button onClick={handleCheckout} disabled={loading} className="btn-primary w-full"><CreditCard className="h-5 w-5" />{loading ? "Criando pedido..." : "Finalizar pedido"}</button>
-        <p className="mt-3 text-center text-xs leading-5 text-kriar-muted">Você será redirecionado para concluir o pagamento no Mercado Pago.</p>
       </aside>
     </main>
-  );
-}
-
-function StepPill({ number, label, active }: { number: string; label: string; active?: boolean }) {
-  return (
-    <div className={`flex items-center gap-2 rounded-xl border px-3 py-2 text-sm font-bold ${active ? "border-kriar-primary/25 bg-kriar-primary/10 text-kriar-primary" : "border-kriar-line bg-kriar-surface text-kriar-muted"}`}>
-      <span className={`grid h-6 w-6 place-items-center rounded-full text-xs ${active ? "bg-kriar-primary text-white" : "bg-kriar-paper text-kriar-muted"}`}>{number}</span>
-      {label}
-    </div>
   );
 }

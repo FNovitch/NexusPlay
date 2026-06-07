@@ -18,12 +18,13 @@ export const notFound: RequestHandler = (req, _res, next) => {
 };
 
 export const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
-  if (process.env.NODE_ENV === "development") {
+  if (process.env.NODE_ENV === "development" || process.env.PRODUCT_DEBUG === "true") {
     console.error("[api:error]", {
       name: err?.name,
       code: err?.code,
       message: err?.message,
-      meta: err?.meta
+      meta: err?.meta,
+      stack: err?.stack
     });
   }
 
@@ -38,6 +39,21 @@ export const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
       success: false,
       message: "Dados invalidos",
       errors
+    });
+  }
+
+  if (err?.name === "MulterError") {
+    const uploadErrors: Record<string, string> = {
+      LIMIT_FILE_COUNT: "Maximo de 3 imagens permitidas.",
+      LIMIT_UNEXPECTED_FILE: "Maximo de 3 imagens permitidas.",
+      LIMIT_FILE_SIZE: "Cada imagem deve ter no maximo 5MB.",
+    };
+    const message = uploadErrors[String(err.code)] ?? "Falha ao enviar imagem.";
+
+    return res.status(400).json({
+      success: false,
+      message,
+      errors: { images: message }
     });
   }
 

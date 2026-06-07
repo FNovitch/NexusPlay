@@ -17,6 +17,9 @@ export type FreightOption = {
   prazo: number;
   imagem?: string | null;
   melhorEnvioServiceId: number;
+  tipo?: "SHIPPING" | "PICKUP";
+  enderecoRetirada?: string | null;
+  instrucoesRetirada?: string | null;
 };
 
 export type FreightGroup = {
@@ -35,7 +38,18 @@ type ProductWithSeller = Product & {
     storeName: string;
     artisans: Array<{
       id: string;
-      addresses: Array<{ zipCode: string; isDefault: boolean }>;
+      acceptsLocalPickup: boolean;
+      pickupInstructions: string | null;
+      addresses: Array<{
+        street: string;
+        number: string;
+        complement: string | null;
+        neighborhood: string;
+        city: string;
+        state: string;
+        zipCode: string;
+        isDefault: boolean;
+      }>;
     }>;
   };
 };
@@ -49,6 +63,11 @@ type MelhorEnvioResponse = Array<{
   company?: { name?: string; picture?: string | null };
   error?: string;
 }>;
+
+function freightDebug(event: string, payload: Record<string, unknown>) {
+  if (process.env.FREIGHT_DEBUG !== "true") return;
+  console.info(`[freight:${event}]`, payload);
+}
 
 export function normalizarCep(cep: string) {
   return String(cep ?? "").replace(/\D/g, "");
@@ -99,18 +118,88 @@ function originZip(product: ProductWithSeller) {
   return normalizarCep(address?.zipCode || env.MELHOR_ENVIO_CEP_ORIGEM);
 }
 
+function pickupAddress(product: ProductWithSeller) {
+  const artisan = product.seller.artisans[0] ?? null;
+  const address = artisan?.addresses.find((item) => item.isDefault) ?? artisan?.addresses[0] ?? null;
+  if (!address) return null;
+  return `${address.street}, ${address.number}${address.complement ? ` - ${address.complement}` : ""}, ${address.neighborhood}, ${address.city} - ${address.state}, ${address.zipCode}`;
+}
+
+function buildPickupOption(product: ProductWithSeller): FreightOption | null {
+  const artisan = product.seller.artisans[0] ?? null;
+  const productAllowsPickup = Boolean(product.pickupAvailable);
+  const storeAllowsPickup = Boolean(artisan?.acceptsLocalPickup);
+
+  if (!productAllowsPickup && !storeAllowsPickup) {
+    return null;
+  }
+
+  return {
+    id: `${product.sellerId}:pickup`,
+    nome: "Retirar na loja",
+    empresa: product.seller.storeName,
+    preco: 0,
+    prazo: 0,
+    imagem: null,
+    melhorEnvioServiceId: 0,
+    tipo: "PICKUP",
+    enderecoRetirada: product.pickupAddress ?? pickupAddress(product),
+    instrucoesRetirada: artisan?.pickupInstructions ?? null
+  };
+}
+
+function sandboxShippingOptions(product: ProductWithSeller): FreightOption[] {
+  return [
+    { id: `${product.sellerId}:mock-pac`, nome: "PAC Sandbox", empresa: "Correios", preco: 24.9, prazo: 6, imagem: null, melhorEnvioServiceId: 1, tipo: "SHIPPING" },
+    { id: `${product.sellerId}:mock-sedex`, nome: "SEDEX Sandbox", empresa: "Correios", preco: 39.9, prazo: 3, imagem: null, melhorEnvioServiceId: 2, tipo: "SHIPPING" }
+  ];
+}
+
+function parseFreightNumber(value: unknown) {
+  if (typeof value === "number") return Number.isFinite(value) ? value : 0;
+  if (typeof value !== "string") return 0;
+  const raw = value.trim();
+  const normalized = raw.includes(",") ? raw.replace(/\./g, "").replace(",", ".") : raw;
+  const parsed = Number(normalized);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
 function mapOptions(response: MelhorEnvioResponse): FreightOption[] {
-  return response
-    .filter((item) => !item.error && Number(item.custom_price ?? item.price) > 0)
-    .map((item) => ({
+  const removed: Array<{ id?: string | number; name?: string; reason: string; price?: unknown; customPrice?: unknown; error?: string }> = [];
+  const options = response.flatMap((item) => {
+    const price = parseFreightNumber(item.custom_price ?? item.price);
+    if (item.error) {
+      removed.push({ id: item.id, name: item.name, reason: "carrier_error", error: item.error, price: item.price, customPrice: item.custom_price });
+      return [];
+    }
+    if (!item.id) {
+      removed.push({ id: item.id, name: item.name, reason: "missing_id", price: item.price, customPrice: item.custom_price });
+      return [];
+    }
+    if (price <= 0) {
+      removed.push({ id: item.id, name: item.name, reason: "invalid_price", price: item.price, customPrice: item.custom_price });
+      return [];
+    }
+
+    return [{
       id: String(item.id),
       nome: item.name ?? `Servico ${item.id}`,
       empresa: item.company?.name ?? "Melhor Envio",
-      preco: Number(item.custom_price ?? item.price),
-      prazo: Number(item.delivery_time ?? 0),
+      preco: price,
+      prazo: Math.max(0, Math.trunc(parseFreightNumber(item.delivery_time))),
       imagem: item.company?.picture ?? null,
-      melhorEnvioServiceId: Number(item.id)
-    }));
+      melhorEnvioServiceId: Number(item.id),
+      tipo: "SHIPPING" as const
+    }];
+  });
+
+  freightDebug("melhor-envio:map-options", {
+    received: response.length,
+    accepted: options.length,
+    removed
+  });
+
+  return options;
 }
 
 export function tratarErroMelhorEnvio(error: unknown): AppError {
@@ -152,16 +241,6 @@ async function calcularGrupo(cepDestino: string, products: ProductWithSeller[], 
     product,
     quantity: items.find((item) => item.produtoId === product.id)?.quantidade ?? 1
   }));
-  const body = {
-    from: { postal_code: cepOrigem },
-    to: { postal_code: cepDestino },
-    products: montarPacoteDoCarrinho(productsWithQuantity),
-    options: {
-      receipt: false,
-      own_hand: false,
-      collect: false
-    }
-  };
 
   if (!env.MELHOR_ENVIO_TOKEN && env.NODE_ENV !== "production") {
     return {
@@ -172,21 +251,64 @@ async function calcularGrupo(cepDestino: string, products: ProductWithSeller[], 
       cepOrigem,
       cepDestino,
       opcoes: [
-        { id: `${first.sellerId}:mock-pac`, nome: "PAC Sandbox", empresa: "Correios", preco: 24.9, prazo: 6, imagem: null, melhorEnvioServiceId: 1 },
-        { id: `${first.sellerId}:mock-sedex`, nome: "SEDEX Sandbox", empresa: "Correios", preco: 39.9, prazo: 3, imagem: null, melhorEnvioServiceId: 2 }
+        ...[buildPickupOption(first)].filter((option): option is FreightOption => option !== null),
+        ...sandboxShippingOptions(first)
       ]
     };
   }
 
-  const response = await fetch(melhorEnvioUrl("/v2/me/shipment/calculate"), {
-    method: "POST",
-    headers: headers(),
-    body: JSON.stringify(body),
-    signal: AbortSignal.timeout(18000)
-  });
-  const data = await response.json().catch(() => []);
-  if (!response.ok) {
-    throw new AppError("Nao foi possivel calcular o frete.", response.status, { frete: JSON.stringify(data) });
+  const pickup = buildPickupOption(first);
+  let shippingOptions: FreightOption[] = [];
+
+  if (products.some((product) => product.shippingAvailable)) {
+    try {
+      const body = {
+        from: { postal_code: cepOrigem },
+        to: { postal_code: cepDestino },
+        products: montarPacoteDoCarrinho(productsWithQuantity),
+        options: {
+          receipt: false,
+          own_hand: false,
+          collect: false
+        }
+      };
+      freightDebug("melhor-envio:request", {
+        url: melhorEnvioUrl("/v2/me/shipment/calculate"),
+        headers: {
+          Authorization: env.MELHOR_ENVIO_TOKEN ? "Bearer ***" : "missing",
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          "User-Agent": env.MELHOR_ENVIO_USER_AGENT
+        },
+        body
+      });
+      const response = await fetch(melhorEnvioUrl("/v2/me/shipment/calculate"), {
+        method: "POST",
+        headers: headers(),
+        body: JSON.stringify(body),
+        signal: AbortSignal.timeout(18000)
+      });
+      const data = await response.json().catch(() => []);
+      freightDebug("melhor-envio:response", {
+        status: response.status,
+        ok: response.ok,
+        body: data
+      });
+      if (!response.ok) {
+        freightDebug("melhor-envio:error", { status: response.status, sellerId: first.sellerId });
+        throw new AppError("Nao foi possivel calcular o frete.", response.status, { frete: "Transportadora indisponivel para este carrinho." });
+      }
+      shippingOptions = mapOptions(data as MelhorEnvioResponse);
+    } catch (error) {
+      freightDebug("melhor-envio:failed", {
+        sellerId: first.sellerId,
+        message: error instanceof Error ? error.message : "unknown"
+      });
+      if (env.NODE_ENV !== "production" && !(error instanceof AppError && error.errors?.produto)) {
+        shippingOptions = sandboxShippingOptions(first);
+      }
+      if (!pickup && shippingOptions.length === 0) throw tratarErroMelhorEnvio(error);
+    }
   }
 
   return {
@@ -196,7 +318,7 @@ async function calcularGrupo(cepDestino: string, products: ProductWithSeller[], 
     loja: first.seller.storeName,
     cepOrigem,
     cepDestino,
-    opcoes: mapOptions(data as MelhorEnvioResponse)
+    opcoes: [...(pickup ? [pickup] : []), ...shippingOptions]
   };
 }
 
@@ -227,10 +349,20 @@ export async function calcularFrete(payload: { cepDestino: string; itens: Freigh
     return acc;
   }, {});
 
+  freightDebug("calculate:start", { sellers: Object.keys(bySeller).length, items: payload.itens.length });
   const grupos = await Promise.all(Object.values(bySeller).map((sellerProducts) => {
     const sellerItems = payload.itens.filter((item) => sellerProducts.some((product) => product.id === item.produtoId));
     return calcularGrupo(cepDestino, sellerProducts, sellerItems);
   }));
+  freightDebug("calculate:success", {
+    groups: grupos.length,
+    options: grupos.reduce((sum, grupo) => sum + grupo.opcoes.length, 0),
+    returned: grupos.map((grupo) => ({
+      groupId: grupo.groupId,
+      sellerId: grupo.sellerId,
+      options: grupo.opcoes.map((opcao) => ({ id: opcao.id, nome: opcao.nome, tipo: opcao.tipo, preco: opcao.preco }))
+    }))
+  });
 
   return {
     grupos,

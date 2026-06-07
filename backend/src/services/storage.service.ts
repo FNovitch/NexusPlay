@@ -1,7 +1,11 @@
 import type { UploadApiResponse } from "cloudinary";
+import crypto from "node:crypto";
+import fs from "node:fs/promises";
+import path from "node:path";
 import { cloudinaryClient, isCloudinaryConfigured } from "../config/cloudinary.js";
 import { env } from "../config/env.js";
 import { AppError } from "../middlewares/error.js";
+import { uploadRoot } from "../middlewares/upload.js";
 
 export type StoredImage = {
   url: string;
@@ -11,11 +15,28 @@ export type StoredImage = {
 
 function assertCloudinaryConfigured() {
   if (!isCloudinaryConfigured) {
-    throw new AppError("Storage de imagens nao configurado.", 500, { images: "Configure as variaveis CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY e CLOUDINARY_API_SECRET." });
+    throw new AppError("Falha ao enviar imagem.", 500, { images: "Configure Cloudinary em producao ou rode localmente em ambiente de desenvolvimento." });
   }
 }
 
+async function saveImageLocally(file: Express.Multer.File): Promise<StoredImage> {
+  const extension = path.extname(file.originalname).toLowerCase() || ".png";
+  const safeName = `${Date.now()}-${crypto.randomUUID()}${extension}`;
+  await fs.mkdir(uploadRoot, { recursive: true });
+  await fs.writeFile(path.join(uploadRoot, safeName), file.buffer);
+
+  return {
+    url: `/uploads/${safeName}`,
+    publicId: `local:${safeName}`,
+    fileName: file.originalname
+  };
+}
+
 export function uploadImageToCloudinary(file: Express.Multer.File): Promise<StoredImage> {
+  if (!isCloudinaryConfigured && env.NODE_ENV !== "production") {
+    return saveImageLocally(file);
+  }
+
   assertCloudinaryConfigured();
 
   return new Promise((resolve, reject) => {
@@ -46,6 +67,11 @@ export function uploadImageToCloudinary(file: Express.Multer.File): Promise<Stor
 }
 
 export async function deleteImageFromCloudinary(publicId: string) {
+  if (publicId.startsWith("local:") && env.NODE_ENV !== "production") {
+    await fs.rm(path.join(uploadRoot, publicId.replace("local:", "")), { force: true });
+    return;
+  }
+
   assertCloudinaryConfigured();
   await cloudinaryClient.uploader.destroy(publicId, { resource_type: "image" });
 }
