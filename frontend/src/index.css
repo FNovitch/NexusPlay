@@ -16,8 +16,7 @@ body {
   min-width: 320px;
   min-height: 100vh;
   background:
-    radial-gradient(circle at top left, rgba(179, 158, 142, 0.18), transparent 360px),
-    linear-gradient(180deg, rgba(254, 252, 252, 0.72), rgba(245, 246, 247, 0.96) 420px),
+    linear-gradient(180deg, rgba(254, 252, 252, 0.88), rgba(245, 246, 247, 0.98) 360px),
     #f5f6f7;
   color: #1d2733;
 }
@@ -76,19 +75,19 @@ a {
   }
 
   .section-y {
-    @apply py-12 sm:py-16;
+    @apply py-12 sm:py-14;
   }
 
   .panel {
-    @apply rounded-[20px] border border-kriar-line bg-kriar-surface/95 shadow-card backdrop-blur;
+    @apply rounded-2xl border border-kriar-line bg-kriar-surface/95 shadow-soft backdrop-blur;
   }
 
   .panel-soft {
-    @apply rounded-[20px] border border-kriar-line bg-kriar-surface/70 shadow-soft backdrop-blur;
+    @apply rounded-2xl border border-kriar-line bg-kriar-surface/70 shadow-soft backdrop-blur;
   }
 
   .card-hover {
-    @apply transition duration-[250ms] ease-out hover:-translate-y-0.5 hover:border-kriar-primary/20 hover:shadow-lift;
+    @apply transition duration-[250ms] ease-out hover:-translate-y-0.5 hover:border-kriar-primary/25 hover:shadow-card;
   }
 
   .btn {
@@ -100,7 +99,7 @@ a {
   }
 
   .btn-secondary {
-    @apply btn border border-kriar-line bg-kriar-surface text-kriar-contrast shadow-sm hover:-translate-y-0.5 hover:border-kriar-primary/35 hover:bg-kriar-surface active:translate-y-0;
+    @apply btn border border-kriar-line bg-kriar-surface/90 text-kriar-contrast shadow-sm hover:-translate-y-0.5 hover:border-kriar-primary/35 hover:bg-kriar-surface active:translate-y-0;
   }
 
   .btn-ghost {

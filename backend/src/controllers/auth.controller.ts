@@ -161,7 +161,7 @@ export async function login(req: Request, res: Response) {
 export async function me(req: Request, res: Response) {
   const user = await prisma.user.findUnique({
     where: { id: req.user!.id },
-    include: { seller: true }
+    include: { seller: true, artisan: true }
   });
 
   if (!user || user.isDeleted) {
@@ -172,5 +172,7 @@ export async function me(req: Request, res: Response) {
 }
 
 function sanitizeUser(user: Record<string, unknown>) {
-  return mapUserToResponse(user as Parameters<typeof mapUserToResponse>[0]);
+  const response = mapUserToResponse(user as Parameters<typeof mapUserToResponse>[0]);
+  const artisan = user.artisan as { status?: string } | undefined;
+  return artisan?.status ? { ...response, status: artisan.status } : response;
 }

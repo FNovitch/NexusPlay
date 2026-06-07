@@ -46,43 +46,43 @@ export function ProductCard({ product }: { product: Product }) {
             onError={handleImageError}
             className="h-full w-full object-cover transition duration-500 ease-out group-hover:scale-[1.035]"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-kriar-contrast/20 via-transparent to-transparent opacity-0 transition group-hover:opacity-100" />
+          <div className="absolute inset-0 bg-gradient-to-t from-kriar-contrast/16 via-transparent to-transparent opacity-0 transition group-hover:opacity-100" />
           {product.customizationAvailable && (
-            <span className="badge bg-kriar-surface/95 text-kriar-primary shadow-sm backdrop-blur absolute left-3 top-3">
-              <Sparkle className="h-3 w-3" /> Personaliza
+            <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-kriar-surface/95 px-2.5 py-1 text-xs font-bold text-kriar-primary shadow-sm backdrop-blur">
+              <Sparkle className="h-3 w-3" /> Personalizável
             </span>
           )}
           {product.stock <= 4 && (
-            <span className="badge bg-kriar-secondary text-kriar-light shadow-sm absolute bottom-3 left-3">Últimas {product.stock}</span>
+            <span className="absolute bottom-3 left-3 rounded-full bg-kriar-secondary px-2.5 py-1 text-xs font-bold text-kriar-light shadow-sm">Últimas {product.stock}</span>
           )}
         </div>
       </Link>
-      <div className="space-y-4 p-4">
+      <div className="space-y-3 p-4">
         <div>
-          <Link to={`/produto/${product.slug}`} className="line-clamp-2 font-black leading-snug text-kriar-contrast transition hover:text-kriar-primary">
+          <Link to={`/produto/${product.slug}`} className="line-clamp-2 text-base font-black leading-snug text-kriar-contrast transition hover:text-kriar-primary">
             {product.name}
           </Link>
-          <Link to={`/loja/${productSellerSlug(product)}`} className="mt-1 block text-sm font-semibold text-kriar-muted transition hover:text-kriar-secondary">
+          <Link to={`/loja/${productSellerSlug(product)}`} className="mt-1 block text-sm font-semibold text-kriar-muted transition hover:text-kriar-primary">
             por {productSellerName(product)}
           </Link>
         </div>
-        <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center justify-between gap-3 text-xs">
           <Stars value={productRating(product)} compact />
-          <span className="rounded-full bg-kriar-paper px-2.5 py-1 text-xs font-bold text-kriar-muted">{productSalesCount(product)} vendas</span>
+          <span className="font-bold text-kriar-muted">{productSalesCount(product)} vendas</span>
         </div>
-        <div className="flex items-center justify-between gap-2 border-t border-kriar-line/70 pt-4">
-          <strong className="text-xl tracking-tight text-kriar-primary">{currency.format(product.price)}</strong>
+        <div className="flex items-center justify-between gap-2 border-t border-kriar-line/70 pt-3">
+          <strong className="text-2xl tracking-tight text-kriar-primary">{currency.format(product.price)}</strong>
           <div className="flex gap-1.5">
             <button
               onClick={handleFavorite}
-              className={`btn-icon ${isFavorite ? "bg-kriar-secondary text-kriar-light hover:bg-kriar-secondary hover:text-kriar-light" : ""}`}
+              className={`btn-icon h-10 w-10 ${isFavorite ? "bg-kriar-secondary text-kriar-light hover:bg-kriar-secondary hover:text-kriar-light" : ""}`}
               aria-label="Favoritar"
             >
               <Heart className={`h-4 w-4 ${isFavorite ? "fill-current" : ""}`} />
             </button>
             <button
               onClick={handleAdd}
-              className="inline-grid h-11 w-11 place-items-center rounded-full bg-kriar-primary text-kriar-light shadow-sm transition duration-[250ms] hover:-translate-y-0.5 hover:bg-[#2f5360] hover:shadow-soft active:translate-y-0"
+              className="inline-grid h-10 w-10 place-items-center rounded-full bg-kriar-primary text-kriar-light shadow-sm transition duration-[250ms] hover:-translate-y-0.5 hover:bg-[#2f5360] hover:shadow-soft active:translate-y-0"
               aria-label="Adicionar ao carrinho"
             >
               <ShoppingBag className="h-4 w-4" />

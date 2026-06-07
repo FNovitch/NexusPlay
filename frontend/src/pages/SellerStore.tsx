@@ -43,10 +43,10 @@ export function SellerStore() {
             alt={seller.storeName}
             decoding="async"
             onError={handleImageError}
-            className="mb-5 h-24 w-24 rounded-[28px] border-4 border-kriar-surface object-cover shadow-lift"
+            className="mb-5 h-24 w-24 rounded-2xl border-4 border-kriar-surface object-cover shadow-lift"
           />
           <div className="flex flex-wrap items-center gap-3">
-            <span className="badge bg-kriar-surface/95 text-kriar-primary shadow-sm backdrop-blur">
+            <span className="inline-flex items-center gap-1 rounded-full bg-kriar-surface/95 px-3 py-1 text-xs font-bold text-kriar-primary shadow-sm backdrop-blur">
               <Store className="h-4 w-4" /> Loja própria
             </span>
             <Stars value={seller.rating} />
@@ -56,19 +56,19 @@ export function SellerStore() {
         </div>
       </section>
 
-      <section className="app-shell grid gap-7 py-12 lg:grid-cols-[0.72fr_1.28fr]">
+      <section className="app-shell grid gap-7 py-12 lg:grid-cols-[0.66fr_1.34fr]">
         <aside className="space-y-4">
-          <div className="panel p-5">
+          <div className="rounded-2xl border border-kriar-line bg-kriar-surface p-5 shadow-soft">
             <HeartHandshake className="mb-3 h-6 w-6 text-kriar-secondary" />
             <h2 className="text-xl font-black tracking-tight text-kriar-contrast">História do criador</h2>
             <p className="mt-3 leading-7 text-kriar-muted">{seller.story}</p>
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <div className="panel p-4">
+            <div className="rounded-2xl border border-kriar-line bg-kriar-surface p-4 shadow-soft">
               <strong className="block text-3xl font-black tracking-tight text-kriar-primary">{seller.salesCount}</strong>
               <span className="text-sm font-bold text-kriar-muted">vendas</span>
             </div>
-            <div className="panel p-4">
+            <div className="rounded-2xl border border-kriar-line bg-kriar-surface p-4 shadow-soft">
               <BadgeCheck className="mb-2 h-5 w-5 text-kriar-primary" />
               <span className="text-sm font-black text-kriar-contrast">Aprovado pela KRIAR</span>
             </div>

@@ -1,4 +1,5 @@
-import { Heart, LogOut, Menu, Search, ShoppingBag, UserRound, X } from "lucide-react";
+import { Boxes, Heart, LogOut, Menu, Search, ShoppingBag, Sparkles, Store, UserRound, X } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import type React from "react";
 import { useMemo, useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
@@ -47,14 +48,26 @@ export function Header() {
   }
 
   const navClass = ({ isActive }: { isActive: boolean }) =>
-    `inline-flex min-h-10 items-center rounded-full px-4 text-sm font-black transition duration-[250ms] ${
-      isActive ? "bg-kriar-primary text-kriar-light" : "text-kriar-muted hover:bg-kriar-primary/10 hover:text-kriar-primary"
+    `inline-flex min-h-10 items-center gap-1.5 rounded-full px-3.5 text-sm font-black transition duration-[250ms] ${
+      isActive ? "bg-kriar-primary/10 text-kriar-primary" : "text-kriar-muted hover:bg-kriar-primary/10 hover:text-kriar-primary"
     }`;
 
   return (
-    <header className="sticky top-0 z-40 border-b border-kriar-line/90 bg-kriar-paper/95 backdrop-blur-xl">
-      <div className="app-shell flex items-center gap-3 py-3 lg:gap-5">
+    <header className="sticky top-0 z-40 border-b border-kriar-line/90 bg-kriar-surface/95 backdrop-blur-xl">
+      <div className="app-shell flex items-center gap-3 py-2.5 lg:gap-4">
         <Brand />
+
+        <nav className="hidden items-center gap-1 lg:flex">
+          <button type="button" className={navClass({ isActive: false })} onClick={goToProducts}>
+            <Boxes className="h-4 w-4" /> Produtos
+          </button>
+          <NavLink className={navClass} to="/artesaos">
+            <Store className="h-4 w-4" /> Artesãos
+          </NavLink>
+          <NavLink className={navClass} to={user?.role === "ARTISAN" ? "/vendedor" : "/artesao/cadastro"}>
+            <Sparkles className="h-4 w-4" /> Vender
+          </NavLink>
+        </nav>
 
         <form onSubmit={submitSearch} className="relative hidden min-w-0 flex-1 md:block">
           <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-kriar-muted" />
@@ -65,7 +78,7 @@ export function Header() {
             placeholder="Buscar produtos artesanais"
           />
           {suggestions.length > 0 && (
-            <div className="absolute left-0 right-0 mt-2 overflow-hidden rounded-[20px] border border-kriar-line bg-kriar-surface shadow-lift">
+            <div className="absolute left-0 right-0 mt-2 overflow-hidden rounded-2xl border border-kriar-line bg-kriar-surface shadow-card">
               {suggestions.map((item) => (
                 <Link
                   key={item.id}
@@ -88,12 +101,6 @@ export function Header() {
           )}
         </form>
 
-        <nav className="hidden items-center gap-1 lg:flex">
-          <button type="button" className={navClass({ isActive: false })} onClick={goToProducts}>Produtos</button>
-          <NavLink className={navClass} to="/artesaos">Artesãos</NavLink>
-          <NavLink className={navClass} to={user?.role === "ARTISAN" ? "/vendedor" : "/artesao/cadastro"}>Vender</NavLink>
-        </nav>
-
         <div className="ml-auto flex items-center gap-1 md:ml-0">
           <button className="btn-icon relative" aria-label="Favoritos">
             <Heart className="h-5 w-5" />
@@ -108,14 +115,14 @@ export function Header() {
               <UserRound className="h-5 w-5" />
             </button>
             {accountOpen && (
-              <div className="absolute right-0 mt-2 w-64 overflow-hidden rounded-[20px] border border-kriar-line bg-kriar-surface p-2 shadow-lift">
+              <div className="absolute right-0 mt-2 w-64 overflow-hidden rounded-2xl border border-kriar-line bg-kriar-surface p-2 shadow-card">
                 <div className="border-b border-kriar-line px-3 py-3">
                   <p className="text-xs font-black uppercase tracking-[0.12em] text-kriar-secondary">{user ? "Conta conectada" : "Conta KRIAR"}</p>
                   <strong className="mt-1 block truncate text-sm text-kriar-contrast">{user?.name ?? "Entre para continuar"}</strong>
                 </div>
                 <div className="grid py-2 text-sm font-bold">
                   <AccountLink to={accountPath} onClick={() => setAccountOpen(false)}>{user ? "Minha conta" : "Entrar"}</AccountLink>
-                  {!user && <AccountLink to="/cliente/cadastro" onClick={() => setAccountOpen(false)}>Cadastrar</AccountLink>}
+                  {!user && <AccountLink to="/cliente/cadastro" onClick={() => setAccountOpen(false)}>Criar conta</AccountLink>}
                   {user?.role === "CUSTOMER" && <AccountLink to="/meus-pedidos" onClick={() => setAccountOpen(false)}>Meus pedidos</AccountLink>}
                   {user?.role === "ARTISAN" && <AccountLink to="/vendedor" onClick={() => setAccountOpen(false)}>Meus produtos</AccountLink>}
                   {user?.role === "ADMIN" && <AccountLink to="/admin/dashboard" onClick={() => setAccountOpen(false)}>Painel administrativo</AccountLink>}
@@ -142,7 +149,7 @@ export function Header() {
       </div>
 
       {menu && (
-        <div className="border-t border-kriar-line bg-kriar-surface/95 shadow-soft">
+        <div className="border-t border-kriar-line bg-kriar-surface/97 shadow-soft">
           <div className="app-shell grid gap-4 py-4 lg:grid-cols-[1fr_auto]">
             <form onSubmit={submitSearch} className="flex gap-2 md:hidden">
               <input
@@ -156,14 +163,14 @@ export function Header() {
               </button>
             </form>
             <nav className="grid gap-1 text-sm font-bold sm:grid-cols-2 lg:flex lg:items-center">
-              <MenuLink to="/artesaos" onClick={() => setMenu(false)}>Artesãos</MenuLink>
-              <button type="button" className="flex min-h-11 items-center rounded-full px-4 py-2 text-left text-kriar-muted transition duration-[250ms] hover:bg-kriar-primary/10 hover:text-kriar-primary" onClick={goToProducts}>Produtos</button>
-              <MenuLink to={accountPath} onClick={() => setMenu(false)}>{accountLabel}</MenuLink>
-              <button className="flex min-h-11 items-center rounded-full px-4 py-2 text-left text-kriar-muted transition duration-[250ms] hover:bg-kriar-primary/10 hover:text-kriar-primary" onClick={() => { openCart(); setMenu(false); }}>Carrinho</button>
-              <span className="flex min-h-11 items-center rounded-full px-4 py-2 text-kriar-muted">Favoritos</span>
+              <button type="button" className="flex min-h-11 items-center gap-2 rounded-full px-4 py-2 text-left text-kriar-muted transition duration-[250ms] hover:bg-kriar-primary/10 hover:text-kriar-primary" onClick={goToProducts}><Boxes className="h-4 w-4" /> Produtos</button>
+              <MenuLink icon={Store} to="/artesaos" onClick={() => setMenu(false)}>Artesãos</MenuLink>
+              <MenuLink icon={UserRound} to={accountPath} onClick={() => setMenu(false)}>{accountLabel}</MenuLink>
+              <button className="flex min-h-11 items-center gap-2 rounded-full px-4 py-2 text-left text-kriar-muted transition duration-[250ms] hover:bg-kriar-primary/10 hover:text-kriar-primary" onClick={() => { openCart(); setMenu(false); }}><ShoppingBag className="h-4 w-4" /> Carrinho</button>
+              <span className="flex min-h-11 items-center gap-2 rounded-full px-4 py-2 text-kriar-muted"><Heart className="h-4 w-4" /> Favoritos</span>
               {user?.role === "CUSTOMER" && <MenuLink to="/meus-pedidos" onClick={() => setMenu(false)}>Meus pedidos</MenuLink>}
               {!user && <MenuLink to="/cliente/cadastro" onClick={() => setMenu(false)}>Criar conta</MenuLink>}
-              <MenuLink to={user?.role === "ARTISAN" ? "/vendedor" : "/artesao/cadastro"} onClick={() => setMenu(false)}>
+              <MenuLink icon={Sparkles} to={user?.role === "ARTISAN" ? "/vendedor" : "/artesao/cadastro"} onClick={() => setMenu(false)}>
                 {user?.role === "ARTISAN" ? "Meus produtos" : "Vender na KRIAR"}
               </MenuLink>
               {user?.role === "ARTISAN" && <MenuLink to="/artesao/assinatura" onClick={() => setMenu(false)}>Assinatura</MenuLink>}
@@ -181,9 +188,10 @@ function Counter({ value }: { value: number }) {
   return <span className="absolute -right-1 -top-1 grid min-h-5 min-w-5 place-items-center rounded-full bg-kriar-secondary px-1 text-[11px] font-black text-white">{value}</span>;
 }
 
-function MenuLink({ to, onClick, children }: { to: string; onClick: () => void; children: React.ReactNode }) {
+function MenuLink({ to, onClick, children, icon: Icon }: { to: string; onClick: () => void; children: React.ReactNode; icon?: LucideIcon }) {
   return (
-    <Link className="flex min-h-11 items-center rounded-full px-4 py-2 text-kriar-muted transition duration-[250ms] hover:bg-kriar-primary/10 hover:text-kriar-primary" onClick={onClick} to={to}>
+    <Link className="flex min-h-11 items-center gap-2 rounded-full px-4 py-2 text-kriar-muted transition duration-[250ms] hover:bg-kriar-primary/10 hover:text-kriar-primary" onClick={onClick} to={to}>
+      {Icon && <Icon className="h-4 w-4" />}
       {children}
     </Link>
   );

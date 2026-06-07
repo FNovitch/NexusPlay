@@ -1,4 +1,4 @@
-import { ArrowRight, BadgeCheck, Boxes, ShieldCheck, SlidersHorizontal, Sparkles, Truck } from "lucide-react";
+import { ArrowRight, BadgeCheck, Boxes, ShieldCheck, Sparkles, Truck } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { EmptyState } from "../components/EmptyState";
@@ -65,72 +65,57 @@ export function Home() {
   }, [products, category, sort, query]);
 
   return (
-    <main>
-      <section className="app-shell grid gap-8 py-10 lg:grid-cols-[1.02fr_0.98fr] lg:py-16">
-        <div className="flex flex-col justify-center">
-          <div className="mb-5 flex flex-wrap gap-2">
-            <span className="badge-soft">
-              <Sparkles className="h-4 w-4" /> Marketplace artesanal
+    <main className="overflow-hidden">
+      <section className="relative min-h-[560px] overflow-hidden bg-kriar-contrast text-white lg:min-h-[680px]">
+        <img
+          src="https://images.unsplash.com/photo-1610701596007-11502861dcfa?auto=format&fit=crop&w=1800&q=82"
+          alt="Artesã trabalhando em cerâmica"
+          onError={handleImageError}
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-kriar-contrast/92 via-kriar-contrast/52 to-kriar-contrast/10" />
+        <div className="absolute inset-y-0 left-0 w-full bg-[radial-gradient(circle_at_24%_50%,rgba(29,39,51,0.58),transparent_42%)]" />
+        <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-kriar-background to-transparent" />
+        <div className="app-shell relative flex min-h-[560px] items-end pb-12 pt-24 sm:pb-16 lg:min-h-[680px] lg:items-center lg:pb-16 lg:pt-20">
+          <div className="max-w-3xl">
+            <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-black uppercase tracking-[0.14em] text-white/85 backdrop-blur">
+              <Sparkles className="h-3.5 w-3.5" /> Marketplace artesanal
             </span>
-            <span className="badge-warm">Pagamento seguro</span>
-          </div>
-          <h1 className="max-w-3xl text-4xl font-black leading-[1.04] tracking-tight text-kriar-contrast sm:text-5xl lg:text-6xl">
-            KRIAR, onde a arte encontra o futuro
-          </h1>
-          <p className="mt-5 max-w-2xl text-lg leading-8 text-kriar-muted">
-            Compre peças únicas direto de artesãos brasileiros, acompanhe pedidos personalizados e descubra lojas com história, avaliação e curadoria.
-          </p>
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <a href="#produtos" className="btn-primary">
-              Explorar produtos <ArrowRight className="h-4 w-4" />
-            </a>
-            <Link to="/vendedor" className="btn-secondary">
-              Abrir minha loja
-            </Link>
-          </div>
-          <div className="mt-10 grid max-w-2xl grid-cols-3 gap-3">
-            {[
-              ["12k+", "compras protegidas"],
-              ["4.9", "avaliação média"],
-              ["820", "lojas criativas"]
-            ].map(([value, label]) => (
-              <div key={label} className="border-l border-kriar-line pl-4 first:border-l-0 first:pl-0">
-                <strong className="block text-2xl font-black tracking-tight text-kriar-primary sm:text-3xl">{value}</strong>
-                <span className="text-xs font-bold uppercase tracking-[0.08em] text-kriar-muted">{label}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-        <div className="relative min-h-[430px] overflow-hidden rounded-[28px] bg-kriar-background shadow-lift">
-          <img
-            src="https://images.unsplash.com/photo-1610701596007-11502861dcfa?auto=format&fit=crop&w=1300&q=80"
-            alt="Artesã trabalhando em cerâmica"
-            onError={handleImageError}
-            className="absolute inset-0 h-full w-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-kriar-contrast/80 via-kriar-contrast/15 to-transparent" />
-          <div className="absolute inset-x-0 bottom-0 p-6 text-white sm:p-8">
-            <p className="text-xs font-black uppercase tracking-[0.16em] text-white/75">Ateliê em destaque</p>
-            <h2 className="mt-2 max-w-md text-3xl font-black tracking-tight">Processo visível, autoria valorizada</h2>
+            <h1 className="mt-5 max-w-3xl text-4xl font-black leading-[1.02] tracking-tight text-white sm:text-5xl lg:text-6xl">
+              KRIAR, onde a arte encontra o futuro
+            </h1>
+            <p className="mt-5 max-w-xl text-lg leading-8 text-white/90 sm:text-xl">
+              Peças autorais, compra segura e histórias reais por trás de cada criação.
+            </p>
+            <div className="mt-7 flex flex-col gap-3 sm:flex-row">
+              <a href="#produtos" className="btn-primary bg-kriar-light text-kriar-primary hover:bg-white">
+                Explorar produtos <ArrowRight className="h-4 w-4" />
+              </a>
+              <Link to="/artesao/cadastro" className="btn border border-white/35 bg-kriar-contrast/35 text-white shadow-sm backdrop-blur hover:bg-kriar-contrast/50">
+                Vender na KRIAR
+              </Link>
+            </div>
           </div>
         </div>
       </section>
 
-      <section className="border-y border-kriar-line/80 bg-kriar-surface/75">
-        <div className="app-shell grid gap-3 py-5 md:grid-cols-4">
+      <section className="-mt-8 relative z-10">
+        <div className="app-shell">
+          <div className="grid gap-3 rounded-2xl border border-kriar-line bg-kriar-surface/95 p-3 shadow-soft md:grid-cols-4">
           {[
             [ShieldCheck, "Compra protegida"],
             [Truck, "Pedido rastreável"],
             [BadgeCheck, "Artesãos avaliados"],
             [Boxes, "Carrinho multi-vendedor"]
           ].map(([Icon, label]) => (
-            <div key={String(label)} className="flex items-center gap-3 rounded-[20px] px-1 py-2">
-              <span className="grid h-10 w-10 place-items-center rounded-xl bg-kriar-primary/10 text-kriar-primary">
+            <div key={String(label)} className="flex items-center gap-3 rounded-xl px-2 py-2">
+              <span className="grid h-9 w-9 place-items-center rounded-lg bg-kriar-primary/10 text-kriar-primary">
                 <Icon className="h-5 w-5" />
               </span>
               <strong className="text-sm text-kriar-contrast">{String(label)}</strong>
             </div>
           ))}
+          </div>
         </div>
       </section>
 
@@ -138,28 +123,27 @@ export function Home() {
         <SectionHeader
           eyebrow="Curadoria"
           title="Produtos em destaque"
-          description="Feitos à mão, únicos e prontos para personalizar."
+          description="Uma vitrine enxuta de peças feitas à mão, com autoria e acabamento."
           action={
-            <div className="flex flex-wrap gap-2">
-              <select value={category} onChange={(event) => setCategory(event.target.value)} className="select-field">
-                <option value="todos">Todas categorias</option>
-                {categories.map((item) => (
-                  <option key={item.id} value={item.slug}>
-                    {item.name}
-                  </option>
-                ))}
-              </select>
+            <div className="flex flex-wrap items-center gap-2">
               <select value={sort} onChange={(event) => setSort(event.target.value)} className="select-field">
                 <option value="featured">Mais bem avaliados</option>
                 <option value="best_sellers">Mais vendidos</option>
                 <option value="price_asc">Menor preço</option>
               </select>
-              <span className="btn-icon bg-kriar-surface">
-                <SlidersHorizontal className="h-4 w-4" />
-              </span>
             </div>
           }
         />
+        <div className="mb-6 flex gap-2 overflow-x-auto pb-1">
+          <button type="button" onClick={() => setCategory("todos")} className={`shrink-0 rounded-full border px-4 py-2 text-sm font-bold transition ${category === "todos" ? "border-kriar-primary/35 bg-kriar-primary/10 text-kriar-primary" : "border-kriar-line bg-kriar-surface text-kriar-muted hover:border-kriar-primary/40 hover:text-kriar-primary"}`}>
+            Todas
+          </button>
+          {categories.slice(0, 8).map((item) => (
+            <button key={item.id} type="button" onClick={() => setCategory(item.slug)} className={`shrink-0 rounded-full border px-4 py-2 text-sm font-bold transition ${category === item.slug ? "border-kriar-primary/35 bg-kriar-primary/10 text-kriar-primary" : "border-kriar-line bg-kriar-surface text-kriar-muted hover:border-kriar-primary/40 hover:text-kriar-primary"}`}>
+              {item.name}
+            </button>
+          ))}
+        </div>
         {productsLoading ? (
           <ProductSkeletonGrid />
         ) : visibleProducts.length === 0 ? (
@@ -178,9 +162,10 @@ export function Home() {
           <SectionHeader
             eyebrow="Lojas autorais"
             title="Artesãos em alta"
-            description="Lojas com história, reputação e produtos autorais."
+            description="Ateliês brasileiros com peças autorais, atendimento próximo e reputação construída por compradores reais."
+            tone="inverted"
             action={
-              <Link to="/artesaos" className="btn bg-kriar-surface/10 text-kriar-light hover:bg-kriar-surface/15">
+              <Link to="/artesaos" className="btn border border-white/15 bg-white/10 text-white backdrop-blur hover:bg-white/15">
                 Ver todos
               </Link>
             }
@@ -194,6 +179,19 @@ export function Home() {
               ))}
             </div>
           )}
+        </div>
+      </section>
+
+      <section className="app-shell py-12">
+        <div className="grid gap-5 rounded-2xl border border-kriar-line bg-kriar-surface p-6 md:grid-cols-[1fr_auto] md:items-center">
+          <div>
+            <p className="eyebrow mb-2">Para vendedores</p>
+            <h2 className="text-2xl font-black text-kriar-contrast">Transforme seu ateliê em uma loja autoral.</h2>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-kriar-muted">
+              Cadastre sua loja, aguarde a aprovação e publique produtos com frete, pagamento e pedidos em um só lugar.
+            </p>
+          </div>
+          <Link to="/artesao/cadastro" className="btn-secondary md:w-max">Começar cadastro</Link>
         </div>
       </section>
     </main>

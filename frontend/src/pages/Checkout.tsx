@@ -129,7 +129,9 @@ export function Checkout() {
         items: items.map((item) => ({ productId: item.product.id, quantity: item.quantity, customizationNotes: item.customizationNotes, selectedVariations: item.selectedVariations }))
       });
       const initPoint = data.data?.initPoint ?? data.initPoint;
+      const pedidoId = data.data?.pedidoId ?? data.pedidoId ?? data.data?.pedido?.id;
       if (!initPoint) throw new Error("Link de pagamento não retornado.");
+      if (pedidoId) sessionStorage.setItem("kriar-last-order-id", String(pedidoId));
       window.location.href = initPoint;
     } catch (requestError: unknown) {
       const response = requestError && typeof requestError === "object" && "response" in requestError ? requestError.response as { data?: { message?: string; errors?: Record<string, string> } } : undefined;
@@ -152,13 +154,21 @@ export function Checkout() {
   return (
     <main className="app-shell grid gap-8 py-10 lg:grid-cols-[1fr_390px]">
       <section>
-        <p className="eyebrow mb-2">Checkout Pro</p>
+        <p className="eyebrow mb-2">Checkout seguro</p>
         <h1 className="text-3xl font-black tracking-tight text-kriar-contrast">Finalizar pedido</h1>
         <p className="mt-2 max-w-2xl text-kriar-muted">Revise itens, endereço e siga para o ambiente seguro do Mercado Pago.</p>
+        <div className="mt-6 grid gap-2 sm:grid-cols-3">
+          <StepPill number="1" label="Endereço" active />
+          <StepPill number="2" label="Frete" active={freightGroups.length > 0} />
+          <StepPill number="3" label="Pagamento" active={Object.keys(selectedFreight).length > 0} />
+        </div>
         {error && <div className="mt-4 rounded-xl bg-red-50 p-3 text-sm font-bold text-red-700">{error}</div>}
 
         <section className="panel mt-7 grid gap-3 p-5 md:grid-cols-2">
-          <h2 className="text-xl font-black text-kriar-primary md:col-span-2">Endereço de entrega</h2>
+          <div className="md:col-span-2">
+            <p className="eyebrow mb-1">Etapa 1</p>
+            <h2 className="text-xl font-black text-kriar-primary">Endereço de entrega</h2>
+          </div>
           <input className="input-field" placeholder="CEP" value={address.zipCode} onBlur={lookupCep} onChange={(e) => setAddress({ ...address, zipCode: maskCep(e.target.value) })} />
           <input className="input-field" placeholder="Rua" value={address.street} onChange={(e) => setAddress({ ...address, street: e.target.value })} />
           <input className="input-field" placeholder="Número" value={address.number} onChange={(e) => setAddress({ ...address, number: e.target.value })} />
@@ -173,6 +183,7 @@ export function Checkout() {
 
         {freightGroups.length > 0 && (
           <section className="panel mt-7 p-5">
+            <p className="eyebrow mb-1">Etapa 2</p>
             <h2 className="mb-4 text-xl font-black text-kriar-primary">Escolha o frete</h2>
             <div className="grid gap-5">
               {freightGroups.map((group) => (
@@ -212,6 +223,10 @@ export function Checkout() {
         )}
 
         <div className="mt-7 space-y-5">
+          <div>
+            <p className="eyebrow mb-1">Revisão</p>
+            <h2 className="text-xl font-black text-kriar-primary">Itens por vendedor</h2>
+          </div>
           {Object.entries(groups).map(([seller, sellerItems]) => (
             <div key={seller} className="panel p-4 sm:p-5">
               <h2 className="mb-4 font-black text-kriar-primary">{seller}</h2>
@@ -241,14 +256,24 @@ export function Checkout() {
       </section>
 
       <aside className="panel h-max p-5 lg:sticky lg:top-24">
-        <div className="mb-5 flex items-center gap-3 text-kriar-primary"><Lock className="h-5 w-5" /><strong className="text-kriar-contrast">Mercado Pago</strong></div>
+        <div className="mb-5 flex items-center gap-3 text-kriar-primary"><Lock className="h-5 w-5" /><strong className="text-kriar-contrast">Pagamento protegido</strong></div>
         <div className="space-y-3 border-y border-kriar-line py-4 text-sm">
           <div className="flex justify-between"><span className="text-kriar-muted">Produtos</span><span className="font-bold">{currency.format(cartTotal(items))}</span></div>
           <div className="flex justify-between"><span className="text-kriar-muted">Frete</span><span className="font-bold">{currency.format(shippingTotal)}</span></div>
         </div>
         <div className="my-5 flex items-center justify-between text-xl font-black text-kriar-contrast"><span>Total</span><span>{currency.format(cartTotal(items) + shippingTotal)}</span></div>
         <button onClick={handleCheckout} disabled={loading} className="btn-primary w-full"><CreditCard className="h-5 w-5" />{loading ? "Criando pedido..." : "Finalizar pedido"}</button>
+        <p className="mt-3 text-center text-xs leading-5 text-kriar-muted">Você será redirecionado para concluir o pagamento no Mercado Pago.</p>
       </aside>
     </main>
+  );
+}
+
+function StepPill({ number, label, active }: { number: string; label: string; active?: boolean }) {
+  return (
+    <div className={`flex items-center gap-2 rounded-xl border px-3 py-2 text-sm font-bold ${active ? "border-kriar-primary/25 bg-kriar-primary/10 text-kriar-primary" : "border-kriar-line bg-kriar-surface text-kriar-muted"}`}>
+      <span className={`grid h-6 w-6 place-items-center rounded-full text-xs ${active ? "bg-kriar-primary text-white" : "bg-kriar-paper text-kriar-muted"}`}>{number}</span>
+      {label}
+    </div>
   );
 }

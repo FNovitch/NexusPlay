@@ -51,6 +51,7 @@ export function App() {
           <Route path="/loja/:slug" element={<SellerStore />} />
           <Route path="/artesaos" element={<Sellers />} />
           <Route path="/checkout" element={<Checkout />} />
+          <Route path="/pedido/:id/status" element={<CheckoutStatus />} />
           <Route path="/checkout/:status" element={<CheckoutStatus />} />
           <Route path="/pedido/:status" element={<CheckoutStatus />} />
           <Route path="/meus-pedidos" element={<MyOrders />} />

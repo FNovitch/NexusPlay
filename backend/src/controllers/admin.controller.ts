@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
 import type { Request, Response } from "express";
-import { ArtisanSubscriptionStatus, OrderStatus, PaymentStatus, ProductStatus, SellerPayoutStatus, SellerStatus, UserRole } from "@prisma/client";
+import { ArtisanSubscriptionStatus, OrderStatus, PaymentHistoryType, PaymentStatus, ProductStatus, SellerPayoutStatus, SellerStatus, UserRole } from "@prisma/client";
 import { prisma } from "../lib/prisma.js";
 import { signToken } from "../middlewares/auth.js";
 import { AppError } from "../middlewares/error.js";
@@ -11,6 +11,14 @@ const skipFrom = (req: Request) => Math.max(Number(req.query.skip ?? 0), 0);
 const contains = (q: unknown) => (q ? { contains: String(q), mode: "insensitive" as const } : undefined);
 const success = (res: Response, data: unknown, message = "Operacao realizada com sucesso.") => res.json({ success: true, message, data });
 const paramId = (req: Request) => String(req.params.id);
+const dateRange = (req: Request) => {
+  const gte = req.query.dateFrom ? new Date(String(req.query.dateFrom)) : undefined;
+  const lte = req.query.dateTo ? new Date(String(req.query.dateTo)) : undefined;
+  return {
+    gte: gte && !Number.isNaN(gte.getTime()) ? gte : undefined,
+    lte: lte && !Number.isNaN(lte.getTime()) ? lte : undefined
+  };
+};
 
 function adminUser(user: { id: string; name: string; email: string; role: UserRole; adminProfile?: { id: string; permissionLevel: string } | null }) {
   return {
@@ -117,7 +125,26 @@ export async function listAdminCustomers(req: Request, res: Response) {
 export async function getAdminCustomer(req: Request, res: Response) {
   const item = await prisma.customer.findUnique({ where: { id: paramId(req) }, include: { user: true, addresses: true } });
   if (!item || item.isDeleted) throw new AppError("Cliente nao encontrado", 404);
-  success(res, item);
+  const [recentOrders, orderSummary, paymentSummary] = await Promise.all([
+    prisma.order.findMany({
+      where: { buyerId: item.userId },
+      include: { items: { include: { product: true, seller: true } } },
+      orderBy: { createdAt: "desc" },
+      take: 5
+    }),
+    prisma.order.aggregate({ where: { buyerId: item.userId }, _count: { _all: true }, _sum: { total: true } }),
+    prisma.paymentHistory.aggregate({ where: { customerId: item.id }, _count: { _all: true }, _sum: { amount: true } })
+  ]);
+  success(res, {
+    ...item,
+    recentOrders,
+    summary: {
+      totalOrders: orderSummary._count._all,
+      totalSpent: Number(orderSummary._sum.total ?? 0),
+      totalPayments: paymentSummary._count._all,
+      totalPaid: Number(paymentSummary._sum.amount ?? 0)
+    }
+  });
 }
 
 export async function blockCustomer(req: Request, res: Response) {
@@ -158,7 +185,30 @@ export async function listAdminArtisans(req: Request, res: Response) {
 export async function getAdminArtisan(req: Request, res: Response) {
   const item = await prisma.artisan.findUnique({ where: { id: paramId(req) }, include: { user: true, addresses: true, store: true } });
   if (!item || item.isDeleted) throw new AppError("Artesao nao encontrado", 404);
-  success(res, item);
+  const productOwnerFilter = item.storeId ? { OR: [{ artisanId: item.id }, { sellerId: item.storeId }] } : { artisanId: item.id };
+  const [recentProducts, subscriptions, payoutSummary, paymentSummary] = await Promise.all([
+    prisma.product.findMany({
+      where: productOwnerFilter,
+      include: { category: true, productImages: { orderBy: { createdAt: "asc" } } },
+      orderBy: { createdAt: "desc" },
+      take: 6
+    }),
+    prisma.artisanSubscription.findMany({ where: { artisanId: item.id }, include: { plan: true }, orderBy: { createdAt: "desc" }, take: 3 }),
+    prisma.sellerPayout.aggregate({ where: { artisanId: item.id }, _count: { _all: true }, _sum: { availableAmount: true, totalAmount: true } }),
+    prisma.paymentHistory.aggregate({ where: { artisanId: item.id }, _count: { _all: true }, _sum: { amount: true } })
+  ]);
+  success(res, {
+    ...item,
+    recentProducts,
+    subscriptions,
+    summary: {
+      totalPayouts: payoutSummary._count._all,
+      availablePayout: Number(payoutSummary._sum.availableAmount ?? 0),
+      totalPayout: Number(payoutSummary._sum.totalAmount ?? 0),
+      totalPayments: paymentSummary._count._all,
+      totalReceived: Number(paymentSummary._sum.amount ?? 0)
+    }
+  });
 }
 
 async function updateArtisanAndStore(id: string, data: { status?: SellerStatus; active?: boolean; blocked?: boolean; rejectionReason?: string | null; blockReason?: string | null }) {
@@ -204,7 +254,16 @@ export async function listAdminProducts(req: Request, res: Response) {
 }
 
 export async function getAdminProduct(req: Request, res: Response) {
-  const item = await prisma.product.findUnique({ where: { id: paramId(req) }, include: { seller: true, category: true, productImages: { orderBy: { createdAt: "asc" } }, reviews: true } });
+  const item = await prisma.product.findUnique({
+    where: { id: paramId(req) },
+    include: {
+      seller: true,
+      category: true,
+      productImages: { orderBy: { createdAt: "asc" } },
+      reviews: { include: { author: { select: { name: true, email: true } } }, orderBy: { createdAt: "desc" }, take: 8 },
+      _count: { select: { favorites: true, orderItems: true, reviews: true } }
+    }
+  });
   if (!item) throw new AppError("Produto nao encontrado", 404);
   success(res, item);
 }
@@ -227,12 +286,35 @@ export async function deleteProductAdmin(req: Request, res: Response) {
 
 export async function listAdminOrders(req: Request, res: Response) {
   const status = req.query.status ? String(req.query.status).toUpperCase() as OrderStatus : undefined;
-  const items = await prisma.order.findMany({ where: { status }, include: { buyer: true, items: { include: { product: true, seller: true } } }, skip: skipFrom(req), take: takeFrom(req), orderBy: { createdAt: "desc" } });
-  success(res, { items, total: await prisma.order.count({ where: { status } }) });
+  const paymentStatus = req.query.paymentStatus ? String(req.query.paymentStatus).toUpperCase() as PaymentStatus : undefined;
+  const { gte, lte } = dateRange(req);
+  const q = req.query.q;
+  const where = {
+    status,
+    paymentStatus,
+    createdAt: gte || lte ? { gte, lte } : undefined,
+    OR: q ? [
+      { orderCode: contains(q) },
+      { buyer: { email: contains(q) } },
+      { buyer: { name: contains(q) } }
+    ] : undefined
+  };
+  const items = await prisma.order.findMany({ where, include: { buyer: true, items: { include: { product: true, seller: true } } }, skip: skipFrom(req), take: takeFrom(req), orderBy: { createdAt: "desc" } });
+  success(res, { items, total: await prisma.order.count({ where }) });
 }
 
 export async function getAdminOrder(req: Request, res: Response) {
-  const item = await prisma.order.findUnique({ where: { id: paramId(req) }, include: { buyer: true, items: { include: { product: true, seller: true } } } });
+  const item = await prisma.order.findUnique({
+    where: { id: paramId(req) },
+    include: {
+      buyer: true,
+      items: { include: { product: true, seller: true } },
+      history: { orderBy: { createdAt: "desc" } },
+      paymentHistories: { orderBy: { createdAt: "desc" } },
+      sellerPayouts: { include: { artisan: { include: { user: { select: { email: true, name: true } } } } }, orderBy: { createdAt: "desc" } },
+      shippingQuotes: { include: { artisan: true }, orderBy: { createdAt: "desc" } }
+    }
+  });
   if (!item) throw new AppError("Pedido nao encontrado", 404);
   success(res, item);
 }
@@ -258,8 +340,9 @@ export async function updateAdminOrderStatus(req: Request, res: Response) {
 
 export async function listAdminReviews(req: Request, res: Response) {
   const rating = req.query.rating ? Number(req.query.rating) : undefined;
-  const items = await prisma.review.findMany({ where: { rating, productId: req.query.productId ? String(req.query.productId) : undefined, authorId: req.query.customerId ? String(req.query.customerId) : undefined }, include: { author: true, product: true }, skip: skipFrom(req), take: takeFrom(req), orderBy: { createdAt: "desc" } });
-  success(res, { items, total: await prisma.review.count({ where: { rating } }) });
+  const where = { rating, productId: req.query.productId ? String(req.query.productId) : undefined, authorId: req.query.customerId ? String(req.query.customerId) : undefined };
+  const items = await prisma.review.findMany({ where, include: { author: true, product: true }, skip: skipFrom(req), take: takeFrom(req), orderBy: { createdAt: "desc" } });
+  success(res, { items, total: await prisma.review.count({ where }) });
 }
 
 export async function hideReview(req: Request, res: Response) {
@@ -275,8 +358,14 @@ export async function deleteReviewAdmin(req: Request, res: Response) {
   success(res, null, "Avaliacao excluida.");
 }
 
-export async function listAdminCategories(_req: Request, res: Response) {
-  success(res, { items: await prisma.category.findMany({ include: { _count: { select: { products: true } } }, orderBy: { name: "asc" } }) });
+export async function listAdminCategories(req: Request, res: Response) {
+  const active = req.query.active === undefined || req.query.active === "" ? undefined : req.query.active === "true";
+  const where = { active, OR: req.query.q ? [{ name: contains(req.query.q) }, { slug: contains(req.query.q) }] : undefined };
+  const [items, total] = await Promise.all([
+    prisma.category.findMany({ where, include: { _count: { select: { products: true } } }, skip: skipFrom(req), take: takeFrom(req), orderBy: { name: "asc" } }),
+    prisma.category.count({ where })
+  ]);
+  success(res, { items, total });
 }
 
 export async function createAdminCategory(req: Request, res: Response) {
@@ -352,11 +441,25 @@ export async function markPayoutPaid(req: Request, res: Response) {
 }
 
 export async function listAdminPaymentHistory(req: Request, res: Response) {
+  const { gte, lte } = dateRange(req);
+  const status = req.query.status ? String(req.query.status) : undefined;
+  const type = req.query.type ? String(req.query.type).toUpperCase() as PaymentHistoryType : undefined;
+  const where = {
+    status,
+    type,
+    createdAt: gte || lte ? { gte, lte } : undefined,
+    OR: req.query.q ? [
+      { description: contains(req.query.q) },
+      { mpPaymentId: contains(req.query.q) },
+      { order: { orderCode: contains(req.query.q) } }
+    ] : undefined
+  };
   const items = await prisma.paymentHistory.findMany({
+    where,
     include: { artisan: true, customer: true, order: true, subscription: { include: { plan: true } } },
     skip: skipFrom(req),
     take: takeFrom(req),
     orderBy: { createdAt: "desc" }
   });
-  success(res, { items, total: await prisma.paymentHistory.count() });
+  success(res, { items, total: await prisma.paymentHistory.count({ where }) });
 }

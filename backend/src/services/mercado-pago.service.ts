@@ -36,10 +36,15 @@ function logPreferenceDebug(flow: string, payload: unknown, response?: { id?: st
 }
 
 function mockPreference(referenceId: string, path = "pedido") {
+  const frontendUrl = env.FRONTEND_URL.replace(/\/$/, "");
+  const successUrl = path === "pedido"
+    ? `${frontendUrl}/pedido/${referenceId}/status?resultado=sucesso&mock=true&ref=${referenceId}`
+    : `${frontendUrl}/${path}/sucesso?mock=true&ref=${referenceId}`;
+
   return {
     id: `mock-${referenceId}`,
-    init_point: `${env.FRONTEND_URL}/${path}/sucesso?mock=true&ref=${referenceId}`,
-    sandbox_init_point: `${env.FRONTEND_URL}/${path}/sucesso?mock=true&ref=${referenceId}`
+    init_point: successUrl,
+    sandbox_init_point: successUrl
   };
 }
 
@@ -86,9 +91,9 @@ export async function criarPreferenciaPagamento(input: {
       payer: { name: input.comprador.nome, email: input.comprador.email },
       payment_methods: checkoutPaymentMethods,
       back_urls: {
-        success: `${env.FRONTEND_URL}/pedido/sucesso`,
-        failure: `${env.FRONTEND_URL}/pedido/falha`,
-        pending: `${env.FRONTEND_URL}/pedido/pendente`
+        success: `${env.FRONTEND_URL.replace(/\/$/, "")}/pedido/${input.pedidoId}/status?resultado=sucesso`,
+        failure: `${env.FRONTEND_URL.replace(/\/$/, "")}/pedido/${input.pedidoId}/status?resultado=falha`,
+        pending: `${env.FRONTEND_URL.replace(/\/$/, "")}/pedido/${input.pedidoId}/status?resultado=pendente`
       },
       auto_return: "approved",
       notification_url: `${env.BACKEND_URL.replace(/\/$/, "")}/api/v1/webhooks/mercado-pago?source_news=webhooks`,

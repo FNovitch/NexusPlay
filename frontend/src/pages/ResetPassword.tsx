@@ -2,6 +2,7 @@ import { KeyRound } from "lucide-react";
 import type React from "react";
 import { useMemo, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { PasswordField } from "../components/PasswordField";
 import { isStrongPassword, parseApiError } from "../lib/artisanForm";
 import { resetCustomerPassword } from "../services/customers";
 import { useToast } from "../store/toast";
@@ -58,11 +59,11 @@ export function ResetPassword() {
         {error && <div className="mt-5 rounded-xl bg-red-50 px-4 py-3 text-sm font-bold text-red-800">{error}</div>}
         <label className="mt-5 block">
           <span className="mb-1.5 block text-sm font-black text-kriar-contrast">Nova senha</span>
-          <input className="input-field w-full" type="password" value={password} onChange={(event) => setPassword(event.target.value)} />
+          <PasswordField value={password} onChange={(event) => setPassword(event.target.value)} autoComplete="new-password" />
         </label>
         <label className="mt-4 block">
           <span className="mb-1.5 block text-sm font-black text-kriar-contrast">Confirmar nova senha</span>
-          <input className="input-field w-full" type="password" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} />
+          <PasswordField value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} autoComplete="new-password" />
         </label>
         <button className="btn-primary mt-5 w-full" disabled={loading}>
           <KeyRound className="h-5 w-5" /> {loading ? "Salvando..." : "Alterar senha"}

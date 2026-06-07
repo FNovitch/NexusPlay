@@ -17,7 +17,8 @@ const currency = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "
 export function SellerDashboard() {
   const user = useAuth((state) => state.user);
   const fallbackProducts = useMemo(() => products.filter((item) => productSellerSlug(item) === "atelie-raiz-digital"), []);
-  const [myProducts, setMyProducts] = useState<Product[]>(fallbackProducts);
+  const initialStatus = user?.status === "APPROVED" ? "aprovado" : user?.status === "REJECTED" ? "recusado" : "pendente";
+  const [myProducts, setMyProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -40,10 +41,10 @@ export function SellerDashboard() {
     variations: [] as Array<{ name: string; options: string }>
   });
   const [dashboard, setDashboard] = useState({
-    revenue: fallbackProducts.reduce((sum, product) => sum + productSalesCount(product) * product.price, 0),
-    orders: 38,
-    rating: "4.9",
-    status: "pendente",
+    revenue: 0,
+    orders: 0,
+    rating: "0.0",
+    status: initialStatus,
     artisanName: user?.name ?? "Vendedor",
     storeName: "Sua loja"
   });
@@ -68,7 +69,7 @@ export function SellerDashboard() {
         setMyProducts((data.topProducts ?? []).map(normalizeProduct));
       })
       .catch(() => {
-        setMyProducts(fallbackProducts);
+        setMyProducts(user?.status === "APPROVED" ? fallbackProducts : []);
       });
 
     getMyArtisanProfile()
@@ -83,7 +84,7 @@ export function SellerDashboard() {
       .catch(() => undefined);
 
     getSubscriptionStatus().then(setSubscription).catch(() => undefined);
-  }, [fallbackProducts]);
+  }, [fallbackProducts, user?.name, user?.status]);
 
   if (!user || user.role !== "ARTISAN") {
     return <Navigate to="/artesao/login" replace />;
@@ -96,11 +97,13 @@ export function SellerDashboard() {
   }
 
   function startCreateProduct() {
+    if (!canManageProducts) return;
     resetForm();
     setShowForm((current) => !current || Boolean(editingProduct));
   }
 
   function startEditProduct(product: Product) {
+    if (!canManageProducts) return;
     setEditingProduct(product);
     setImageError("");
     setForm({
@@ -152,6 +155,10 @@ export function SellerDashboard() {
 
   async function submitProduct(event: React.FormEvent) {
     event.preventDefault();
+    if (!canManageProducts) {
+      setImageError("Seu cadastro precisa estar aprovado para cadastrar ou editar produtos.");
+      return;
+    }
     const category = categories.find((item) => item.id === form.categoryId);
     if (!category) {
       return;
@@ -200,6 +207,15 @@ export function SellerDashboard() {
     [TrendingUp, dashboard.rating, "avaliação"],
     [ShieldCheck, dashboard.status, "status da conta"]
   ];
+  const isApproved = dashboard.status === "aprovado";
+  const canManageProducts = isApproved && (!subscription || subscription.canSell);
+  const blockedReason = !isApproved
+    ? dashboard.status === "recusado"
+      ? "Seu cadastro foi recusado. Atualize seus dados ou fale com o suporte antes de vender."
+      : "Seu cadastro está em análise. Assim que for aprovado, o cadastro de produtos será liberado."
+    : subscription && !subscription.canSell
+      ? "Sua assinatura precisa estar ativa para cadastrar ou editar produtos."
+      : "";
 
   return (
     <main className="app-shell section-y">
@@ -212,7 +228,7 @@ export function SellerDashboard() {
             <p className="mt-2 max-w-2xl rounded-xl border border-kriar-line bg-kriar-background px-4 py-3 text-sm font-bold text-kriar-contrast">
               {dashboard.status === "recusado"
                 ? "Seu cadastro foi recusado. Atualize o perfil ou fale com o suporte antes de vender."
-                : "Seu cadastro está pendente de aprovação. Você pode preparar o perfil e os produtos enquanto aguarda."}
+                : "Seu cadastro está pendente de aprovação. Você poderá cadastrar produtos assim que a análise for concluída."}
             </p>
           )}
           {subscription && !subscription.canSell && (
@@ -222,18 +238,45 @@ export function SellerDashboard() {
           )}
         </div>
         <div className="flex flex-wrap gap-3">
-          <Link to="/artesao/perfil" className="btn-secondary">
-            <Settings className="h-5 w-5" /> Perfil
-          </Link>
-          <Link to="/artesao/pedidos" className="btn-secondary">Pedidos</Link>
-          <Link to="/artesao/assinatura" className="btn-secondary">Assinatura</Link>
-          <button className="btn-primary" onClick={startCreateProduct} disabled={subscription ? !subscription.canSell : false}>
-            <ImagePlus className="h-5 w-5" /> {showForm && !editingProduct ? "Fechar cadastro" : "Cadastrar produto"}
-          </button>
+          {isApproved ? (
+            <Link to="/artesao/perfil" className="btn-secondary">
+              <Settings className="h-5 w-5" /> Perfil
+            </Link>
+          ) : (
+            <span className="inline-flex min-h-11 items-center rounded-full bg-kriar-paper px-4 py-2 text-sm font-black text-kriar-muted">
+              Perfil em análise
+            </span>
+          )}
+          {isApproved && <Link to="/artesao/pedidos" className="btn-secondary">Pedidos</Link>}
+          {isApproved && <Link to="/artesao/assinatura" className="btn-secondary">Assinatura</Link>}
+          {canManageProducts ? (
+            <button className="btn-primary" onClick={startCreateProduct}>
+              <ImagePlus className="h-5 w-5" /> {showForm && !editingProduct ? "Fechar cadastro" : "Cadastrar produto"}
+            </button>
+          ) : (
+            <span className="inline-flex min-h-11 items-center rounded-full bg-kriar-paper px-4 py-2 text-sm font-black text-kriar-muted">
+              Cadastro de produto bloqueado
+            </span>
+          )}
         </div>
       </div>
 
-      {showForm && (
+      {!canManageProducts && (
+        <section className="panel mb-8 p-5">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="eyebrow mb-2">Produtos</p>
+              <h2 className="text-xl font-black tracking-tight text-kriar-contrast">Aguardando liberação</h2>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-kriar-muted">{blockedReason}</p>
+            </div>
+            <span className="inline-flex min-h-11 items-center rounded-full bg-kriar-paper px-4 py-2 text-sm font-black text-kriar-muted">
+              Aguarde a análise
+            </span>
+          </div>
+        </section>
+      )}
+
+      {showForm && canManageProducts && (
         <form onSubmit={submitProduct} className="panel mb-8 grid gap-4 p-5 md:grid-cols-2">
           <input className="input-field" required placeholder="Nome do produto" value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} />
           <select className="select-field" required value={form.categoryId} onChange={(event) => setForm({ ...form, categoryId: event.target.value })}>
@@ -343,7 +386,7 @@ export function SellerDashboard() {
                   <td>{productSalesCount(product)}</td>
                   <td className="font-bold text-kriar-primary">{currency.format(product.price)}</td>
                   <td><span className="badge-soft">{product.status}</span></td>
-                  <td><button className="btn-secondary px-3 py-1 text-xs" onClick={() => startEditProduct(product)}>Editar</button></td>
+                  <td>{canManageProducts ? <button className="btn-secondary px-3 py-1 text-xs" onClick={() => startEditProduct(product)}>Editar</button> : <span className="text-xs font-bold text-kriar-muted">Bloqueado</span>}</td>
                 </tr>
               ))}
             </tbody>

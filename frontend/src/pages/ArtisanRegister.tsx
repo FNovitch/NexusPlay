@@ -2,6 +2,7 @@ import { Store, UserPlus } from "lucide-react";
 import type React from "react";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { PasswordField } from "../components/PasswordField";
 import {
   fetchAddressByCep,
   isStrongPassword,
@@ -194,11 +195,11 @@ export function ArtisanRegister() {
             {errorText("craftCategories")}
           </label>
           <label>
-            <input required className={`input-field w-full ${fieldClass(errors.password)}`} type="password" placeholder="Senha" value={form.password} onChange={(event) => update("password", event.target.value)} />
+            <PasswordField required className={fieldClass(errors.password)} placeholder="Senha" value={form.password} onChange={(event) => update("password", event.target.value)} autoComplete="new-password" />
             {errorText("password")}
           </label>
           <label>
-            <input required className={`input-field w-full ${fieldClass(errors.confirmPassword)}`} type="password" placeholder="Confirmar senha" value={form.confirmPassword} onChange={(event) => update("confirmPassword", event.target.value)} />
+            <PasswordField required className={fieldClass(errors.confirmPassword)} placeholder="Confirmar senha" value={form.confirmPassword} onChange={(event) => update("confirmPassword", event.target.value)} autoComplete="new-password" />
             {errorText("confirmPassword")}
           </label>
           <label className="md:col-span-2">

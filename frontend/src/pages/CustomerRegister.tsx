@@ -2,6 +2,7 @@ import { UserPlus } from "lucide-react";
 import type React from "react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { PasswordField } from "../components/PasswordField";
 import { fetchAddressByCep, isStrongPassword, isValidCpf, isValidPhone, maskCep, maskDocument, maskPhone, onlyDigits, parseApiError, type FieldErrors } from "../lib/artisanForm";
 import { registerCustomer } from "../services/customers";
 import { useToast } from "../store/toast";
@@ -99,8 +100,8 @@ export function CustomerRegister() {
         {message && <div className="rounded-xl bg-kriar-background p-3 text-sm font-bold md:col-span-2">{message}</div>}
         <label><input className="input-field w-full" placeholder="Nome completo" value={form.name} onChange={(e) => update("name", e.target.value)} />{errorText("name")}</label>
         <label><input className="input-field w-full" type="email" placeholder="E-mail" value={form.email} onChange={(e) => update("email", e.target.value)} />{errorText("email")}</label>
-        <label><input className="input-field w-full" type="password" placeholder="Senha" value={form.password} onChange={(e) => update("password", e.target.value)} />{errorText("password")}</label>
-        <label><input className="input-field w-full" type="password" placeholder="Confirmar senha" value={form.confirmPassword} onChange={(e) => update("confirmPassword", e.target.value)} />{errorText("confirmPassword")}</label>
+        <label><PasswordField placeholder="Senha" value={form.password} onChange={(e) => update("password", e.target.value)} autoComplete="new-password" />{errorText("password")}</label>
+        <label><PasswordField placeholder="Confirmar senha" value={form.confirmPassword} onChange={(e) => update("confirmPassword", e.target.value)} autoComplete="new-password" />{errorText("confirmPassword")}</label>
         <label><input className="input-field w-full" placeholder="CPF" value={form.cpf} onChange={(e) => update("cpf", maskDocument(e.target.value))} />{errorText("cpf")}</label>
         <label><input className="input-field w-full" placeholder="Telefone/WhatsApp" value={form.phone} onChange={(e) => update("phone", maskPhone(e.target.value))} />{errorText("phone")}</label>
         <label><input className="input-field w-full" type="date" value={form.birthDate} onChange={(e) => update("birthDate", e.target.value)} />{errorText("birthDate")}</label>

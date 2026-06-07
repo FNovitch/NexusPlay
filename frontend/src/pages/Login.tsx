@@ -3,6 +3,7 @@ import type { LucideIcon } from "lucide-react";
 import type React from "react";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { PasswordField } from "../components/PasswordField";
 import { parseApiError } from "../lib/artisanForm";
 import { useAuth } from "../store/auth";
 import { useToast } from "../store/toast";
@@ -64,7 +65,7 @@ export function Login({ artisanMode = false }: LoginProps) {
         <p className="mt-5 max-w-xl text-lg leading-8 text-kriar-muted">
           {artisanMode
             ? "Use seu e-mail e sua senha para acessar o painel do vendedor."
-            : "Use o acesso de cliente para comprar, acompanhar pedidos, confirmar recebimento e avaliar produtos."}
+            : "Use sua conta para comprar, acompanhar pedidos, confirmar recebimento e avaliar produtos."}
         </p>
         <div className="mt-8 grid max-w-xl gap-3 sm:grid-cols-3">
           {accountTypes.map(([Icon, label]) => (
@@ -84,7 +85,7 @@ export function Login({ artisanMode = false }: LoginProps) {
         </label>
         <label className="mb-5 block">
           <span className="mb-1.5 block text-sm font-black text-kriar-contrast">Senha</span>
-          <input type="password" value={password} onChange={(event) => setPassword(event.target.value)} className="input-field w-full" />
+          <PasswordField value={password} onChange={(event) => setPassword(event.target.value)} autoComplete="current-password" />
         </label>
         {!artisanMode && <Link to="/esqueci-minha-senha" className="mb-4 block text-right text-sm font-bold text-kriar-primary">Esqueci minha senha</Link>}
         <button disabled={loading} className="btn-primary w-full">
@@ -97,7 +98,7 @@ export function Login({ artisanMode = false }: LoginProps) {
             </button>
           ) : (
             <button type="button" className="min-h-11 rounded-full px-4 py-2 text-left font-bold text-kriar-primary transition duration-[250ms] hover:bg-kriar-primary/10" onClick={() => navigate("/cliente/cadastro")}>
-              Criar conta de cliente
+              Criar conta
             </button>
           )}
         </div>

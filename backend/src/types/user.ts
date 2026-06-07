@@ -8,6 +8,7 @@ export type UserResponseDTO = {
   email: string;
   role: UserRole;
   storeId: string | null;
+  status?: string;
   isDeleted: boolean;
   createdAt: string;
   updatedAt: string;

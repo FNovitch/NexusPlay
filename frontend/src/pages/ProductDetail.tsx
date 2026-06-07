@@ -63,8 +63,8 @@ export function ProductDetail() {
 
   return (
     <main className="app-shell py-8 sm:py-12">
-      <div className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr]">
-        <div className="overflow-hidden rounded-[28px] bg-kriar-background shadow-card">
+      <div className="grid gap-8 lg:grid-cols-[1.08fr_0.92fr]">
+        <div className="overflow-hidden rounded-2xl bg-kriar-background shadow-soft">
           <img
             src={productImageUrl(product)}
             alt={product.name}
@@ -73,7 +73,7 @@ export function ProductDetail() {
             className="aspect-[4/3] w-full object-cover"
           />
         </div>
-        <section className="panel p-5 sm:p-7">
+        <section className="rounded-2xl border border-kriar-line bg-kriar-surface p-5 shadow-soft sm:p-7">
           <Link to={`/loja/${productSellerSlug(product)}`} className="text-sm font-black text-kriar-secondary transition hover:text-kriar-primary">
             {productSellerName(product)}
           </Link>
@@ -83,8 +83,8 @@ export function ProductDetail() {
             <span className="badge-soft">{productSalesCount(product)} vendas</span>
             <span className="badge-warm">Feito à mão</span>
           </div>
-          <p className="mt-6 text-base leading-8 text-kriar-muted sm:text-lg">{product.description}</p>
-          <div className="mt-7 text-4xl font-black tracking-tight text-kriar-primary">{currency.format(product.price)}</div>
+          <p className="mt-5 text-base leading-8 text-kriar-muted">{product.description}</p>
+          <div className="mt-6 text-4xl font-black tracking-tight text-kriar-primary">{currency.format(product.price)}</div>
           {product.stock <= 4 && <p className="mt-2 font-bold text-kriar-secondary">Estoque baixo: restam {product.stock} unidades</p>}
 
           {product.customizationAvailable && (
@@ -145,13 +145,13 @@ export function ProductDetail() {
             </button>
           </div>
 
-          <div className="mt-7 grid gap-3 sm:grid-cols-2">
-            <div className="rounded-[20px] border border-kriar-line bg-kriar-background/70 p-4">
+          <div className="mt-7 grid gap-3 border-t border-kriar-line pt-5 sm:grid-cols-2">
+            <div className="rounded-xl bg-kriar-background/70 p-4">
               <ShieldCheck className="mb-2 h-5 w-5 text-kriar-primary" />
               <strong className="text-kriar-contrast">Pagamento Mercado Pago</strong>
               <p className="mt-1 text-sm leading-6 text-kriar-muted">Preferência gerada pela API e confirmação via webhook.</p>
             </div>
-            <div className="rounded-[20px] border border-kriar-line bg-kriar-background/70 p-4">
+            <div className="rounded-xl bg-kriar-background/70 p-4">
               <PackageCheck className="mb-2 h-5 w-5 text-kriar-primary" />
               <strong className="text-kriar-contrast">{product.pickupAvailable ? "Retirada local disponível" : "Pedido por vendedor"}</strong>
               <p className="mt-1 text-sm leading-6 text-kriar-muted">
