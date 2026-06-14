@@ -17,7 +17,7 @@ export function ArtisanSubscription() {
   return (
     <main className="app-shell section-y">
       <p className="eyebrow mb-2">Minha assinatura</p>
-      <h1 className="text-3xl font-semibold text-nexus-contrast">Status da loja</h1>
+      <h1 className="text-3xl font-semibold leading-tight text-nexus-contrast">Status da loja</h1>
       <section className="panel mt-6 p-6">
         <Clock className="mb-4 h-6 w-6 text-nexus-primary" />
         <strong className="text-2xl text-nexus-contrast">{status?.status ?? "Carregando..."}</strong>

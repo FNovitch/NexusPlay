@@ -53,7 +53,7 @@ export function ResetPassword() {
     <main className="app-shell grid min-h-[68vh] place-items-center py-12">
       <form onSubmit={submit} className="panel w-full max-w-md p-6">
         <p className="eyebrow mb-2">Cliente</p>
-        <h1 className="text-3xl font-semibold tracking-normal text-nexus-contrast">Criar nova senha</h1>
+        <h1 className="text-3xl font-semibold leading-tight tracking-normal text-nexus-contrast">Criar nova senha</h1>
         <p className="mt-3 text-sm leading-6 text-nexus-muted">Sua nova senha precisa ser forte para proteger compras, pedidos e avaliações.</p>
         {message && <div className="mt-5 rounded-lg bg-emerald-50 px-4 py-3 text-sm font-bold text-emerald-800">{message}</div>}
         {error && <div className="mt-5 rounded-lg bg-red-50 px-4 py-3 text-sm font-bold text-red-800">{error}</div>}

@@ -40,7 +40,7 @@ export function ArtisanPlans() {
       <p className="eyebrow mb-2">Assinatura da loja</p>
       <div className="mb-8 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
         <div>
-          <h1 className="text-3xl font-semibold text-nexus-contrast">Continue publicando na NexusPlay</h1>
+          <h1 className="text-3xl font-semibold leading-tight text-nexus-contrast">Continue publicando na NexusPlay</h1>
           <p className="mt-2 max-w-2xl text-nexus-muted">A loja demonstrativa usa assinatura fictícia, sem comissão sobre pedidos simulados.</p>
         </div>
         <Link to="/vendedor/assinatura" className="btn-secondary">Ver status</Link>
@@ -62,7 +62,7 @@ export function ArtisanPlans() {
             <h2 className="text-2xl font-semibold text-nexus-contrast">{plan.name}</h2>
             <p className="mt-2 text-nexus-muted">{plan.description}</p>
             <div className="mt-6 text-4xl font-semibold text-nexus-contrast">{currency.format(Number(plan.price))}</div>
-            <p className="mt-1 text-sm font-bold text-nexus-muted">{plan.durationDays} dias</p>
+          <p className="mt-1 text-sm font-semibold text-nexus-muted">{plan.durationDays} dias de acesso</p>
             <button className="btn-primary mt-6 w-full" disabled={loadingPlanId === plan.id} onClick={() => subscribe(plan.id)}>
               <CreditCard className="h-5 w-5" /> {loadingPlanId === plan.id ? "Criando checkout..." : "Assinar com Mercado Pago"}
             </button>

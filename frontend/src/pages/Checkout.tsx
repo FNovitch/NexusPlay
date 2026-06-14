@@ -156,7 +156,7 @@ export function Checkout() {
 
     if (isDemoToken(token)) {
       const order = createDemoOrder(items, shippingTotal);
-      showToast({ title: "Pedido Simulado Criado", description: `${order.orderCode} foi aprovado na demo.`, variant: "success" });
+      showToast({ title: "Pedido simulado criado", description: `${order.orderCode} foi aprovado na demo.`, variant: "success" });
       navigate(`/pedido/${order.id}/status?resultado=sucesso`);
       setLoading(false);
       return;
@@ -200,7 +200,7 @@ export function Checkout() {
   if (items.length === 0) {
     return (
       <main className="app-shell grid min-h-[60vh] place-items-center py-16">
-        <EmptyState icon={<PackageCheck className="h-6 w-6" />} title="Seu Carrinho Está Vazio" description="Explore o catálogo para encontrar periféricos, colecionáveis e acessórios." action={<Link to="/" className="btn-primary">Ver Produtos</Link>} />
+        <EmptyState icon={<PackageCheck className="h-6 w-6" />} title="Seu carrinho está vazio" description="Explore o catálogo para encontrar periféricos, colecionáveis e acessórios." action={<Link to="/" className="btn-primary">Ver produtos</Link>} />
       </main>
     );
   }
@@ -209,12 +209,12 @@ export function Checkout() {
     <main className="app-shell grid gap-8 py-10 lg:grid-cols-[1fr_390px]">
       <section>
         <p className="eyebrow mb-2">Checkout NexusPlay</p>
-        <h1 className="text-3xl font-semibold tracking-normal text-nexus-contrast">Finalizar Pedido</h1>
-        <p className="mt-2 max-w-2xl text-nexus-muted">Revise itens, endereço e conclua um Pedido Simulado na Demo.</p>
+        <h1 className="text-3xl font-semibold leading-tight tracking-normal text-nexus-contrast">Finalizar pedido</h1>
+        <p className="mt-2 max-w-2xl text-nexus-muted">Revise itens, endereço e conclua um pedido simulado na demo.</p>
         {error && <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm font-medium text-red-700">{error}</div>}
 
         <section className="panel mt-7 grid gap-3 p-5 md:grid-cols-2">
-          <h2 className="text-xl font-semibold text-nexus-contrast md:col-span-2">Endereço de Entrega</h2>
+          <h2 className="text-xl font-semibold text-nexus-contrast md:col-span-2">Endereço de entrega</h2>
           <input className="input-field" placeholder="CEP" value={address.zipCode} onBlur={lookupCep} onChange={(e) => setAddress({ ...address, zipCode: maskCep(e.target.value) })} />
           <input className="input-field" placeholder="Rua" value={address.street} onChange={(e) => setAddress({ ...address, street: e.target.value })} />
           <input className="input-field" placeholder="Número" value={address.number} onChange={(e) => setAddress({ ...address, number: e.target.value })} />
@@ -223,13 +223,13 @@ export function Checkout() {
           <input className="input-field" placeholder="Cidade" value={address.city} onChange={(e) => setAddress({ ...address, city: e.target.value })} />
           <input className="input-field" maxLength={2} placeholder="UF" value={address.state} onChange={(e) => setAddress({ ...address, state: e.target.value.toUpperCase() })} />
           <button type="button" className="btn-secondary md:w-max" onClick={calculateFreight} disabled={freightLoading}>
-            <Truck className="h-5 w-5" /> {freightLoading ? "Calculando..." : "Calcular Entrega"}
+            <Truck className="h-5 w-5" /> {freightLoading ? "Calculando..." : "Calcular entrega"}
           </button>
         </section>
 
         {freightGroups.length > 0 && (
           <section className="panel mt-7 p-5">
-            <h2 className="mb-4 text-xl font-semibold text-nexus-contrast">Escolha a Entrega</h2>
+            <h2 className="mb-4 text-xl font-semibold text-nexus-contrast">Escolha a entrega</h2>
             <div className="grid gap-5">
               {freightGroups.map((group) => (
                 <div key={group.groupId} className="rounded-lg border border-nexus-line p-4">
@@ -304,13 +304,13 @@ export function Checkout() {
       </section>
 
       <aside className="panel h-max p-5 lg:sticky lg:top-24">
-        <div className="mb-5 flex items-center gap-3 text-nexus-secondary"><Lock className="h-5 w-5" /><strong className="text-nexus-contrast">{isDemoToken(token) ? "Pedido Simulado" : "Mercado Pago"}</strong></div>
+        <div className="mb-5 flex items-center gap-3 text-nexus-secondary"><Lock className="h-5 w-5" /><strong className="text-nexus-contrast">{isDemoToken(token) ? "Pedido simulado" : "Mercado Pago"}</strong></div>
         <div className="space-y-3 border-y border-nexus-line py-4 text-sm">
           <div className="flex justify-between"><span className="text-nexus-muted">Produtos</span><span className="font-medium">{currency.format(cartTotal(items))}</span></div>
           <div className="flex justify-between"><span className="text-nexus-muted">Entrega</span><span className="font-medium">{currency.format(shippingTotal)}</span></div>
         </div>
         <div className="my-5 flex items-center justify-between text-xl font-semibold text-nexus-contrast"><span>Total</span><span>{currency.format(cartTotal(items) + shippingTotal)}</span></div>
-        <button onClick={handleCheckout} disabled={loading} className="btn-primary w-full"><CreditCard className="h-5 w-5" />{loading ? "Criando Pedido..." : isDemoToken(token) ? "Simular Pedido" : "Finalizar Pedido"}</button>
+        <button onClick={handleCheckout} disabled={loading} className="btn-primary w-full"><CreditCard className="h-5 w-5" />{loading ? "Criando pedido..." : isDemoToken(token) ? "Simular pedido" : "Finalizar pedido"}</button>
       </aside>
     </main>
   );

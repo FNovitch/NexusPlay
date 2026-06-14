@@ -28,7 +28,7 @@ export function Header() {
   }, [query]);
 
   const accountPath = user?.role === "ADMIN" ? "/admin/dashboard" : user?.role === "ARTISAN" ? "/vendedor" : user?.role === "CUSTOMER" ? "/cliente" : "/login";
-  const accountLabel = user ? "Minha Conta" : "Entrar";
+  const accountLabel = user ? "Minha conta" : "Entrar";
 
   function submitSearch(event: React.FormEvent) {
     event.preventDefault();
@@ -48,7 +48,7 @@ export function Header() {
   }
 
   const navClass = ({ isActive }: { isActive: boolean }) =>
-    `inline-flex min-h-9 items-center rounded-lg px-3 text-sm font-medium transition duration-200 ${
+    `inline-flex min-h-10 items-center rounded-lg px-3 text-sm font-medium transition duration-200 ${
       isActive ? "bg-nexus-paper text-nexus-contrast" : "text-nexus-muted hover:bg-nexus-paper hover:text-nexus-contrast"
     }`;
 
@@ -65,7 +65,7 @@ export function Header() {
             Marcas
           </NavLink>
           <NavLink className={navClass} to={user?.role === "ARTISAN" ? "/vendedor" : "/vendedor/cadastro"}>
-            Vender Produtos
+            Vender produtos
           </NavLink>
         </nav>
 
@@ -117,15 +117,15 @@ export function Header() {
             {accountOpen && (
               <div className="absolute right-0 mt-2 w-64 overflow-hidden rounded-lg border border-nexus-line bg-nexus-surface p-2 shadow-card">
                 <div className="border-b border-nexus-line px-3 py-3">
-                  <p className="text-xs font-semibold uppercase tracking-[0.1em] text-nexus-muted">{user ? "Conta Conectada" : "Conta NexusPlay"}</p>
-                  <strong className="mt-1 block truncate text-sm font-semibold text-nexus-contrast">{user?.name ?? "Entre para Continuar"}</strong>
+                  <p className="text-xs font-semibold uppercase tracking-[0.1em] text-nexus-muted">{user ? "Conta conectada" : "Conta NexusPlay"}</p>
+                  <strong className="mt-1 block truncate text-sm font-semibold text-nexus-contrast">{user?.name ?? "Entre para continuar"}</strong>
                 </div>
                 <div className="grid py-2 text-sm font-medium">
-                  <AccountLink to={accountPath} onClick={() => setAccountOpen(false)}>{user ? "Minha Conta" : "Entrar"}</AccountLink>
-                  {!user && <AccountLink to="/cliente/cadastro" onClick={() => setAccountOpen(false)}>Criar Conta</AccountLink>}
-                  {user?.role === "CUSTOMER" && <AccountLink to="/meus-pedidos" onClick={() => setAccountOpen(false)}>Meus Pedidos</AccountLink>}
-                  {user?.role === "ARTISAN" && <AccountLink to="/vendedor" onClick={() => setAccountOpen(false)}>Meus Produtos</AccountLink>}
-                  {user?.role === "ADMIN" && <AccountLink to="/admin/dashboard" onClick={() => setAccountOpen(false)}>Painel Administrativo</AccountLink>}
+                  <AccountLink to={accountPath} onClick={() => setAccountOpen(false)}>{user ? "Minha conta" : "Entrar"}</AccountLink>
+                  {!user && <AccountLink to="/cliente/cadastro" onClick={() => setAccountOpen(false)}>Criar conta</AccountLink>}
+                  {user?.role === "CUSTOMER" && <AccountLink to="/meus-pedidos" onClick={() => setAccountOpen(false)}>Meus pedidos</AccountLink>}
+                  {user?.role === "ARTISAN" && <AccountLink to="/vendedor" onClick={() => setAccountOpen(false)}>Meus produtos</AccountLink>}
+                  {user?.role === "ADMIN" && <AccountLink to="/admin/dashboard" onClick={() => setAccountOpen(false)}>Painel administrativo</AccountLink>}
                   {user && (
                     <button
                       className="flex min-h-10 items-center gap-2 rounded-lg px-3 text-left text-red-600 transition hover:bg-red-50"
@@ -156,7 +156,7 @@ export function Header() {
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
                 className="input-field min-w-0 flex-1"
-                placeholder="Buscar Produtos"
+                placeholder="Buscar produtos"
               />
               <button className="btn-primary px-4" aria-label="Buscar">
                 <Search className="h-4 w-4" />
@@ -168,10 +168,10 @@ export function Header() {
               <MenuLink icon={UserRound} to={accountPath} onClick={() => setMenu(false)}>{accountLabel}</MenuLink>
               <button className="flex min-h-10 items-center gap-2 rounded-lg px-3 py-2 text-left text-nexus-muted transition duration-200 hover:bg-nexus-paper hover:text-nexus-contrast" onClick={() => { openCart(); setMenu(false); }}><ShoppingBag className="h-4 w-4" /> Carrinho</button>
               <span className="flex min-h-10 items-center gap-2 rounded-lg px-3 py-2 text-nexus-muted"><Heart className="h-4 w-4" /> Favoritos</span>
-              {user?.role === "CUSTOMER" && <MenuLink to="/meus-pedidos" onClick={() => setMenu(false)}>Meus Pedidos</MenuLink>}
-              {!user && <MenuLink to="/cliente/cadastro" onClick={() => setMenu(false)}>Criar Conta</MenuLink>}
+              {user?.role === "CUSTOMER" && <MenuLink to="/meus-pedidos" onClick={() => setMenu(false)}>Meus pedidos</MenuLink>}
+              {!user && <MenuLink to="/cliente/cadastro" onClick={() => setMenu(false)}>Criar conta</MenuLink>}
               <MenuLink icon={Sparkles} to={user?.role === "ARTISAN" ? "/vendedor" : "/vendedor/cadastro"} onClick={() => setMenu(false)}>
-                {user?.role === "ARTISAN" ? "Meus Produtos" : "Vender Produtos"}
+                {user?.role === "ARTISAN" ? "Meus produtos" : "Vender produtos"}
               </MenuLink>
               {user?.role === "ARTISAN" && <MenuLink to="/vendedor/assinatura" onClick={() => setMenu(false)}>Assinatura</MenuLink>}
               {user?.role === "ADMIN" && <MenuLink to="/admin/dashboard" onClick={() => setMenu(false)}>Painel Administrativo</MenuLink>}

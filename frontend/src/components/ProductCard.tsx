@@ -35,7 +35,7 @@ export function ProductCard({ product }: { product: Product }) {
   }
 
   return (
-    <article className="group panel overflow-hidden card-hover">
+    <article className="group panel flex h-full flex-col overflow-hidden card-hover">
       <Link to={`/produto/${product.slug}`} className="block">
         <div className="relative aspect-[4/3] overflow-hidden border-b border-nexus-line bg-nexus-paper">
           <img
@@ -48,8 +48,8 @@ export function ProductCard({ product }: { product: Product }) {
           />
         </div>
       </Link>
-      <div className="space-y-3 p-4">
-        <div>
+      <div className="flex flex-1 flex-col space-y-3 p-4">
+        <div className="flex-1">
           <div className="mb-2 flex flex-wrap gap-1.5">
             {product.customizationAvailable && <span className="badge-warm">Configurável</span>}
             {product.stock <= 4 && <span className="badge-soft">Estoque {product.stock}</span>}
@@ -70,14 +70,14 @@ export function ProductCard({ product }: { product: Product }) {
           <div className="flex gap-1.5">
             <button
               onClick={handleFavorite}
-              className={`btn-icon h-9 w-9 ${isFavorite ? "bg-nexus-paper text-nexus-secondary hover:bg-nexus-paper hover:text-nexus-secondary" : ""}`}
+              className={`btn-icon h-10 w-10 ${isFavorite ? "bg-nexus-paper text-nexus-secondary hover:bg-nexus-paper hover:text-nexus-secondary" : ""}`}
               aria-label={`${isFavorite ? "Remover dos favoritos" : "Favoritar"} ${product.name}`}
             >
               <Heart className={`h-4 w-4 ${isFavorite ? "fill-current" : ""}`} />
             </button>
             <button
               onClick={handleAdd}
-              className="inline-grid h-9 w-9 place-items-center rounded-lg bg-nexus-primary text-white shadow-soft transition duration-200 hover:bg-[#343344]"
+              className="inline-grid h-10 w-10 place-items-center rounded-lg bg-nexus-primary text-white shadow-soft transition duration-200 hover:-translate-y-0.5 hover:bg-[#343344] active:translate-y-0"
               aria-label={`Adicionar ${product.name} ao carrinho`}
             >
               <Plus className="h-4 w-4" />

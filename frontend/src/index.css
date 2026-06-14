@@ -17,6 +17,7 @@ body {
   min-height: 100vh;
   background: #eef1ec;
   color: #242330;
+  letter-spacing: 0;
 }
 
 button,
@@ -56,8 +57,8 @@ a {
   input:focus-visible,
   select:focus-visible,
   textarea:focus-visible {
-    outline: 3px solid rgba(240, 207, 114, 0.95);
-    outline-offset: 2px;
+    outline: 3px solid rgba(40, 125, 142, 0.28);
+    outline-offset: 3px;
   }
 }
 
@@ -67,7 +68,7 @@ a {
   }
 
   .section-y {
-    @apply py-10 sm:py-12;
+    @apply py-12 sm:py-16;
   }
 
   .panel {
@@ -75,23 +76,23 @@ a {
   }
 
   .panel-soft {
-    @apply rounded-lg border border-nexus-line bg-nexus-surface shadow-soft;
+    @apply rounded-lg border border-nexus-line bg-nexus-surface/90 shadow-soft;
   }
 
   .card-hover {
-    @apply transition duration-200 ease-out hover:border-nexus-metal hover:shadow-card;
+    @apply transition duration-200 ease-out hover:-translate-y-0.5 hover:border-nexus-metal hover:shadow-card;
   }
 
   .btn {
-    @apply inline-flex min-h-10 items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition duration-200 ease-out disabled:pointer-events-none disabled:opacity-60;
+    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition duration-200 ease-out disabled:pointer-events-none disabled:opacity-60;
   }
 
   .btn-primary {
-    @apply btn bg-nexus-primary text-white shadow-soft hover:bg-[#1f1e2b] active:bg-[#171620];
+    @apply btn bg-nexus-primary text-white shadow-soft hover:-translate-y-0.5 hover:bg-[#1f1e2b] active:translate-y-0 active:bg-[#171620];
   }
 
   .btn-secondary {
-    @apply btn border border-nexus-line bg-nexus-surface text-nexus-contrast shadow-soft hover:border-nexus-metal hover:bg-nexus-paper active:bg-[#e2e6df];
+    @apply btn border border-nexus-line bg-nexus-surface text-nexus-contrast shadow-soft hover:-translate-y-0.5 hover:border-nexus-metal hover:bg-nexus-paper active:translate-y-0 active:bg-[#e2e6df];
   }
 
   .btn-ghost {
@@ -99,15 +100,15 @@ a {
   }
 
   .btn-icon {
-    @apply inline-grid h-10 w-10 place-items-center rounded-lg text-nexus-muted transition duration-200 hover:bg-nexus-paper hover:text-nexus-contrast;
+    @apply inline-grid h-11 w-11 place-items-center rounded-lg text-nexus-muted transition duration-200 hover:bg-nexus-paper hover:text-nexus-contrast;
   }
 
   .input-field {
-    @apply h-10 rounded-lg border border-nexus-line bg-nexus-surface px-3 text-sm text-nexus-contrast shadow-soft transition duration-200 placeholder:text-nexus-muted/70 focus:border-nexus-secondary focus:bg-nexus-surface;
+    @apply h-11 rounded-lg border border-nexus-line bg-nexus-surface px-3 text-sm text-nexus-contrast shadow-soft transition duration-200 placeholder:text-nexus-muted/65 focus:border-nexus-secondary focus:bg-nexus-surface;
   }
 
   .select-field {
-    @apply h-10 rounded-lg border border-nexus-line bg-nexus-surface px-3 text-sm font-medium text-nexus-contrast shadow-soft transition duration-200 focus:border-nexus-secondary focus:bg-nexus-surface;
+    @apply h-11 rounded-lg border border-nexus-line bg-nexus-surface px-3 text-sm font-medium text-nexus-contrast shadow-soft transition duration-200 focus:border-nexus-secondary focus:bg-nexus-surface;
   }
 
   .text-field {
@@ -115,7 +116,7 @@ a {
   }
 
   .badge {
-    @apply inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-semibold;
+    @apply inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-semibold;
   }
 
   .badge-primary {
@@ -132,6 +133,15 @@ a {
 
   .eyebrow {
     @apply text-xs font-semibold uppercase tracking-[0.12em] text-nexus-secondary;
+  }
+
+  .display-title {
+    font-family: "Jersey 10", "Poppins", ui-sans-serif, system-ui, sans-serif;
+    @apply font-normal leading-none tracking-normal;
+  }
+
+  .section-card {
+    @apply rounded-lg border border-nexus-line bg-nexus-surface p-5 shadow-soft;
   }
 
   .muted-copy {

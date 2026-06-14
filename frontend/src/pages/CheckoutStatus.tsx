@@ -22,9 +22,9 @@ type Order = {
 };
 
 const legacyCopy = {
-  sucesso: ["Pedido Recebido", "O Mercado Pago confirmou ou está processando seu retorno. Acompanhe em Meus Pedidos.", CheckCircle2],
-  falha: ["Pagamento Não Concluído", "Não foi possível concluir o pagamento. Você pode tentar novamente.", AlertCircle],
-  pendente: ["Pagamento Pendente", "Assim que o Mercado Pago confirmar, atualizaremos seu pedido.", Clock]
+  sucesso: ["Pedido recebido", "O Mercado Pago confirmou ou está processando seu retorno. Acompanhe em meus pedidos.", CheckCircle2],
+  falha: ["Pagamento não concluído", "Não foi possível concluir o pagamento. Você pode tentar novamente.", AlertCircle],
+  pendente: ["Pagamento pendente", "Assim que o Mercado Pago confirmar, atualizaremos seu pedido.", Clock]
 } as const;
 
 export function CheckoutStatus() {
@@ -88,7 +88,7 @@ export function CheckoutStatus() {
     const [title, description, Icon] = legacyCopy[result as keyof typeof legacyCopy] ?? legacyCopy.sucesso;
     return (
       <main className="app-shell grid min-h-[70vh] place-items-center py-16">
-        <EmptyState icon={<Icon className="h-6 w-6" />} title={title} description={description} action={<Link to="/meus-pedidos" className="btn-primary">Ver Meus Pedidos</Link>} />
+        <EmptyState icon={<Icon className="h-6 w-6" />} title={title} description={description} action={<Link to="/meus-pedidos" className="btn-primary">Ver meus pedidos</Link>} />
       </main>
     );
   }
@@ -102,7 +102,7 @@ export function CheckoutStatus() {
   if (error && !order) {
     return (
       <main className="app-shell grid min-h-[70vh] place-items-center py-16">
-        <EmptyState icon={<AlertCircle className="h-6 w-6" />} title="Pedido Não Encontrado" description={error} action={<Link to="/meus-pedidos" className="btn-primary">Ver Meus Pedidos</Link>} />
+        <EmptyState icon={<AlertCircle className="h-6 w-6" />} title="Pedido não encontrado" description={error} action={<Link to="/meus-pedidos" className="btn-primary">Ver meus pedidos</Link>} />
       </main>
     );
   }
@@ -114,8 +114,8 @@ export function CheckoutStatus() {
       <section className="panel p-5 sm:p-7">
         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div>
-            <p className="eyebrow mb-2">Status do Pedido</p>
-            <h1 className="text-3xl font-semibold tracking-normal text-nexus-contrast">{state.title}</h1>
+            <p className="eyebrow mb-2">Status do pedido</p>
+            <h1 className="text-3xl font-semibold leading-tight tracking-normal text-nexus-contrast">{state.title}</h1>
             <p className="mt-2 max-w-2xl text-nexus-muted">{state.description}</p>
             {shouldPoll(order) && (
               <p className="mt-3 inline-flex items-center gap-2 rounded-lg bg-nexus-paper px-3 py-1.5 text-xs font-medium text-nexus-muted">
@@ -172,8 +172,8 @@ export function CheckoutStatus() {
         </div>
 
         <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-          <Link to={realOrderPath} className="btn-primary">Ver Detalhes do Pedido</Link>
-          <Link to="/meus-pedidos" className="btn-secondary">Meus Pedidos</Link>
+          <Link to={realOrderPath} className="btn-primary">Ver detalhes do pedido</Link>
+          <Link to="/meus-pedidos" className="btn-secondary">Meus pedidos</Link>
         </div>
       </section>
     </main>
@@ -186,15 +186,15 @@ function shouldPoll(order: Order) {
 
 function resolveState(order: Order | null, result: string) {
   if (order?.paymentStatus === "APPROVED" || order?.status === "PAID") {
-    return { title: "Pedido Confirmado", description: "O pedido foi registrado e a loja já pode preparar a entrega ou retirada." };
+    return { title: "Pedido confirmado", description: "O pedido foi registrado e a loja já pode preparar a entrega ou retirada." };
   }
   if (order?.paymentStatus === "REJECTED" || order?.status === "PAYMENT_REJECTED" || result === "falha") {
-    return { title: "Pedido Não Concluído", description: "A simulação não foi aprovada. Você pode acompanhar este pedido ou tentar novamente em Meus Pedidos." };
+    return { title: "Pedido não concluído", description: "A simulação não foi aprovada. Você pode acompanhar este pedido ou tentar novamente em meus pedidos." };
   }
   if (result === "pendente") {
-    return { title: "Pedido Pendente", description: "A confirmação ainda está em processamento. Atualizaremos o pedido automaticamente quando houver retorno." };
+    return { title: "Pedido pendente", description: "A confirmação ainda está em processamento. Atualizaremos o pedido automaticamente quando houver retorno." };
   }
-  return { title: "Estamos Confirmando seu Pedido", description: "A confirmação final pode levar alguns instantes quando a integração real estiver ativa." };
+  return { title: "Estamos confirmando seu pedido", description: "A confirmação final pode levar alguns instantes quando a integração real estiver ativa." };
 }
 
 function StatusBadge({ value, tone }: { value: string; tone: "payment" | "order" }) {

@@ -94,7 +94,7 @@ export function CustomerRegister() {
     <main className="app-shell section-y">
       <div className="mb-8">
         <p className="eyebrow mb-2">Cliente</p>
-        <h1 className="text-3xl font-semibold tracking-normal text-nexus-contrast">Criar conta</h1>
+        <h1 className="text-3xl font-semibold leading-tight tracking-normal text-nexus-contrast">Criar conta</h1>
       </div>
       <form onSubmit={submit} className="panel grid gap-4 p-5 sm:p-7 md:grid-cols-2">
         {message && <div className="rounded-lg bg-nexus-background p-3 text-sm font-bold md:col-span-2">{message}</div>}

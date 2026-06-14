@@ -37,7 +37,7 @@ export function ProductDetail() {
   }, [slug]);
 
   if (notFound) {
-    return <main className="app-shell py-16 text-nexus-muted">Produto Não Encontrado.</main>;
+    return <main className="app-shell py-16 text-nexus-muted">Produto não encontrado.</main>;
   }
 
   if (!product) {
@@ -77,15 +77,15 @@ export function ProductDetail() {
           <Link to={`/loja/${productSellerSlug(product)}`} className="text-sm font-medium text-nexus-secondary transition hover:text-nexus-contrast">
             {productSellerName(product)}
           </Link>
-          <h1 className="mt-3 text-3xl font-semibold leading-tight tracking-normal text-nexus-contrast md:text-5xl">{product.name}</h1>
+          <h1 className="display-title mt-3 text-5xl text-nexus-contrast sm:text-6xl">{product.name}</h1>
           <div className="mt-5 flex flex-wrap items-center gap-3">
             <Stars value={productRating(product)} />
-            <span className="badge-soft">{productSalesCount(product)} Pedidos</span>
-            <span className="badge-warm">Publicado</span>
+            <span className="badge-soft">{productSalesCount(product)} pedidos</span>
+            <span className="badge-warm">Disponível</span>
           </div>
           <p className="mt-5 text-base leading-8 text-nexus-muted">{product.description}</p>
           <div className="mt-6 text-3xl font-semibold tracking-normal text-nexus-contrast">{currency.format(product.price)}</div>
-          {product.stock <= 4 && <p className="mt-2 font-medium text-nexus-secondary">Estoque Baixo: restam {product.stock} unidades</p>}
+          {product.stock <= 4 && <p className="mt-2 font-medium text-nexus-secondary">Estoque baixo: restam {product.stock} unidades</p>}
 
           {product.customizationAvailable && (
             <label className="mt-7 block">
@@ -138,7 +138,7 @@ export function ProductDetail() {
 
           <div className="mt-7 flex flex-col gap-3 sm:flex-row">
             <button onClick={handleAdd} className="btn-primary flex-1">
-              <ShoppingBag className="h-5 w-5" /> Adicionar ao Carrinho
+              <ShoppingBag className="h-5 w-5" /> Adicionar ao carrinho
             </button>
             <button onClick={handleFavorite} className="btn-secondary">
               <Heart className={`h-5 w-5 ${isFavorite ? "fill-nexus-secondary text-nexus-secondary" : ""}`} /> Favoritar
@@ -148,12 +148,12 @@ export function ProductDetail() {
           <div className="mt-7 grid gap-3 border-t border-nexus-line pt-5 sm:grid-cols-2">
             <div className="rounded-lg border border-nexus-line bg-nexus-paper p-4">
               <ShieldCheck className="mb-2 h-5 w-5 text-nexus-secondary" />
-              <strong className="font-semibold text-nexus-contrast">Compra Protegida na Demo</strong>
+              <strong className="font-semibold text-nexus-contrast">Compra protegida na demo</strong>
               <p className="mt-1 text-sm leading-6 text-nexus-muted">O fluxo cria pedidos fictícios para demonstrar carrinho, checkout e acompanhamento.</p>
             </div>
             <div className="rounded-lg border border-nexus-line bg-nexus-paper p-4">
               <PackageCheck className="mb-2 h-5 w-5 text-nexus-secondary" />
-              <strong className="font-semibold text-nexus-contrast">{product.pickupAvailable ? "Retirada Local Disponível" : "Pedido pelo Negócio"}</strong>
+              <strong className="font-semibold text-nexus-contrast">{product.pickupAvailable ? "Retirada local disponível" : "Pedido pela loja"}</strong>
               <p className="mt-1 text-sm leading-6 text-nexus-muted">
                 {product.pickupAvailable
                   ? product.pickupAddress ?? "A loja combina a retirada após o pedido."
@@ -165,7 +165,7 @@ export function ProductDetail() {
       </div>
 
       <section className="section-y">
-        <SectionHeader title="Mais da Mesma Loja" description="Continue explorando produtos do mesmo catálogo." />
+        <SectionHeader title="Mais da mesma loja" description="Continue explorando produtos do mesmo catálogo." />
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {related.map((item) => (
             <ProductCard key={item.id} product={item} />

@@ -141,7 +141,7 @@ export function ArtisanRegister() {
         acceptsLocalPickup: form.acceptsLocalPickup,
         pickupInstructions: form.acceptsLocalPickup ? form.pickupInstructions.trim() : null
       });
-      showToast({ title: "Cadastro Enviado", description: "Aguarde aprovação para publicar seus produtos.", variant: "success" });
+      showToast({ title: "Cadastro enviado", description: "Aguarde aprovação para publicar seus produtos.", variant: "success" });
       setMessage("Cadastro de loja realizado com sucesso. Aguarde aprovação.");
       window.setTimeout(() => navigate("/vendedor/login"), 1200);
     } catch (requestError: unknown) {
@@ -158,8 +158,8 @@ export function ArtisanRegister() {
   return (
     <main className="app-shell section-y">
       <div className="mb-8 max-w-3xl">
-        <p className="eyebrow mb-2">Cadastrar Loja</p>
-        <h1 className="text-3xl font-semibold tracking-normal text-nexus-contrast md:text-5xl">Venda Produtos Gamer na NexusPlay</h1>
+        <p className="eyebrow mb-2">Cadastrar loja</p>
+        <h1 className="display-title text-6xl text-nexus-contrast sm:text-7xl">Venda produtos gamer na NexusPlay.</h1>
         <p className="mt-4 text-base leading-7 text-nexus-muted">Crie sua loja, envie dados de operação e prepare o catálogo para publicar periféricos, colecionáveis e acessórios de setup.</p>
       </div>
 
@@ -168,14 +168,14 @@ export function ArtisanRegister() {
 
         <section className="grid gap-4 md:grid-cols-2">
           <h2 className="flex items-center gap-2 border-b border-nexus-line pb-3 text-base font-semibold text-nexus-contrast md:col-span-2">
-            <Store className="h-5 w-5" /> Dados da Loja
+            <Store className="h-5 w-5" /> Dados da loja
           </h2>
           <label>
-            <input required className={`input-field w-full ${fieldClass(errors.name)}`} placeholder="Nome Completo" value={form.name} onChange={(event) => update("name", event.target.value)} />
+            <input required className={`input-field w-full ${fieldClass(errors.name)}`} placeholder="Nome completo" value={form.name} onChange={(event) => update("name", event.target.value)} />
             {errorText("name")}
           </label>
           <label>
-            <input required className={`input-field w-full ${fieldClass(errors.storeName)}`} placeholder="Nome da Loja" value={form.storeName} onChange={(event) => update("storeName", event.target.value)} />
+            <input required className={`input-field w-full ${fieldClass(errors.storeName)}`} placeholder="Nome da loja" value={form.storeName} onChange={(event) => update("storeName", event.target.value)} />
             {errorText("storeName")}
           </label>
           <label>
@@ -199,17 +199,17 @@ export function ArtisanRegister() {
             {errorText("password")}
           </label>
           <label>
-            <PasswordField required className={fieldClass(errors.confirmPassword)} placeholder="Confirmar Senha" value={form.confirmPassword} onChange={(event) => update("confirmPassword", event.target.value)} autoComplete="new-password" />
+            <PasswordField required className={fieldClass(errors.confirmPassword)} placeholder="Confirmar senha" value={form.confirmPassword} onChange={(event) => update("confirmPassword", event.target.value)} autoComplete="new-password" />
             {errorText("confirmPassword")}
           </label>
           <label className="md:col-span-2">
-            <textarea required className={`text-field min-h-28 w-full ${fieldClass(errors.storeDescription)}`} placeholder="Descrição da Loja" value={form.storeDescription} onChange={(event) => update("storeDescription", event.target.value)} />
+            <textarea required className={`text-field min-h-28 w-full ${fieldClass(errors.storeDescription)}`} placeholder="Descrição da loja" value={form.storeDescription} onChange={(event) => update("storeDescription", event.target.value)} />
             {errorText("storeDescription")}
           </label>
         </section>
 
         <section className="grid gap-4 md:grid-cols-6">
-          <h2 className="border-b border-nexus-line pb-3 text-base font-semibold text-nexus-contrast md:col-span-6">Endereço de Origem</h2>
+          <h2 className="border-b border-nexus-line pb-3 text-base font-semibold text-nexus-contrast md:col-span-6">Endereço de origem</h2>
           <label className="md:col-span-2">
             <input required className={`input-field w-full ${fieldClass(errors["address.zipCode"])}`} placeholder={cepLoading ? "Buscando CEP..." : "CEP"} value={form.zipCode} onBlur={lookupCep} onChange={(event) => update("zipCode", maskCep(event.target.value))} />
             {errorText("address.zipCode")}
@@ -240,19 +240,19 @@ export function ArtisanRegister() {
         <section className="grid gap-4">
           <label className="flex items-center gap-3 text-sm font-medium text-nexus-contrast">
             <input type="checkbox" checked={form.acceptsLocalPickup} onChange={(event) => update("acceptsLocalPickup", event.target.checked)} className="h-4 w-4 accent-nexus-secondary" />
-            Aceito Retirada Local
+            Aceito retirada local
           </label>
           <label>
-            <textarea className={`text-field min-h-24 w-full ${fieldClass(errors.pickupInstructions)}`} placeholder="Instruções de Retirada" value={form.pickupInstructions} onChange={(event) => update("pickupInstructions", event.target.value)} />
+            <textarea className={`text-field min-h-24 w-full ${fieldClass(errors.pickupInstructions)}`} placeholder="Instruções de retirada" value={form.pickupInstructions} onChange={(event) => update("pickupInstructions", event.target.value)} />
             {errorText("pickupInstructions")}
           </label>
         </section>
 
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <button className="btn-primary" disabled={loading}>
-            <UserPlus className="h-5 w-5" /> {loading ? "Enviando..." : "Cadastrar Loja"}
+            <UserPlus className="h-5 w-5" /> {loading ? "Enviando..." : "Cadastrar loja"}
           </button>
-          <Link to="/vendedor/login" className="btn-secondary">Entrar no Painel</Link>
+          <Link to="/vendedor/login" className="btn-secondary">Entrar no painel</Link>
         </div>
       </form>
     </main>

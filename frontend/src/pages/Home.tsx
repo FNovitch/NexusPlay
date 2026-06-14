@@ -25,29 +25,28 @@ import { SellerCard } from "../components/SellerCard";
 import { getCategories, getProducts, getSellers } from "../lib/api";
 import type { Category, Product, Seller } from "../types";
 
-const heroImage =
-  "https://images.unsplash.com/photo-1598550476439-6847785fcea6?auto=format&fit=crop&w=1800&q=82";
+const heroImage = "https://images.unsplash.com/photo-1598550476439-6847785fcea6?auto=format&fit=crop&w=1800&q=82";
 
 const buyerSteps = [
   {
     icon: Search,
-    title: "Descubra por Setup",
-    description: "Filtre por categoria, preço e reputação para comparar acessórios, periféricos e colecionáveis sem perder contexto."
+    title: "Compare por contexto",
+    description: "Filtre por categoria, preço e reputação para escolher acessórios, periféricos e colecionáveis com mais segurança."
   },
   {
     icon: ShoppingBag,
-    title: "Carrinho por Loja",
+    title: "Carrinho organizado",
     description: "Itens ficam agrupados por vendedor, com variações, personalização e cálculo de entrega antes do checkout."
   },
   {
     icon: PackageCheck,
-    title: "Pedido Rastreável",
+    title: "Pedido rastreável",
     description: "A demo registra pedidos, status e histórico para simular uma operação real de marketplace."
   }
 ];
 
 const sellerFeatures = [
-  ["Catálogo Gamer", "Produtos, imagens, variações e estoque em uma rotina simples."],
+  ["Catálogo gamer", "Produtos, imagens, variações e estoque em uma rotina simples."],
   ["Assinatura", "Planos demonstrativos para liberar publicação e recorrência."],
   ["Operação", "Pedidos, métricas, status de aprovação e gestão de loja no painel."]
 ];
@@ -117,38 +116,38 @@ export function Home() {
 
   return (
     <main className="overflow-hidden bg-nexus-background">
-      <section className="relative min-h-[calc(100vh-76px)] overflow-hidden bg-nexus-primary text-white">
-        <img src={heroImage} alt="" className="absolute inset-0 h-full w-full object-cover opacity-[0.42]" />
-        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(31,31,42,0.94)_0%,rgba(31,31,42,0.82)_42%,rgba(31,31,42,0.48)_100%)]" />
-        <div className="app-shell relative flex min-h-[calc(100vh-76px)] flex-col justify-center py-16">
+      <section className="relative min-h-[620px] overflow-hidden bg-nexus-primary text-white">
+        <img src={heroImage} alt="" className="absolute inset-0 h-full w-full object-cover opacity-[0.5]" />
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(31,31,42,0.95)_0%,rgba(31,31,42,0.84)_46%,rgba(31,31,42,0.38)_100%)]" />
+        <div className="app-shell relative flex min-h-[620px] flex-col justify-center py-14 sm:py-16">
           <div className="max-w-3xl">
-            <span className="inline-flex items-center gap-2 rounded-full border border-white/[0.18] bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-nexus-accent backdrop-blur">
+            <span className="inline-flex items-center gap-2 rounded-lg border border-white/[0.18] bg-white/10 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-nexus-accent backdrop-blur">
               <Gamepad2 className="h-3.5 w-3.5" /> Marketplace SaaS Gamer
             </span>
-            <h1 className="mt-5 max-w-3xl text-4xl font-semibold leading-[1.04] tracking-normal sm:text-5xl lg:text-6xl">
-              Compre, Venda e Opere Produtos Gamer em um só lugar.
+            <h1 className="display-title mt-5 max-w-3xl text-6xl sm:text-7xl lg:text-8xl">
+              Marketplace gamer com cara de operação real.
             </h1>
             <p className="mt-5 max-w-2xl text-base leading-8 text-white/78 sm:text-lg">
-              A NexusPlay simula um marketplace completo para periféricos, colecionáveis e acessórios de setup, com catálogo, lojas, carrinho, checkout, pedidos e painel de vendedor.
+              A NexusPlay apresenta catálogo, lojas, carrinho, checkout, pedidos e painel de vendedor em uma experiência enxuta para demonstrar um produto SaaS gamer de ponta a ponta.
             </p>
             <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-              <a href="#produtos" className="btn bg-nexus-accent text-nexus-primary shadow-soft hover:bg-white">
+              <a href="#produtos" className="btn bg-nexus-accent text-nexus-primary shadow-soft hover:-translate-y-0.5 hover:bg-white active:translate-y-0">
                 Explorar Catálogo <ArrowRight className="h-4 w-4" />
               </a>
               <Link to="/vendedor/cadastro" className="btn border border-white/20 bg-white/10 text-white backdrop-blur hover:bg-white/[0.16]">
-                Abrir Loja Gamer
+                Criar Loja Demo
               </Link>
             </div>
           </div>
 
           <div className="mt-12 grid gap-3 md:grid-cols-4">
             {[
-              [MousePointer2, "Hardware Competitivo"],
-              [Headphones, "Áudio e Streaming"],
-              [Monitor, "Setup e Ergonomia"],
-              [Truck, "Entrega Demonstrativa"]
+              [MousePointer2, "Periféricos"],
+              [Headphones, "Streaming"],
+              [Monitor, "Setup"],
+              [Truck, "Entrega simulada"]
             ].map(([Icon, label]) => (
-              <div key={String(label)} className="rounded-lg border border-white/[0.14] bg-white/[0.09] p-4 backdrop-blur">
+              <div key={String(label)} className="rounded-lg border border-white/[0.14] bg-white/[0.08] p-4 backdrop-blur">
                 <Icon className="mb-3 h-5 w-5 text-nexus-accent" />
                 <strong className="text-sm font-semibold text-white">{String(label)}</strong>
               </div>
@@ -160,10 +159,10 @@ export function Home() {
       <section className="border-b border-nexus-line bg-white">
         <div className="app-shell grid gap-4 py-5 md:grid-cols-4">
           {[
-            ["10", "Produtos Demo"],
-            ["3", "Lojas Fictícias"],
-            ["4,9/5", "Avaliação Média"],
-            ["48h", "Entrega Simulada"]
+            ["10", "produtos demo"],
+            ["3", "lojas fictícias"],
+            ["4,9/5", "avaliação média"],
+            ["48h", "entrega simulada"]
           ].map(([value, label]) => (
             <div key={label} className="flex items-center gap-3">
               <span className="grid h-9 w-9 place-items-center rounded-lg bg-nexus-paper text-nexus-secondary">
@@ -181,7 +180,7 @@ export function Home() {
       <section id="produtos" className="app-shell section-y">
         <SectionHeader
           eyebrow="Catálogo"
-          title="Produtos para Jogar, Streamar e Montar Setup"
+          title="Produtos para jogar, streamar e montar setup"
           description="Itens de demonstração com imagens, preços, estoque, avaliações, variações e vendedores para apresentar um fluxo real de marketplace."
           action={
             <select value={sort} onChange={(event) => setSort(event.target.value)} className="select-field">
@@ -224,7 +223,7 @@ export function Home() {
         <div className="app-shell">
           <SectionHeader
             eyebrow="Experiência do comprador"
-          title="Da Descoberta ao Pedido em Poucos Passos"
+            title="Da descoberta ao pedido em poucos passos"
             description="A jornada prioriza comparação rápida, segurança visual e confirmação clara de cada ação."
           />
           <div className="grid gap-5 md:grid-cols-3">
@@ -233,7 +232,7 @@ export function Home() {
                 <span className="grid h-10 w-10 place-items-center rounded-lg bg-nexus-primary text-nexus-accent">
                   <Icon className="h-5 w-5" />
                 </span>
-                <h3 className="mt-4 text-lg font-semibold text-nexus-contrast">{title}</h3>
+                <h3 className="mt-4 text-lg font-semibold leading-snug text-nexus-contrast">{title}</h3>
                 <p className="mt-2 text-sm leading-6 text-nexus-muted">{description}</p>
               </article>
             ))}
@@ -245,16 +244,16 @@ export function Home() {
         <div className="grid gap-7 lg:grid-cols-[0.78fr_1.22fr] lg:items-start">
           <div>
             <p className="eyebrow mb-2">Operação de Vendedores</p>
-            <h2 className="text-3xl font-semibold leading-tight text-nexus-contrast">Um Painel para Lojas Gamer Venderem com Mais Controle.</h2>
+            <h2 className="text-3xl font-semibold leading-tight text-nexus-contrast">Um painel para lojas gamer venderem com mais controle.</h2>
             <p className="mt-4 text-base leading-7 text-nexus-muted">
               Cadastro de loja, aprovação administrativa, assinatura, produtos com imagens e variações, pedidos e métricas convivem no mesmo fluxo técnico.
             </p>
             <div className="mt-6 flex flex-col gap-3 sm:flex-row">
               <Link to="/vendedor/cadastro" className="btn-primary">
-                Cadastrar Loja <Store className="h-4 w-4" />
+                Cadastrar loja <Store className="h-4 w-4" />
               </Link>
               <Link to="/vendedor/login" className="btn-secondary">
-                Entrar como Vendedor
+                Entrar como vendedor
               </Link>
             </div>
           </div>
@@ -276,11 +275,11 @@ export function Home() {
         <div className="app-shell">
           <SectionHeader
             eyebrow="Lojas"
-            title="Marcas Prontas para Demonstração"
+            title="Marcas prontas para demonstração"
             description="Vendedores fictícios com identidade própria, reputação, loja pública e produtos relacionados."
             action={
               <Link to="/marcas" className="btn-secondary">
-                Ver Todas
+                Ver todas
               </Link>
             }
           />
@@ -306,14 +305,14 @@ export function Home() {
             decoding="async"
           />
           <div className="relative">
-            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-nexus-accent">Demo Completa</p>
-            <h2 className="mt-2 text-2xl font-semibold">Teste Compra, Venda, Pedidos e Assinatura no Mesmo Projeto.</h2>
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-nexus-accent">Demo completa</p>
+            <h2 className="mt-2 text-2xl font-semibold leading-tight">Teste compra, venda, pedidos e assinatura no mesmo projeto.</h2>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-white/76">
               A experiência usa dados fictícios quando a API não está disponível, preservando os principais fluxos para apresentação em portfólio.
             </p>
           </div>
           <Link to="/login" className="btn relative bg-white text-nexus-primary hover:bg-nexus-accent md:w-max">
-            Testar Conta Demo <Users className="h-4 w-4" />
+            Testar conta demo <Users className="h-4 w-4" />
           </Link>
         </div>
       </section>

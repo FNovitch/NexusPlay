@@ -19,7 +19,7 @@ export function SellerStore() {
   }, [slug]);
 
   if (notFound) {
-    return <main className="app-shell py-16 text-nexus-muted">Loja Não Encontrada.</main>;
+    return <main className="app-shell py-16 text-nexus-muted">Loja não encontrada.</main>;
   }
 
   if (!seller) {
@@ -50,11 +50,11 @@ export function SellerStore() {
               />
               <div className="flex flex-wrap items-center gap-3">
                 <span className="inline-flex items-center gap-1 rounded-md bg-nexus-paper px-2 py-1 text-xs font-semibold text-nexus-secondary">
-                  <Store className="h-4 w-4" /> Loja Ativa
+                  <Store className="h-4 w-4" /> Loja ativa
                 </span>
                 <Stars value={seller.rating} />
               </div>
-              <h1 className="mt-4 text-3xl font-semibold tracking-normal text-nexus-contrast md:text-5xl">{seller.storeName}</h1>
+              <h1 className="display-title mt-4 text-5xl text-nexus-contrast sm:text-6xl">{seller.storeName}</h1>
               <p className="mt-3 max-w-2xl text-base leading-7 text-nexus-muted">{seller.bio}</p>
             </div>
           </div>
@@ -65,7 +65,7 @@ export function SellerStore() {
         <aside className="space-y-4">
           <div className="rounded-lg border border-nexus-line bg-nexus-surface p-5 shadow-soft">
             <HeartHandshake className="mb-3 h-6 w-6 text-nexus-secondary" />
-            <h2 className="text-xl font-semibold tracking-normal text-nexus-contrast">Especialidade da Loja</h2>
+            <h2 className="text-xl font-semibold tracking-normal text-nexus-contrast">Especialidade da loja</h2>
             <p className="mt-3 leading-7 text-nexus-muted">{seller.story}</p>
           </div>
           <div className="grid grid-cols-2 gap-3">
@@ -75,12 +75,12 @@ export function SellerStore() {
             </div>
             <div className="rounded-lg border border-nexus-line bg-nexus-surface p-4 shadow-soft">
               <BadgeCheck className="mb-2 h-5 w-5 text-nexus-secondary" />
-              <span className="text-sm font-semibold text-nexus-contrast">Loja Verificada</span>
+              <span className="text-sm font-semibold text-nexus-contrast">Loja verificada</span>
             </div>
           </div>
         </aside>
         <div>
-          <SectionHeader title="Produtos Publicados" description="Itens disponíveis para compra, entrega simulada ou personalização." />
+          <SectionHeader title="Produtos publicados" description="Itens disponíveis para compra, entrega simulada ou personalização." />
           <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
             {seller.products.map((product) => (
               <ProductCard key={product.id} product={product} />

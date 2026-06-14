@@ -42,7 +42,7 @@ export function OrderDetail() {
     <main className="app-shell section-y">
       <p className="eyebrow mb-2">Pedido</p>
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-3xl font-semibold text-nexus-contrast">{order.orderCode}</h1>
+        <h1 className="text-3xl font-semibold leading-tight text-nexus-contrast">{order.orderCode}</h1>
         <div className="flex flex-wrap gap-2">
           {canConfirmReceipt && <button onClick={confirmReceipt} className="btn-primary">Confirmar recebimento</button>}
           {["CREATED", "PENDING", "AWAITING_PAYMENT"].includes(order.status) && <button onClick={cancel} className="btn-secondary">Cancelar pedido</button>}
@@ -65,7 +65,7 @@ export function OrderDetail() {
                     onError={handleImageError}
                   />
                 )}
-                <div className="flex-1"><strong>{item.productName || item.product?.name}</strong><p className="text-sm text-nexus-muted">Qtd. {item.quantity}</p>{item.selectedVariations && <p className="text-xs text-nexus-muted">{Object.entries(item.selectedVariations).map(([n, o]) => `${n}: ${o}`).join(" · ")}</p>}</div>
+                <div className="flex-1"><strong>{item.productName || item.product?.name}</strong><p className="text-sm text-nexus-muted">Quantidade: {item.quantity}</p>{item.selectedVariations && <p className="text-xs text-nexus-muted">{Object.entries(item.selectedVariations).map(([n, o]) => `${n}: ${o}`).join(" · ")}</p>}</div>
                 <div className="grid justify-items-end gap-2">
                   <strong>{currency.format(Number(item.total))}</strong>
                   {order.status === "DELIVERED" && <span className="badge-soft">Avaliação liberada</span>}

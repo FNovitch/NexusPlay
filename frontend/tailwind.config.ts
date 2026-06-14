@@ -24,12 +24,13 @@ export default {
         }
       },
       boxShadow: {
-        soft: "0 1px 2px rgba(36, 35, 48, 0.06)",
-        card: "0 10px 28px rgba(36, 35, 48, 0.09)",
-        lift: "0 18px 48px rgba(36, 35, 48, 0.12)"
+        soft: "0 1px 2px rgba(36, 35, 48, 0.05)",
+        card: "0 12px 30px rgba(36, 35, 48, 0.08)",
+        lift: "0 18px 42px rgba(36, 35, 48, 0.10)"
       },
       fontFamily: {
-        sans: ["Inter", "ui-sans-serif", "system-ui", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "sans-serif"]
+        sans: ["Poppins", "ui-sans-serif", "system-ui", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "sans-serif"],
+        display: ["Jersey 10", "Poppins", "ui-sans-serif", "system-ui", "sans-serif"]
       }
     }
   },

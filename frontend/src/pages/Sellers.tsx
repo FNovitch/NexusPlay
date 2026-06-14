@@ -15,7 +15,7 @@ export function Sellers() {
     <main className="app-shell section-y">
       <SectionHeader
         eyebrow="Lojas"
-        title="Marcas Gamer em Destaque"
+        title="Marcas gamer em destaque"
         description="Catálogos fictícios com periféricos, colecionáveis, acessórios de setup e identidade própria."
       />
       <div className="grid gap-5 md:grid-cols-3">

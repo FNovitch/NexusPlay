@@ -169,14 +169,14 @@ export function SellerDashboard() {
       const message = editingProduct ? "Mantenha pelo menos uma imagem do produto." : "Envie pelo menos uma imagem.";
       setImageError(message);
       setFormMessage(message);
-      showToast({ title: "Imagem Obrigatória", description: message, variant: "warning" });
+      showToast({ title: "Imagem obrigatória", description: message, variant: "warning" });
       return;
     }
     if (form.existingImages.length - form.removeImageIds.length + form.images.length > 3) {
       const message = "Máximo de 3 imagens permitidas.";
       setImageError(message);
       setFormMessage(message);
-      showToast({ title: "Limite de Imagens", description: message, variant: "warning" });
+      showToast({ title: "Limite de imagens", description: message, variant: "warning" });
       return;
     }
 
@@ -206,7 +206,7 @@ export function SellerDashboard() {
         category: categoryForProduct
       });
       setMyProducts((current) => editingProduct ? current.map((product) => product.id === demoProduct.id ? demoProduct : product) : [demoProduct, ...current]);
-      showToast({ title: editingProduct ? "Produto Atualizado na Demo." : "Produto Cadastrado na Demo.", description: "A alteração aparece no painel durante esta sessão.", variant: "success" });
+      showToast({ title: editingProduct ? "Produto atualizado na demo." : "Produto cadastrado na demo.", description: "A alteração aparece no painel durante esta sessão.", variant: "success" });
       setSaving(false);
       setShowForm(false);
       resetForm();
@@ -251,7 +251,7 @@ export function SellerDashboard() {
 
       const savedProduct = normalizeProduct(data.product);
       setMyProducts((current) => editingProduct ? current.map((product) => product.id === savedProduct.id ? savedProduct : product) : [savedProduct, ...current]);
-      showToast({ title: "Produto Cadastrado com Sucesso.", description: "O produto foi salvo e enviado para avaliação.", variant: "success" });
+      showToast({ title: "Produto cadastrado com sucesso.", description: "O produto foi salvo e enviado para avaliação.", variant: "success" });
       setShowForm(false);
       resetForm();
     } catch (requestError) {
@@ -272,7 +272,7 @@ export function SellerDashboard() {
               : message;
       setFormMessage(friendly);
       if (parsed.errors.images) setImageError(parsed.errors.images);
-      showToast({ title: "Erro ao Salvar Produto.", description: friendly, variant: "warning" });
+      showToast({ title: "Erro ao salvar produto.", description: friendly, variant: "warning" });
       if (import.meta.env.DEV || import.meta.env.VITE_PRODUCT_DEBUG === "true") {
         console.error("[product-form:error]", requestError);
       }
@@ -283,10 +283,10 @@ export function SellerDashboard() {
 
   const metrics: Array<[LucideIcon, string | number, string]> = [
     [WalletCards, currency.format(dashboard.revenue), "Faturamento"],
-    [Package, myProducts.length, "Produtos Ativos"],
+    [Package, myProducts.length, "Produtos ativos"],
     [ClipboardList, dashboard.orders, "Pedidos"],
     [TrendingUp, dashboard.rating, "Avaliação"],
-    [ShieldCheck, dashboard.status, "Status da Conta"]
+    [ShieldCheck, dashboard.status, "Status da conta"]
   ];
 
   return (
@@ -294,7 +294,7 @@ export function SellerDashboard() {
       <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <p className="eyebrow mb-2">Operação</p>
-          <h1 className="text-3xl font-semibold tracking-normal text-nexus-contrast">Painel da Loja</h1>
+          <h1 className="text-3xl font-semibold leading-tight tracking-normal text-nexus-contrast">Painel da loja</h1>
           <p className="mt-2 text-nexus-muted">{dashboard.artisanName} · {dashboard.storeName}</p>
           {dashboard.status !== "aprovado" && (
             <p className="mt-2 max-w-2xl rounded-lg border border-nexus-line bg-nexus-paper px-4 py-3 text-sm font-medium text-nexus-contrast">
@@ -316,7 +316,7 @@ export function SellerDashboard() {
           <Link to="/vendedor/pedidos" className="btn-secondary">Pedidos</Link>
           <Link to="/vendedor/assinatura" className="btn-secondary">Assinatura</Link>
           <button className="btn-primary" onClick={startCreateProduct} disabled={subscription ? !subscription.canSell : false}>
-            <ImagePlus className="h-5 w-5" /> {showForm && !editingProduct ? "Fechar Cadastro" : "Cadastrar Produto"}
+            <ImagePlus className="h-5 w-5" /> {showForm && !editingProduct ? "Fechar cadastro" : "Cadastrar produto"}
           </button>
         </div>
       </div>
@@ -324,7 +324,7 @@ export function SellerDashboard() {
       {showForm && (
         <form onSubmit={submitProduct} className="panel mb-8 grid gap-4 p-5 md:grid-cols-2">
           {formMessage && <p className="md:col-span-2 rounded-lg border border-nexus-line bg-nexus-paper px-4 py-3 text-sm font-medium text-nexus-contrast">{formMessage}</p>}
-          <input className="input-field" required placeholder="Nome do Produto" value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} />
+          <input className="input-field" required placeholder="Nome do produto" value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} />
           <select className="select-field" required value={form.categoryId} onChange={(event) => setForm({ ...form, categoryId: event.target.value })}>
             {categories.map((category) => (
               <option key={category.id} value={category.id}>{category.name}</option>
@@ -352,7 +352,7 @@ export function SellerDashboard() {
               {form.existingImages.filter((image) => !image.id || !form.removeImageIds.includes(image.id)).map((image) => (
                 <div key={image.id ?? image.url} className="rounded-lg border border-nexus-line p-2">
                   <img src={image.url} alt="" loading="lazy" decoding="async" onError={handleImageError} className="aspect-video w-full rounded-lg object-cover" />
-                  {image.id && <button type="button" className="mt-2 text-xs font-bold text-nexus-secondary" onClick={() => removeExistingImage(image)}>Remover Imagem</button>}
+                  {image.id && <button type="button" className="mt-2 text-xs font-bold text-nexus-secondary" onClick={() => removeExistingImage(image)}>Remover imagem</button>}
                 </div>
               ))}
             </div>
@@ -362,7 +362,7 @@ export function SellerDashboard() {
               {form.images.map((image) => (
                 <div key={image.name} className="rounded-lg border border-nexus-line p-2">
                   <img src={URL.createObjectURL(image)} alt="" loading="lazy" decoding="async" onError={handleImageError} className="aspect-video w-full rounded-lg object-cover" />
-                  <button type="button" className="mt-2 text-xs font-bold text-nexus-secondary" onClick={() => setForm({ ...form, images: form.images.filter((item) => item !== image) })}>Remover Imagem</button>
+                  <button type="button" className="mt-2 text-xs font-bold text-nexus-secondary" onClick={() => setForm({ ...form, images: form.images.filter((item) => item !== image) })}>Remover imagem</button>
                 </div>
               ))}
             </div>
@@ -370,7 +370,7 @@ export function SellerDashboard() {
           <div className="md:col-span-2">
             <div className="mb-2 flex items-center justify-between">
               <strong className="text-sm text-nexus-contrast">Variações</strong>
-              <button type="button" className="btn-secondary px-3 py-1 text-xs" onClick={() => setForm({ ...form, variations: [...form.variations, { name: "", options: "" }] })}>Adicionar Variação</button>
+              <button type="button" className="btn-secondary px-3 py-1 text-xs" onClick={() => setForm({ ...form, variations: [...form.variations, { name: "", options: "" }] })}>Adicionar variação</button>
             </div>
             <div className="grid gap-2">
               {form.variations.map((variation, index) => (
@@ -383,8 +383,8 @@ export function SellerDashboard() {
             </div>
           </div>
           <textarea className="text-field min-h-28 md:col-span-2" required minLength={10} placeholder="Descrição" value={form.description} onChange={(event) => setForm({ ...form, description: event.target.value })} />
-          <button className="btn-primary md:w-max" disabled={saving || categories.length === 0}>{saving ? "Salvando..." : editingProduct ? "Salvar Produto" : "Cadastrar Produto"}</button>
-          {editingProduct && <button type="button" className="btn-secondary md:w-max" onClick={() => { setShowForm(false); resetForm(); }}>Cancelar Edição</button>}
+          <button className="btn-primary md:w-max" disabled={saving || categories.length === 0}>{saving ? "Salvando..." : editingProduct ? "Salvar produto" : "Cadastrar produto"}</button>
+          {editingProduct && <button type="button" className="btn-secondary md:w-max" onClick={() => { setShowForm(false); resetForm(); }}>Cancelar edição</button>}
         </form>
       )}
 
@@ -403,7 +403,7 @@ export function SellerDashboard() {
       <section className="panel mt-8 p-4 sm:p-5">
         <div className="mb-5 flex items-center justify-between gap-4">
           <div>
-            <h2 className="text-xl font-semibold tracking-normal text-nexus-contrast">Produtos Publicados</h2>
+            <h2 className="text-xl font-semibold tracking-normal text-nexus-contrast">Produtos publicados</h2>
             <p className="mt-1 text-sm text-nexus-muted">Visão rápida de estoque, pedidos e status.</p>
           </div>
         </div>

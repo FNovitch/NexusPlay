@@ -421,7 +421,7 @@ function AdminToolbar({ title, description, section, detailId }: { title: string
       </p>
       <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
         <div>
-          <h1 className="text-3xl font-semibold tracking-normal text-nexus-contrast">{title}</h1>
+          <h1 className="text-3xl font-semibold leading-tight tracking-normal text-nexus-contrast">{title}</h1>
           <p className="mt-1 max-w-2xl text-sm leading-6 text-nexus-muted">{description}</p>
         </div>
         {detailId && <Link to={`/admin/${section}`} className="btn-secondary md:w-max">Voltar para Lista</Link>}

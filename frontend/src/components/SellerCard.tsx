@@ -6,7 +6,7 @@ import { Stars } from "./Stars";
 
 export function SellerCard({ seller }: { seller: Seller }) {
   return (
-    <Link to={`/loja/${seller.slug}`} className="group panel block overflow-hidden card-hover">
+    <Link to={`/loja/${seller.slug}`} className="group panel block h-full overflow-hidden card-hover">
       <div className="relative h-32 overflow-hidden border-b border-nexus-line bg-nexus-paper">
         <img
           src={resolveImageUrl(seller.coverUrl)}
@@ -29,14 +29,14 @@ export function SellerCard({ seller }: { seller: Seller }) {
           />
           <span className="inline-flex items-center gap-1 rounded-md bg-nexus-paper px-2 py-1 text-xs font-semibold text-nexus-secondary">
             <Store className="h-3 w-3" />
-            Loja Ativa
+            Loja ativa
           </span>
         </div>
-        <h3 className="text-base font-semibold tracking-normal text-nexus-contrast">{seller.storeName}</h3>
+        <h3 className="text-base font-semibold leading-snug tracking-normal text-nexus-contrast">{seller.storeName}</h3>
         <p className="mt-1 line-clamp-2 text-sm leading-6 text-nexus-muted">{seller.bio}</p>
         <div className="mt-4 flex items-center justify-between border-t border-nexus-line pt-3">
           <Stars value={seller.rating} compact />
-          <span className="text-xs font-semibold text-nexus-muted">{seller.salesCount} Pedidos</span>
+          <span className="text-xs font-semibold text-nexus-muted">{seller.salesCount} pedidos</span>
         </div>
       </div>
     </Link>

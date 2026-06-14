@@ -24,10 +24,10 @@ export function CartDrawer() {
       <aside className="ml-auto flex h-full w-full max-w-md flex-col border-l border-nexus-line bg-white shadow-card">
         <div className="flex items-center justify-between border-b border-nexus-line p-5">
           <div>
-            <p className="eyebrow">Sua Seleção</p>
+            <p className="eyebrow">Sua seleção</p>
             <h2 className="text-xl font-semibold tracking-normal text-nexus-contrast">Carrinho</h2>
           </div>
-          <button onClick={close} className="btn-icon" aria-label="Fechar Carrinho">
+          <button onClick={close} className="btn-icon" aria-label="Fechar carrinho">
             <X className="h-5 w-5" />
           </button>
         </div>
@@ -38,8 +38,8 @@ export function CartDrawer() {
                 <div className="mx-auto mb-4 grid h-10 w-10 place-items-center rounded-lg bg-nexus-paper text-nexus-secondary">
                   <ShoppingBag className="h-5 w-5" />
                 </div>
-                <p className="font-semibold text-nexus-contrast">Seu Carrinho Está Vazio</p>
-                <p className="mt-2 text-sm leading-6 text-nexus-muted">Ele está esperando periféricos, colecionáveis ou acessórios para o setup.</p>
+                <p className="font-semibold text-nexus-contrast">Seu carrinho está vazio</p>
+                <p className="mt-2 text-sm leading-6 text-nexus-muted">Explore periféricos, colecionáveis e acessórios para montar a primeira seleção.</p>
               </div>
             </div>
           ) : (
@@ -97,7 +97,7 @@ export function CartDrawer() {
             to="/checkout"
             className="btn-primary w-full"
           >
-            Finalizar Compra
+            Finalizar compra
           </Link>
         </div>
       </aside>

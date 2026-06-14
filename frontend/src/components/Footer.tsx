@@ -12,7 +12,7 @@ export function Footer() {
         <div>
           <Brand />
           <p className="mt-4 max-w-sm text-sm leading-6 text-nexus-muted">
-            SaaS demonstrativo de Marketplace Gamer com Catálogo, Lojas, Carrinho, Checkout, Pedidos e Painel de Vendedor.
+            Marketplace SaaS gamer demonstrativo com catálogo, lojas, carrinho, checkout, pedidos e painel de vendedor.
           </p>
         </div>
 
@@ -20,12 +20,12 @@ export function Footer() {
           <strong className="mb-1 text-sm font-semibold text-nexus-contrast">Comprar</strong>
           <Link className="text-nexus-muted hover:text-nexus-contrast" to="/#produtos">Catálogo</Link>
           <Link className="text-nexus-muted hover:text-nexus-contrast" to="/marcas">Marcas</Link>
-          <button className="w-max text-left text-nexus-muted hover:text-nexus-contrast" type="button" onClick={openCart}>Abrir Carrinho</button>
+          <button className="w-max text-left text-nexus-muted hover:text-nexus-contrast" type="button" onClick={openCart}>Abrir carrinho</button>
         </nav>
 
         <nav className="grid content-start gap-2 text-sm">
           <strong className="mb-1 text-sm font-semibold text-nexus-contrast">Vender</strong>
-          <Link className="text-nexus-muted hover:text-nexus-contrast" to="/vendedor/cadastro">Cadastrar Loja</Link>
+          <Link className="text-nexus-muted hover:text-nexus-contrast" to="/vendedor/cadastro">Cadastrar loja</Link>
           <Link className="text-nexus-muted hover:text-nexus-contrast" to="/vendedor">Painel</Link>
         </nav>
 
