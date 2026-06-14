@@ -155,8 +155,8 @@ ALTER TABLE "SellerPayout" ADD CONSTRAINT "SellerPayout_artisanId_fkey" FOREIGN 
 -- Seed subscription plans
 INSERT INTO "SubscriptionPlan" ("id", "name", "description", "price", "durationDays", "type", "active", "updatedAt")
 VALUES
-  (gen_random_uuid()::text, 'Plano mensal', 'Assinatura mensal para continuar vendendo no Kriar.', 9.90, 30, 'MONTHLY', true, CURRENT_TIMESTAMP),
-  (gen_random_uuid()::text, 'Plano anual', 'Assinatura anual com desconto para continuar vendendo no Kriar.', 99.00, 365, 'YEARLY', true, CURRENT_TIMESTAMP)
+  (gen_random_uuid()::text, 'Plano mensal', 'Assinatura mensal para continuar vendendo na NexusPlay.', 9.90, 30, 'MONTHLY', true, CURRENT_TIMESTAMP),
+  (gen_random_uuid()::text, 'Plano anual', 'Assinatura anual com desconto para continuar vendendo na NexusPlay.', 99.00, 365, 'YEARLY', true, CURRENT_TIMESTAMP)
 ON CONFLICT ("type") DO NOTHING;
 
 -- Backfill trial for existing artisans that do not have trial dates yet.

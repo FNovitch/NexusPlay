@@ -23,8 +23,8 @@ export async function registerCustomer(req: Request, res: Response) {
     prisma.customer.findUnique({ where: { cpf: body.cpf }, select: { id: true } })
   ]);
 
-  if (emailOwner) throw new AppError("E-mail ja cadastrado", 409, { email: "Este e-mail ja esta cadastrado." });
-  if (cpfOwner) throw new AppError("CPF ja cadastrado", 409, { cpf: "Este CPF ja esta cadastrado." });
+  if (emailOwner) throw new AppError("E-mail já cadastrado", 409, { email: "Este e-mail já está cadastrado." });
+  if (cpfOwner) throw new AppError("CPF já cadastrado", 409, { cpf: "Este CPF já está cadastrado." });
 
   const passwordHash = await bcrypt.hash(body.password, 12);
   const customer = await prisma.$transaction(async (tx) => {
@@ -66,7 +66,7 @@ export async function loginCustomer(req: Request, res: Response) {
     user.customer.blocked ||
     !(await bcrypt.compare(password, user.passwordHash))
   ) {
-    throw new AppError("E-mail ou senha invalidos.", 401);
+    throw new AppError("E-mail ou senha inválidos.", 401);
   }
   const token = signToken({ sub: user.id, role: user.role });
   res.json({
@@ -119,7 +119,7 @@ export async function resetCustomerPassword(req: Request, res: Response) {
   });
 
   if (!user || !user.customer || user.customer.isDeleted || !user.customer.active || user.customer.blocked) {
-    throw new AppError("Token invalido ou expirado.", 400, { token: "Solicite uma nova recuperacao de senha." });
+    throw new AppError("Token inválido ou expirado.", 400, { token: "Solicite uma nova recuperacao de senha." });
   }
 
   const passwordHash = await bcrypt.hash(password, 12);
@@ -140,18 +140,18 @@ export async function getCustomerProfile(req: Request, res: Response) {
     where: { userId: req.user!.id },
     include: { user: true, addresses: true }
   });
-  if (!customer || customer.isDeleted) throw new AppError("Perfil de cliente nao encontrado", 404);
+  if (!customer || customer.isDeleted) throw new AppError("Perfil de cliente não encontrado", 404);
   res.json({ success: true, data: mapCustomerToResponse(customer) });
 }
 
 export async function updateCustomerProfile(req: Request, res: Response) {
   const body = req.body as Partial<CreateCustomerDTO>;
   const current = await prisma.customer.findUnique({ where: { userId: req.user!.id }, include: { addresses: true } });
-  if (!current || current.isDeleted) throw new AppError("Perfil de cliente nao encontrado", 404);
+  if (!current || current.isDeleted) throw new AppError("Perfil de cliente não encontrado", 404);
 
   if (body.cpf && body.cpf !== current.cpf) {
     const owner = await prisma.customer.findUnique({ where: { cpf: body.cpf }, select: { id: true } });
-    if (owner) throw new AppError("CPF ja cadastrado", 409, { cpf: "Este CPF ja esta cadastrado." });
+    if (owner) throw new AppError("CPF já cadastrado", 409, { cpf: "Este CPF já está cadastrado." });
   }
 
   const updated = await prisma.$transaction(async (tx) => {

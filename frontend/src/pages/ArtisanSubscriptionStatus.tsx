@@ -13,7 +13,7 @@ export function ArtisanSubscriptionStatus() {
   const [title, description, Icon] = copy[status as keyof typeof copy] ?? copy.sucesso;
   return (
     <main className="app-shell grid min-h-[70vh] place-items-center py-16">
-      <EmptyState icon={<Icon className="h-6 w-6" />} title={title} description={description} action={<Link to="/artesao/assinatura" className="btn-primary">Ver assinatura</Link>} />
+      <EmptyState icon={<Icon className="h-6 w-6" />} title={title} description={description} action={<Link to="/vendedor/assinatura" className="btn-primary">Ver assinatura</Link>} />
     </main>
   );
 }

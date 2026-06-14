@@ -50,7 +50,7 @@ export const useCart = create<CartState>()(
       open: () => set({ isOpen: true }),
       close: () => set({ isOpen: false })
     }),
-    { name: "kriar-cart" }
+    { name: "nexus-cart" }
   )
 );
 

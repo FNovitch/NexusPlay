@@ -46,7 +46,7 @@ export async function getSellerStore(req: Request, res: Response) {
   });
 
   if (!seller || seller.status !== SellerStatus.APPROVED) {
-    throw new AppError("Loja nao encontrada", 404);
+    throw new AppError("Loja não encontrada", 404);
   }
 
   res.json({
@@ -59,7 +59,7 @@ export async function getSellerStore(req: Request, res: Response) {
 
 export async function updateMySeller(req: Request, res: Response) {
   if (!req.user?.sellerId) {
-    throw new AppError("Perfil de vendedor nao encontrado", 404);
+    throw new AppError("Perfil de vendedor não encontrado", 404);
   }
 
   const { storeName, bio, story, avatarUrl, coverUrl } = req.body;
@@ -80,7 +80,7 @@ export async function updateMySeller(req: Request, res: Response) {
 
 export async function dashboard(req: Request, res: Response) {
   if (!req.user?.sellerId) {
-    throw new AppError("Perfil de vendedor nao encontrado", 404);
+    throw new AppError("Perfil de vendedor não encontrado", 404);
   }
 
   const [seller, items, products] = await Promise.all([

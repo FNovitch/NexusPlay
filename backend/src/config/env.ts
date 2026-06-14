@@ -40,14 +40,14 @@ const envSchema = z.object({
   CLOUDINARY_CLOUD_NAME: z.string().optional(),
   CLOUDINARY_API_KEY: z.string().optional(),
   CLOUDINARY_API_SECRET: z.string().optional(),
-  CLOUDINARY_FOLDER: z.string().default("kriar/products"),
+  CLOUDINARY_FOLDER: z.string().default("nexusplay/products"),
   MELHOR_ENVIO_BASE_URL: z.string().url().default("https://sandbox.melhorenvio.com.br/api"),
   MELHOR_ENVIO_TOKEN: z.string().optional(),
   MELHOR_ENVIO_CLIENT_ID: z.string().optional(),
   MELHOR_ENVIO_CLIENT_SECRET: z.string().optional(),
   MELHOR_ENVIO_REDIRECT_URL: z.string().url().optional(),
   MELHOR_ENVIO_SANDBOX: z.coerce.boolean().default(true),
-  MELHOR_ENVIO_USER_AGENT: z.string().default("Kriar Marketplace (suporte@kriar.com)"),
+  MELHOR_ENVIO_USER_AGENT: z.string().default("NexusPlay Marketplace (suporte@nexusplay.demo)"),
   MELHOR_ENVIO_CEP_ORIGEM: z.string().default("55900000"),
 });
 

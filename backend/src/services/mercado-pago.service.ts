@@ -50,7 +50,7 @@ function mockPreference(referenceId: string, path = "pedido") {
 
 async function mercadoPagoRequest<T>(path: string, options: RequestInit = {}) {
   if (!token) {
-    throw new Error("MERCADO_PAGO_ACCESS_TOKEN nao configurado.");
+    throw new Error("MERCADO_PAGO_ACCESS_TOKEN não configurado.");
   }
 
   const response = await fetch(`${mercadoPagoApiBase}${path}`, {
@@ -78,7 +78,7 @@ export async function criarPreferenciaPagamento(input: {
 }) {
   if (!token) {
     if (env.NODE_ENV === "production") {
-      throw new Error("MERCADO_PAGO_ACCESS_TOKEN nao configurado para producao.");
+      throw new Error("MERCADO_PAGO_ACCESS_TOKEN não configurado para produção.");
     }
 
     return mockPreference(input.pedidoId);
@@ -97,7 +97,7 @@ export async function criarPreferenciaPagamento(input: {
       },
       auto_return: "approved",
       notification_url: `${env.BACKEND_URL.replace(/\/$/, "")}/api/v1/webhooks/mercado-pago?source_news=webhooks`,
-      statement_descriptor: "KRIAR"
+      statement_descriptor: "NEXUSPLAY"
     };
     logPreferenceDebug("customer_purchase", body);
     const response = await mercadoPagoRequest<{ id?: string; init_point?: string | null; sandbox_init_point?: string | null }>("/checkout/preferences", {
@@ -123,10 +123,10 @@ export async function criarPreferenciaAssinatura(input: {
   const externalReference = input.subscriptionId;
   if (!token) {
     if (env.NODE_ENV === "production") {
-      throw new Error("MERCADO_PAGO_ACCESS_TOKEN nao configurado para producao.");
+      throw new Error("MERCADO_PAGO_ACCESS_TOKEN não configurado para produção.");
     }
 
-    return mockPreference(externalReference, "artesao/assinatura");
+    return mockPreference(externalReference, "vendedor/assinatura");
   }
 
   try {
@@ -142,13 +142,13 @@ export async function criarPreferenciaAssinatura(input: {
       payer: { name: input.artesao.nome, email: input.artesao.email },
       payment_methods: checkoutPaymentMethods,
       back_urls: {
-        success: `${env.FRONTEND_URL}/artesao/assinatura/sucesso`,
-        failure: `${env.FRONTEND_URL}/artesao/assinatura/falha`,
-        pending: `${env.FRONTEND_URL}/artesao/assinatura/pendente`
+        success: `${env.FRONTEND_URL}/vendedor/assinatura/sucesso`,
+        failure: `${env.FRONTEND_URL}/vendedor/assinatura/falha`,
+        pending: `${env.FRONTEND_URL}/vendedor/assinatura/pendente`
       },
       auto_return: "approved",
       notification_url: `${env.BACKEND_URL.replace(/\/$/, "")}/api/v1/webhooks/mercado-pago/subscription?source_news=webhooks`,
-      statement_descriptor: "KRIAR"
+      statement_descriptor: "NEXUSPLAY"
     };
     logPreferenceDebug("artisan_subscription", body);
     const response = await mercadoPagoRequest<{ id?: string; init_point?: string | null; sandbox_init_point?: string | null }>("/checkout/preferences", {
@@ -159,7 +159,7 @@ export async function criarPreferenciaAssinatura(input: {
     return response;
   } catch (error) {
     if (process.env.MERCADO_PAGO_DEBUG === "true") console.error("[mercado-pago:subscription-preference:error]", error);
-    if (env.NODE_ENV === "development") return mockPreference(externalReference, "artesao/assinatura");
+    if (env.NODE_ENV === "development") return mockPreference(externalReference, "vendedor/assinatura");
     throw error;
   }
 }

@@ -91,10 +91,10 @@ adminRoutes.get("/admin/pedidos", asyncHandler(listAdminOrders));
 adminRoutes.get("/admin/pedidos/:id", asyncHandler(getAdminOrder));
 adminRoutes.put("/admin/pedidos/:id/status", asyncHandler(updateAdminOrderStatus));
 
-adminRoutes.get("/admin/avaliacoes", asyncHandler(listAdminReviews));
-adminRoutes.put("/admin/avaliacoes/:id/ocultar", asyncHandler(hideReview));
-adminRoutes.put("/admin/avaliacoes/:id/exibir", asyncHandler(showReview));
-adminRoutes.delete("/admin/avaliacoes/:id", asyncHandler(deleteReviewAdmin));
+adminRoutes.get("/admin/avaliações", asyncHandler(listAdminReviews));
+adminRoutes.put("/admin/avaliações/:id/ocultar", asyncHandler(hideReview));
+adminRoutes.put("/admin/avaliações/:id/exibir", asyncHandler(showReview));
+adminRoutes.delete("/admin/avaliações/:id", asyncHandler(deleteReviewAdmin));
 
 adminRoutes.get("/admin/categorias", asyncHandler(listAdminCategories));
 adminRoutes.post("/admin/categorias", asyncHandler(createAdminCategory));

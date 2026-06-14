@@ -114,7 +114,7 @@ export async function requireActiveSubscription(req: Request, _res: Response, ne
 
   if (!trialActive && !subscriptionActive) {
     return next(new AppError("Assinatura necessaria para continuar vendendo.", 403, {
-      subscription: "Seu período grátis terminou. Escolha um plano para continuar vendendo na KRIAR."
+      subscription: "Seu período grátis terminou. Escolha um plano para continuar vendendo na NexusPlay."
     }));
   }
 

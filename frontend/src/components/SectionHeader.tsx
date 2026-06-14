@@ -15,8 +15,8 @@ export function SectionHeader({ eyebrow, title, description, action, tone = "def
     <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
       <div>
         {eyebrow && <p className={`eyebrow mb-2 ${inverted ? "text-white/65" : ""}`}>{eyebrow}</p>}
-        <h2 className={`text-2xl font-black tracking-tight sm:text-[2rem] ${inverted ? "text-white" : "text-kriar-contrast"}`}>{title}</h2>
-        {description && <p className={`mt-2 max-w-2xl text-sm leading-6 sm:text-base ${inverted ? "text-white/75" : "text-kriar-muted"}`}>{description}</p>}
+        <h2 className={`text-2xl font-semibold tracking-normal sm:text-3xl ${inverted ? "text-white" : "text-nexus-contrast"}`}>{title}</h2>
+        {description && <p className={`mt-2 max-w-2xl text-sm leading-6 sm:text-base ${inverted ? "text-white/75" : "text-nexus-muted"}`}>{description}</p>}
       </div>
       {action}
     </div>

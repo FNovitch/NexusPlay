@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { api } from "../lib/api";
+import { readDemoOrders } from "../data/demoOrders";
 import { useAuth } from "../store/auth";
 
 export function ArtisanOrders() {
   const user = useAuth((state) => state.user);
   const [orders, setOrders] = useState<any[]>([]);
-  useEffect(() => { api.get("/artesao/pedidos").then(({ data }) => setOrders(data.data?.pedidos ?? [])).catch(() => setOrders([])); }, []);
-  if (!user || user.role !== "ARTISAN") return <Navigate to="/artesao/login" replace />;
+  useEffect(() => { api.get("/artesao/pedidos").then(({ data }) => setOrders(data.data?.pedidos ?? [])).catch(() => setOrders(readDemoOrders())); }, []);
+  if (!user || user.role !== "ARTISAN") return <Navigate to="/vendedor/login" replace />;
 
   async function update(id: string, status: string) {
     await api.put(`/artesao/pedidos/${id}/status`, { status });
@@ -17,8 +18,8 @@ export function ArtisanOrders() {
 
   return (
     <main className="app-shell section-y">
-      <p className="eyebrow mb-2">Vendedor</p>
-      <h1 className="mb-8 text-3xl font-black text-kriar-contrast">Pedidos recebidos</h1>
+      <p className="eyebrow mb-2">Empreendedor</p>
+      <h1 className="mb-8 text-3xl font-semibold text-nexus-contrast">Pedidos Recebidos</h1>
       <div className="panel overflow-x-auto p-4">
         <table className="table-modern">
           <thead><tr><th>Pedido</th><th>Status</th><th>Cliente</th><th>Itens</th><th>Atualizar</th></tr></thead>

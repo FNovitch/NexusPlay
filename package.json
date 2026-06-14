@@ -1,8 +1,8 @@
 {
-  "name": "kriar-marketplace",
+  "name": "nexusplay-marketplace",
   "private": true,
   "version": "1.0.0",
-  "description": "KRIAR - Onde a Arte encontra o Futuro",
+  "description": "NexusPlay - marketplace demonstrativo geek/gamer",
   "workspaces": [
     "backend",
     "frontend"

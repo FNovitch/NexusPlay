@@ -2,6 +2,7 @@ import { AlertCircle, CheckCircle2, Clock, PackageCheck, RefreshCw } from "lucid
 import { useEffect, useMemo, useState } from "react";
 import { Link, Navigate, useParams, useSearchParams } from "react-router-dom";
 import { EmptyState } from "../components/EmptyState";
+import { findDemoOrder, lastDemoOrderId } from "../data/demoOrders";
 import { api } from "../lib/api";
 import { useAuth } from "../store/auth";
 import { useCart } from "../store/cart";
@@ -21,9 +22,9 @@ type Order = {
 };
 
 const legacyCopy = {
-  sucesso: ["Pedido recebido", "O Mercado Pago confirmou ou está processando seu retorno. Acompanhe em Meus pedidos.", CheckCircle2],
-  falha: ["Pagamento não concluído", "Não foi possível concluir o pagamento. Você pode tentar novamente.", AlertCircle],
-  pendente: ["Pagamento pendente", "Assim que o Mercado Pago confirmar, atualizaremos seu pedido.", Clock]
+  sucesso: ["Pedido Recebido", "O Mercado Pago confirmou ou está processando seu retorno. Acompanhe em Meus Pedidos.", CheckCircle2],
+  falha: ["Pagamento Não Concluído", "Não foi possível concluir o pagamento. Você pode tentar novamente.", AlertCircle],
+  pendente: ["Pagamento Pendente", "Assim que o Mercado Pago confirmar, atualizaremos seu pedido.", Clock]
 } as const;
 
 export function CheckoutStatus() {
@@ -36,7 +37,7 @@ export function CheckoutStatus() {
   const [error, setError] = useState("");
   const [pollCount, setPollCount] = useState(0);
   const result = searchParams.get("resultado") ?? status;
-  const fallbackOrderId = typeof window !== "undefined" ? sessionStorage.getItem("kriar-last-order-id") : null;
+  const fallbackOrderId = lastDemoOrderId();
 
   useEffect(() => {
     if (result === "sucesso") clear();
@@ -60,6 +61,12 @@ export function CheckoutStatus() {
     if (!id) return;
     if (showLoading) setLoading(true);
     setError("");
+    const demoOrder = findDemoOrder(id);
+    if (demoOrder) {
+      setOrder(demoOrder);
+      setLoading(false);
+      return;
+    }
     try {
       const { data } = await api.get(`/pedidos/${id}`);
       setOrder(data.data?.pedido);
@@ -81,7 +88,7 @@ export function CheckoutStatus() {
     const [title, description, Icon] = legacyCopy[result as keyof typeof legacyCopy] ?? legacyCopy.sucesso;
     return (
       <main className="app-shell grid min-h-[70vh] place-items-center py-16">
-        <EmptyState icon={<Icon className="h-6 w-6" />} title={title} description={description} action={<Link to="/meus-pedidos" className="btn-primary">Ver meus pedidos</Link>} />
+        <EmptyState icon={<Icon className="h-6 w-6" />} title={title} description={description} action={<Link to="/meus-pedidos" className="btn-primary">Ver Meus Pedidos</Link>} />
       </main>
     );
   }
@@ -89,13 +96,13 @@ export function CheckoutStatus() {
   if (!user) return <Navigate to="/login" replace />;
 
   if (loading && !order) {
-    return <main className="app-shell py-16 text-kriar-muted">Carregando status do pedido...</main>;
+    return <main className="app-shell py-16 text-nexus-muted">Carregando status do pedido...</main>;
   }
 
   if (error && !order) {
     return (
       <main className="app-shell grid min-h-[70vh] place-items-center py-16">
-        <EmptyState icon={<AlertCircle className="h-6 w-6" />} title="Pedido não encontrado" description={error} action={<Link to="/meus-pedidos" className="btn-primary">Ver meus pedidos</Link>} />
+        <EmptyState icon={<AlertCircle className="h-6 w-6" />} title="Pedido Não Encontrado" description={error} action={<Link to="/meus-pedidos" className="btn-primary">Ver Meus Pedidos</Link>} />
       </main>
     );
   }
@@ -107,11 +114,11 @@ export function CheckoutStatus() {
       <section className="panel p-5 sm:p-7">
         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div>
-            <p className="eyebrow mb-2">Status do pedido</p>
-            <h1 className="text-3xl font-black tracking-tight text-kriar-contrast">{state.title}</h1>
-            <p className="mt-2 max-w-2xl text-kriar-muted">{state.description}</p>
+            <p className="eyebrow mb-2">Status do Pedido</p>
+            <h1 className="text-3xl font-semibold tracking-normal text-nexus-contrast">{state.title}</h1>
+            <p className="mt-2 max-w-2xl text-nexus-muted">{state.description}</p>
             {shouldPoll(order) && (
-              <p className="mt-3 inline-flex items-center gap-2 rounded-full bg-kriar-background px-3 py-1.5 text-xs font-black text-kriar-muted">
+              <p className="mt-3 inline-flex items-center gap-2 rounded-lg bg-nexus-paper px-3 py-1.5 text-xs font-medium text-nexus-muted">
                 <RefreshCw className="h-3.5 w-3.5 animate-spin" /> Atualizando automaticamente
               </p>
             )}
@@ -123,38 +130,38 @@ export function CheckoutStatus() {
         </div>
 
         <div className="mt-7 grid gap-5 lg:grid-cols-[1fr_320px]">
-          <section className="rounded-[20px] border border-kriar-line bg-kriar-background/70 p-4">
+          <section className="rounded-lg border border-nexus-line bg-nexus-paper p-4">
             <div className="mb-4 flex items-center gap-3">
-              <PackageCheck className="h-5 w-5 text-kriar-primary" />
+              <PackageCheck className="h-5 w-5 text-nexus-secondary" />
               <div>
-                <strong className="block text-kriar-contrast">{order.orderCode}</strong>
-                <span className="text-sm text-kriar-muted">{order.items?.length ?? 0} item(ns)</span>
+                <strong className="block text-nexus-contrast">{order.orderCode}</strong>
+                <span className="text-sm text-nexus-muted">{order.items?.length ?? 0} item(ns)</span>
               </div>
             </div>
             <div className="grid gap-3">
               {order.items?.map((item) => (
-                <div key={item.id} className="flex items-center justify-between gap-3 rounded-xl bg-kriar-surface p-3">
+                <div key={item.id} className="flex items-center justify-between gap-3 rounded-lg bg-nexus-surface p-3">
                   <div>
-                    <strong className="text-sm text-kriar-contrast">{item.productName || item.product?.name}</strong>
-                    <p className="text-xs font-bold text-kriar-muted">Quantidade: {item.quantity}</p>
+                    <strong className="text-sm text-nexus-contrast">{item.productName || item.product?.name}</strong>
+                    <p className="text-xs font-medium text-nexus-muted">Quantidade: {item.quantity}</p>
                   </div>
-                  <strong className="text-sm text-kriar-primary">{currency.format(Number(item.total))}</strong>
+                  <strong className="text-sm text-nexus-contrast">{currency.format(Number(item.total))}</strong>
                 </div>
               ))}
             </div>
           </section>
 
-          <aside className="rounded-[20px] border border-kriar-line bg-kriar-background/70 p-4">
-            <h2 className="text-lg font-black text-kriar-primary">Resumo</h2>
+          <aside className="rounded-lg border border-nexus-line bg-nexus-paper p-4">
+            <h2 className="text-lg font-semibold text-nexus-contrast">Resumo</h2>
             <div className="mt-4 grid gap-2 text-sm">
-              <p className="flex justify-between gap-3"><span className="text-kriar-muted">Total</span><strong>{currency.format(Number(order.total))}</strong></p>
-              <p className="flex justify-between gap-3"><span className="text-kriar-muted">Pagamento</span><strong>{statusLabel(order.paymentStatus)}</strong></p>
-              <p className="flex justify-between gap-3"><span className="text-kriar-muted">Pedido</span><strong>{statusLabel(order.status)}</strong></p>
+              <p className="flex justify-between gap-3"><span className="text-nexus-muted">Total</span><strong>{currency.format(Number(order.total))}</strong></p>
+              <p className="flex justify-between gap-3"><span className="text-nexus-muted">Pagamento</span><strong>{statusLabel(order.paymentStatus)}</strong></p>
+              <p className="flex justify-between gap-3"><span className="text-nexus-muted">Pedido</span><strong>{statusLabel(order.status)}</strong></p>
             </div>
             {order.history && order.history.length > 0 && (
               <>
-                <h3 className="mt-5 font-black text-kriar-contrast">Histórico</h3>
-                <div className="mt-2 grid gap-2 text-xs text-kriar-muted">
+                <h3 className="mt-5 font-semibold text-nexus-contrast">Histórico</h3>
+                <div className="mt-2 grid gap-2 text-xs text-nexus-muted">
                   {order.history.slice(-4).map((history) => (
                     <span key={history.id}>{statusLabel(history.newStatus)} · {new Date(history.createdAt).toLocaleString("pt-BR")}</span>
                   ))}
@@ -165,8 +172,8 @@ export function CheckoutStatus() {
         </div>
 
         <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-          <Link to={realOrderPath} className="btn-primary">Ver detalhes do pedido</Link>
-          <Link to="/meus-pedidos" className="btn-secondary">Meus pedidos</Link>
+          <Link to={realOrderPath} className="btn-primary">Ver Detalhes do Pedido</Link>
+          <Link to="/meus-pedidos" className="btn-secondary">Meus Pedidos</Link>
         </div>
       </section>
     </main>
@@ -179,21 +186,21 @@ function shouldPoll(order: Order) {
 
 function resolveState(order: Order | null, result: string) {
   if (order?.paymentStatus === "APPROVED" || order?.status === "PAID") {
-    return { title: "Pagamento confirmado", description: "Recebemos a confirmação do pagamento e o vendedor já pode preparar seu pedido." };
+    return { title: "Pedido Confirmado", description: "O pedido foi registrado e a loja já pode preparar a entrega ou retirada." };
   }
   if (order?.paymentStatus === "REJECTED" || order?.status === "PAYMENT_REJECTED" || result === "falha") {
-    return { title: "Pagamento não concluído", description: "O pagamento não foi aprovado. Você pode acompanhar este pedido ou tentar novamente em Meus pedidos." };
+    return { title: "Pedido Não Concluído", description: "A simulação não foi aprovada. Você pode acompanhar este pedido ou tentar novamente em Meus Pedidos." };
   }
   if (result === "pendente") {
-    return { title: "Pagamento pendente", description: "O Mercado Pago ainda está processando a transação. Atualizaremos o pedido automaticamente quando houver confirmação." };
+    return { title: "Pedido Pendente", description: "A confirmação ainda está em processamento. Atualizaremos o pedido automaticamente quando houver retorno." };
   }
-  return { title: "Estamos confirmando seu pagamento", description: "O retorno do Mercado Pago chegou, mas a confirmação final pode levar alguns instantes pelo webhook." };
+  return { title: "Estamos Confirmando seu Pedido", description: "A confirmação final pode levar alguns instantes quando a integração real estiver ativa." };
 }
 
 function StatusBadge({ value, tone }: { value: string; tone: "payment" | "order" }) {
   const positive = ["APPROVED", "PAID", "DELIVERED"].includes(value);
   const negative = ["REJECTED", "PAYMENT_REJECTED", "CANCELED", "REFUNDED"].includes(value);
-  const className = negative ? "badge bg-red-50 text-red-700" : positive ? "badge-soft" : tone === "payment" ? "badge-warm" : "badge bg-kriar-background text-kriar-muted";
+  const className = negative ? "badge bg-red-50 text-red-700" : positive ? "badge-soft" : tone === "payment" ? "badge-warm" : "badge bg-nexus-background text-nexus-muted";
   return <span className={className}>{statusLabel(value)}</span>;
 }
 

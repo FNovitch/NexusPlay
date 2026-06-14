@@ -14,7 +14,7 @@ export class AppError extends Error {
 }
 
 export const notFound: RequestHandler = (req, _res, next) => {
-  next(new AppError(`Rota nao encontrada: ${req.originalUrl}`, 404));
+  next(new AppError(`Rota não encontrada: ${req.originalUrl}`, 404));
 };
 
 export const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
@@ -37,7 +37,7 @@ export const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
 
     return res.status(400).json({
       success: false,
-      message: "Dados invalidos",
+      message: "Dados inválidos",
       errors
     });
   }
@@ -61,13 +61,13 @@ export const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
     if (err.code === "P2002") {
       const fields = Array.isArray(err.meta?.target) ? err.meta.target.map(String) : ["form"];
       const errors = fields.reduce<Record<string, string>>((acc, field) => {
-        acc[field] = "Valor ja cadastrado.";
+        acc[field] = "Valor já cadastrado.";
         return acc;
       }, {});
 
       return res.status(409).json({
         success: false,
-        message: "Nao foi possivel concluir o cadastro.",
+        message: "Não foi possível concluir o cadastro.",
         errors
       });
     }
@@ -75,7 +75,7 @@ export const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
     if (err.code === "P2003") {
       return res.status(400).json({
         success: false,
-        message: "Referencia invalida para concluir a operacao.",
+        message: "Referencia inválida para concluir a operacao.",
         errors: { form: "Verifique os dados relacionados e tente novamente." }
       });
     }
@@ -83,8 +83,8 @@ export const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
     if (err.code === "P2025") {
       return res.status(404).json({
         success: false,
-        message: "Recurso nao encontrado.",
-        errors: { form: "O registro solicitado nao foi encontrado." }
+        message: "Recurso não encontrado.",
+        errors: { form: "O registro solicitado não foi encontrado." }
       });
     }
   }

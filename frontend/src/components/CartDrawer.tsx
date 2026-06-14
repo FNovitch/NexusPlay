@@ -16,18 +16,18 @@ export function CartDrawer() {
 
   function handleRemove(productId: string, productName: string, selectedVariations?: Record<string, string>) {
     removeItem(productId, selectedVariations);
-    showToast({ title: "Item removido", description: productName, variant: "info" });
+    showToast({ title: "Item Removido", description: productName, variant: "info" });
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-kriar-contrast/30 backdrop-blur-sm">
-      <aside className="ml-auto flex h-full w-full max-w-md flex-col border-l border-kriar-line bg-kriar-background shadow-lift">
-        <div className="flex items-center justify-between border-b border-kriar-line p-5">
+    <div className="fixed inset-0 z-50 bg-nexus-primary/35 backdrop-blur-sm">
+      <aside className="ml-auto flex h-full w-full max-w-md flex-col border-l border-nexus-line bg-white shadow-card">
+        <div className="flex items-center justify-between border-b border-nexus-line p-5">
           <div>
-            <p className="eyebrow">Sua seleção</p>
-            <h2 className="text-xl font-black tracking-tight text-kriar-contrast">Carrinho</h2>
+            <p className="eyebrow">Sua Seleção</p>
+            <h2 className="text-xl font-semibold tracking-normal text-nexus-contrast">Carrinho</h2>
           </div>
-          <button onClick={close} className="btn-icon" aria-label="Fechar carrinho">
+          <button onClick={close} className="btn-icon" aria-label="Fechar Carrinho">
             <X className="h-5 w-5" />
           </button>
         </div>
@@ -35,18 +35,18 @@ export function CartDrawer() {
           {items.length === 0 ? (
             <div className="grid h-full place-items-center text-center">
               <div>
-                <div className="mx-auto mb-4 grid h-12 w-12 place-items-center rounded-[20px] bg-kriar-primary/10 text-kriar-primary">
+                <div className="mx-auto mb-4 grid h-10 w-10 place-items-center rounded-lg bg-nexus-paper text-nexus-secondary">
                   <ShoppingBag className="h-5 w-5" />
                 </div>
-                <p className="font-black text-kriar-contrast">Seu carrinho está vazio</p>
-                <p className="mt-2 text-sm leading-6 text-kriar-muted">Ele está esperando uma descoberta artesanal.</p>
+                <p className="font-semibold text-nexus-contrast">Seu Carrinho Está Vazio</p>
+                <p className="mt-2 text-sm leading-6 text-nexus-muted">Ele está esperando periféricos, colecionáveis ou acessórios para o setup.</p>
               </div>
             </div>
           ) : (
             <div className="space-y-7">
               {Object.entries(groups).map(([seller, sellerItems]) => (
                 <section key={seller}>
-                  <h3 className="mb-3 text-xs font-black uppercase tracking-[0.14em] text-kriar-secondary">{seller}</h3>
+                  <h3 className="mb-3 text-xs font-semibold uppercase tracking-[0.1em] text-nexus-muted">{seller}</h3>
                   <div className="space-y-3">
                     {sellerItems.map((item) => (
                       <div key={cartItemKey(item.product.id, item.selectedVariations)} className="panel flex gap-3 p-3 shadow-none">
@@ -56,25 +56,25 @@ export function CartDrawer() {
                           loading="lazy"
                           decoding="async"
                           onError={handleImageError}
-                          className="h-20 w-20 rounded-xl object-cover"
+                          className="h-20 w-20 rounded-lg object-cover"
                         />
                         <div className="min-w-0 flex-1">
-                          <p className="truncate font-black text-kriar-contrast">{item.product.name}</p>
-                          <p className="text-sm font-bold text-kriar-primary">{currency.format(item.product.price)}</p>
+                          <p className="truncate font-semibold text-nexus-contrast">{item.product.name}</p>
+                          <p className="text-sm font-medium text-nexus-contrast">{currency.format(item.product.price)}</p>
                           {item.selectedVariations && Object.keys(item.selectedVariations).length > 0 && (
-                            <p className="mt-1 text-xs font-bold text-kriar-muted">
+                            <p className="mt-1 text-xs font-medium text-nexus-muted">
                               {Object.entries(item.selectedVariations).map(([name, option]) => `${name}: ${option}`).join(" · ")}
                             </p>
                           )}
                           <div className="mt-3 flex items-center gap-2">
-                            <button className="grid h-8 w-8 place-items-center rounded-lg border border-kriar-line text-kriar-muted transition hover:bg-kriar-primary/10 hover:text-kriar-primary" onClick={() => updateQuantity(item.product.id, item.quantity - 1, item.selectedVariations)} aria-label="Diminuir">
+                            <button className="grid h-8 w-8 place-items-center rounded-lg border border-nexus-line text-nexus-muted transition hover:bg-nexus-paper hover:text-nexus-contrast" onClick={() => updateQuantity(item.product.id, item.quantity - 1, item.selectedVariations)} aria-label="Diminuir">
                               <Minus className="h-3 w-3" />
                             </button>
-                            <span className="w-6 text-center text-sm font-black">{item.quantity}</span>
-                            <button className="grid h-8 w-8 place-items-center rounded-lg border border-kriar-line text-kriar-muted transition hover:bg-kriar-primary/10 hover:text-kriar-primary" onClick={() => updateQuantity(item.product.id, item.quantity + 1, item.selectedVariations)} aria-label="Aumentar">
+                            <span className="w-6 text-center text-sm font-semibold">{item.quantity}</span>
+                            <button className="grid h-8 w-8 place-items-center rounded-lg border border-nexus-line text-nexus-muted transition hover:bg-nexus-paper hover:text-nexus-contrast" onClick={() => updateQuantity(item.product.id, item.quantity + 1, item.selectedVariations)} aria-label="Aumentar">
                               <Plus className="h-3 w-3" />
                             </button>
-                            <button className="ml-auto grid h-8 w-8 place-items-center rounded-lg text-kriar-muted transition hover:bg-kriar-secondary/10 hover:text-kriar-secondary" onClick={() => handleRemove(item.product.id, item.product.name, item.selectedVariations)} aria-label="Remover">
+                            <button className="ml-auto grid h-8 w-8 place-items-center rounded-lg text-nexus-muted transition hover:bg-red-50 hover:text-red-600" onClick={() => handleRemove(item.product.id, item.product.name, item.selectedVariations)} aria-label="Remover">
                               <Trash2 className="h-4 w-4" />
                             </button>
                           </div>
@@ -87,8 +87,8 @@ export function CartDrawer() {
             </div>
           )}
         </div>
-        <div className="border-t border-kriar-line bg-kriar-surface/70 p-5">
-          <div className="mb-4 flex items-center justify-between text-lg font-black text-kriar-contrast">
+        <div className="border-t border-nexus-line bg-white p-5">
+          <div className="mb-4 flex items-center justify-between text-lg font-semibold text-nexus-contrast">
             <span>Total</span>
             <span>{currency.format(cartTotal(items))}</span>
           </div>
@@ -97,7 +97,7 @@ export function CartDrawer() {
             to="/checkout"
             className="btn-primary w-full"
           >
-            Finalizar compra
+            Finalizar Compra
           </Link>
         </div>
       </aside>

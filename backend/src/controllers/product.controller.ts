@@ -81,7 +81,7 @@ export async function createProduct(req: Request, res: Response) {
   });
 
   if (!seller) {
-    throw new AppError("Perfil de vendedor nao encontrado", 404);
+    throw new AppError("Perfil de vendedor não encontrado", 404);
   }
 
   const artisan = seller.artisans[0];
@@ -173,7 +173,7 @@ export async function updateProduct(req: Request, res: Response) {
   const product = await prisma.product.findUnique({ where: { id: String(req.params.id) }, include: { productImages: true } });
 
   if (!product || product.sellerId !== req.user?.sellerId) {
-    throw new AppError("Produto nao encontrado", 404);
+    throw new AppError("Produto não encontrado", 404);
   }
 
   const body = req.body as UpdateProductDTO & { categoryId?: string; removeImageIds?: string[] };
@@ -244,7 +244,7 @@ export async function archiveProduct(req: Request, res: Response) {
   const product = await prisma.product.findUnique({ where: { id: String(req.params.id) } });
 
   if (!product || product.sellerId !== req.user?.sellerId) {
-    throw new AppError("Produto nao encontrado", 404);
+    throw new AppError("Produto não encontrado", 404);
   }
 
   await prisma.product.update({

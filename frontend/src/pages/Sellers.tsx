@@ -14,9 +14,9 @@ export function Sellers() {
   return (
     <main className="app-shell section-y">
       <SectionHeader
-        eyebrow="Criadores"
-        title="Artesãos em alta"
-        description="Criadores aprovados, avaliados e prontos para receber pedidos personalizados."
+        eyebrow="Lojas"
+        title="Marcas Gamer em Destaque"
+        description="Catálogos fictícios com periféricos, colecionáveis, acessórios de setup e identidade própria."
       />
       <div className="grid gap-5 md:grid-cols-3">
         {sellers.map((seller) => (

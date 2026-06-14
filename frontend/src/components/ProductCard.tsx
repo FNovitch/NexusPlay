@@ -1,4 +1,4 @@
-import { Heart, ShoppingBag, Sparkle } from "lucide-react";
+import { Heart, Plus } from "lucide-react";
 import { Link } from "react-router-dom";
 import { productImageUrl, productRating, productSalesCount, productSellerName, productSellerSlug } from "../api/products";
 import type { Product } from "../types";
@@ -37,55 +37,50 @@ export function ProductCard({ product }: { product: Product }) {
   return (
     <article className="group panel overflow-hidden card-hover">
       <Link to={`/produto/${product.slug}`} className="block">
-        <div className="relative aspect-[4/3] overflow-hidden bg-kriar-paper">
+        <div className="relative aspect-[4/3] overflow-hidden border-b border-nexus-line bg-nexus-paper">
           <img
             src={productImageUrl(product)}
             alt={product.name}
             loading="lazy"
             decoding="async"
             onError={handleImageError}
-            className="h-full w-full object-cover transition duration-500 ease-out group-hover:scale-[1.035]"
+            className="h-full w-full object-cover transition duration-300 ease-out group-hover:scale-[1.02]"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-kriar-contrast/16 via-transparent to-transparent opacity-0 transition group-hover:opacity-100" />
-          {product.customizationAvailable && (
-            <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-kriar-surface/95 px-2.5 py-1 text-xs font-bold text-kriar-primary shadow-sm backdrop-blur">
-              <Sparkle className="h-3 w-3" /> Personalizável
-            </span>
-          )}
-          {product.stock <= 4 && (
-            <span className="absolute bottom-3 left-3 rounded-full bg-kriar-secondary px-2.5 py-1 text-xs font-bold text-kriar-light shadow-sm">Últimas {product.stock}</span>
-          )}
         </div>
       </Link>
       <div className="space-y-3 p-4">
         <div>
-          <Link to={`/produto/${product.slug}`} className="line-clamp-2 text-base font-black leading-snug text-kriar-contrast transition hover:text-kriar-primary">
+          <div className="mb-2 flex flex-wrap gap-1.5">
+            {product.customizationAvailable && <span className="badge-warm">Configurável</span>}
+            {product.stock <= 4 && <span className="badge-soft">Estoque {product.stock}</span>}
+          </div>
+          <Link to={`/produto/${product.slug}`} className="line-clamp-2 text-sm font-semibold leading-snug text-nexus-contrast transition hover:text-nexus-secondary">
             {product.name}
           </Link>
-          <Link to={`/loja/${productSellerSlug(product)}`} className="mt-1 block text-sm font-semibold text-kriar-muted transition hover:text-kriar-primary">
+          <Link to={`/loja/${productSellerSlug(product)}`} className="mt-1 block text-xs font-medium text-nexus-muted transition hover:text-nexus-contrast">
             por {productSellerName(product)}
           </Link>
         </div>
         <div className="flex items-center justify-between gap-3 text-xs">
           <Stars value={productRating(product)} compact />
-          <span className="font-bold text-kriar-muted">{productSalesCount(product)} vendas</span>
+          <span className="font-bold text-nexus-muted">{productSalesCount(product)} pedidos</span>
         </div>
-        <div className="flex items-center justify-between gap-2 border-t border-kriar-line/70 pt-3">
-          <strong className="text-2xl tracking-tight text-kriar-primary">{currency.format(product.price)}</strong>
+        <div className="flex items-center justify-between gap-2 border-t border-nexus-line pt-3">
+          <strong className="text-lg font-semibold tracking-normal text-nexus-contrast">{currency.format(product.price)}</strong>
           <div className="flex gap-1.5">
             <button
               onClick={handleFavorite}
-              className={`btn-icon h-10 w-10 ${isFavorite ? "bg-kriar-secondary text-kriar-light hover:bg-kriar-secondary hover:text-kriar-light" : ""}`}
-              aria-label="Favoritar"
+              className={`btn-icon h-9 w-9 ${isFavorite ? "bg-nexus-paper text-nexus-secondary hover:bg-nexus-paper hover:text-nexus-secondary" : ""}`}
+              aria-label={`${isFavorite ? "Remover dos favoritos" : "Favoritar"} ${product.name}`}
             >
               <Heart className={`h-4 w-4 ${isFavorite ? "fill-current" : ""}`} />
             </button>
             <button
               onClick={handleAdd}
-              className="inline-grid h-10 w-10 place-items-center rounded-full bg-kriar-primary text-kriar-light shadow-sm transition duration-[250ms] hover:-translate-y-0.5 hover:bg-[#2f5360] hover:shadow-soft active:translate-y-0"
-              aria-label="Adicionar ao carrinho"
+              className="inline-grid h-9 w-9 place-items-center rounded-lg bg-nexus-primary text-white shadow-soft transition duration-200 hover:bg-[#343344]"
+              aria-label={`Adicionar ${product.name} ao carrinho`}
             >
-              <ShoppingBag className="h-4 w-4" />
+              <Plus className="h-4 w-4" />
             </button>
           </div>
         </div>

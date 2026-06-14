@@ -24,7 +24,7 @@ const addressString = (address: unknown) => JSON.stringify(address ?? {});
 const orderInclude = { items: { include: { product: true, seller: true } }, buyer: { select: { id: true, name: true, email: true } }, history: { orderBy: { createdAt: "asc" as const } }, shippingQuotes: true };
 
 function orderCode() {
-  return `KRIAR-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
+  return `NEXUS-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
 }
 
 function mapPaymentStatus(status: string): PaymentStatus {
@@ -92,7 +92,7 @@ async function createBlockedPayouts(orderId: string) {
         totalAmount: saleAmount,
         availableAmount: saleAmount,
         status: SellerPayoutStatus.BLOCKED,
-        note: "Valor bloqueado ate confirmacao de recebimento pelo cliente."
+        note: "Valor bloqueado até confirmação de recebimento pelo cliente."
       }
     });
   }
@@ -103,19 +103,19 @@ export async function createOrder(req: Request, res: Response) {
   const shippingAddress = req.body.shippingAddress ?? req.body.enderecoEntrega;
   const shippingSelections = (req.body.shippingSelections ?? []) as ShippingSelection[];
 
-  if (!Array.isArray(items) || items.length === 0) throw new AppError("Nao foi possivel concluir o pedido.", 400, { carrinho: "Carrinho vazio." });
-  if (!shippingAddress) throw new AppError("Nao foi possivel concluir o pedido.", 400, { enderecoEntrega: "Informe o endereco de entrega." });
+  if (!Array.isArray(items) || items.length === 0) throw new AppError("Não foi possível concluir o pedido.", 400, { carrinho: "Carrinho vazio." });
+  if (!shippingAddress) throw new AppError("Não foi possível concluir o pedido.", 400, { enderecoEntrega: "Informe o endereço de entrega." });
 
   const products = await prisma.product.findMany({ where: { id: { in: items.map((item) => item.productId) } }, include: { seller: true } });
-  if (products.length !== items.length) throw new AppError("Nao foi possivel concluir o pedido.", 404, { produtos: "Um ou mais produtos nao foram encontrados." });
+  if (products.length !== items.length) throw new AppError("Não foi possível concluir o pedido.", 404, { produtos: "Um ou mais produtos não foram encontrados." });
 
   const orderItems = items.map((item) => {
     const product = products.find((current) => current.id === item.productId)!;
-    if (product.status !== ProductStatus.ACTIVE) throw new AppError("Nao foi possivel concluir o pedido.", 400, { produto: `${product.name} nao esta ativo.` });
-    if (product.stock < item.quantity) throw new AppError("Nao foi possivel concluir o pedido.", 400, { estoque: `Estoque insuficiente para ${product.name}.` });
+    if (product.status !== ProductStatus.ACTIVE) throw new AppError("Não foi possível concluir o pedido.", 400, { produto: `${product.name} não está ativo.` });
+    if (product.stock < item.quantity) throw new AppError("Não foi possível concluir o pedido.", 400, { estoque: `Estoque insuficiente para ${product.name}.` });
     const variations = Array.isArray(product.variations) ? product.variations as Array<{ name: string; options: string[] }> : [];
     const missing = variations.find((variation) => !item.selectedVariations?.[variation.name]);
-    if (missing) throw new AppError("Nao foi possivel concluir o pedido.", 400, { variacao: `Selecione ${missing.name} para ${product.name}.` });
+    if (missing) throw new AppError("Não foi possível concluir o pedido.", 400, { variacao: `Selecione ${missing.name} para ${product.name}.` });
     const image = Array.isArray(product.images) ? (product.images[0] as { url?: string } | undefined)?.url : undefined;
     const unitPrice = Number(product.price);
     return { product, item, unitPrice, subtotal: unitPrice * item.quantity, image };
@@ -128,16 +128,16 @@ export async function createOrder(req: Request, res: Response) {
     itens: items.map((item) => ({ produtoId: item.productId, quantidade: item.quantity, variacaoSelecionada: item.selectedVariations }))
   });
   if (shippingSelections.length !== recalculatedFreight.grupos.length) {
-    throw new AppError("Nao foi possivel concluir o pedido.", 400, { frete: "Selecione uma opcao de frete para cada artesao." });
+    throw new AppError("Não foi possível concluir o pedido.", 400, { frete: "Selecione uma opção de frete para cada loja." });
   }
   const validatedShipping = recalculatedFreight.grupos.map((grupo) => {
     const selected = shippingSelections.find((item) => item.groupId === grupo.groupId || item.sellerId === grupo.sellerId);
     if (!selected) {
-      throw new AppError("Nao foi possivel concluir o pedido.", 400, { frete: `Selecione o frete de ${grupo.loja}.` });
+      throw new AppError("Não foi possível concluir o pedido.", 400, { frete: `Selecione o frete de ${grupo.loja}.` });
     }
     const option = grupo.opcoes.find((current) => String(current.melhorEnvioServiceId) === String(selected.servicoId) || current.id === selected.servicoId);
     if (!option) {
-      throw new AppError("Nao foi possivel concluir o pedido.", 400, { frete: `Opcao de frete invalida para ${grupo.loja}.` });
+      throw new AppError("Não foi possível concluir o pedido.", 400, { frete: `Opção de frete inválida para ${grupo.loja}.` });
     }
     return {
       groupId: grupo.groupId,
@@ -156,7 +156,7 @@ export async function createOrder(req: Request, res: Response) {
   const shippingTotal = validatedShipping.reduce((sum, item) => sum + item.price, 0);
   const total = productsTotal + shippingTotal;
   const buyer = await prisma.user.findUnique({ where: { id: req.user!.id } });
-  if (!buyer) throw new AppError("Comprador nao encontrado", 404);
+  if (!buyer) throw new AppError("Comprador não encontrado", 404);
 
   const pedido = await prisma.$transaction(async (tx) => {
     const created = await tx.order.create({
@@ -215,7 +215,7 @@ export async function createOrder(req: Request, res: Response) {
   });
 
   const initPoint = getMercadoPagoInitPoint(preference);
-  if (!initPoint) throw new AppError("Nao foi possivel criar o link de pagamento.", 500, { pagamento: "Mercado Pago nao retornou init_point." });
+  if (!initPoint) throw new AppError("Não foi possível criar o link de pagamento.", 500, { pagamento: "Mercado Pago não retornou init_point." });
 
   const updated = await prisma.order.update({ where: { id: pedido.id }, data: { mpPreferenceId: preference.id }, include: orderInclude });
   res.status(201).json({
@@ -234,16 +234,16 @@ export async function myOrders(req: Request, res: Response) {
 
 export async function getMyOrder(req: Request, res: Response) {
   const order = await prisma.order.findUnique({ where: { id: String(req.params.id) }, include: orderInclude });
-  if (!order || order.buyerId !== req.user!.id) throw new AppError("Pedido nao encontrado", 404);
+  if (!order || order.buyerId !== req.user!.id) throw new AppError("Pedido não encontrado", 404);
   res.json({ success: true, data: { pedido: order } });
 }
 
 export async function cancelMyOrder(req: Request, res: Response) {
   const order = await prisma.order.findUnique({ where: { id: String(req.params.id) } });
-  if (!order || order.buyerId !== req.user!.id) throw new AppError("Pedido nao encontrado", 404);
+  if (!order || order.buyerId !== req.user!.id) throw new AppError("Pedido não encontrado", 404);
   const cancelable: OrderStatus[] = [OrderStatus.CREATED, OrderStatus.PENDING, OrderStatus.AWAITING_PAYMENT];
   if (!cancelable.includes(order.status)) {
-    throw new AppError("Pedido nao pode ser cancelado neste status", 400, { status: "Cancelamento indisponivel." });
+    throw new AppError("Pedido não pode ser cancelado neste status", 400, { status: "Cancelamento indisponível." });
   }
   const updated = await prisma.order.update({ where: { id: order.id }, data: { status: OrderStatus.CANCELED }, include: orderInclude });
   await addHistory(order.id, order.status, OrderStatus.CANCELED, "Pedido cancelado pelo cliente.");
@@ -252,15 +252,15 @@ export async function cancelMyOrder(req: Request, res: Response) {
 
 export async function confirmReceipt(req: Request, res: Response) {
   const order = await prisma.order.findUnique({ where: { id: String(req.params.id) }, include: orderInclude });
-  if (!order || order.buyerId !== req.user!.id) throw new AppError("Pedido nao encontrado", 404);
+  if (!order || order.buyerId !== req.user!.id) throw new AppError("Pedido não encontrado", 404);
   if (order.paymentStatus !== PaymentStatus.APPROVED) {
-    throw new AppError("Pagamento ainda nao aprovado.", 400, { payment: "A confirmacao de recebimento exige pagamento aprovado." });
+    throw new AppError("Pagamento ainda não aprovado.", 400, { payment: "A confirmação de recebimento exige pagamento aprovado." });
   }
   if (order.status === OrderStatus.CANCELED) {
-    throw new AppError("Pedido cancelado.", 400, { status: "Pedido cancelado nao pode ser confirmado." });
+    throw new AppError("Pedido cancelado.", 400, { status: "Pedido cancelado não pode ser confirmado." });
   }
   if (order.customerConfirmedDelivery) {
-    return res.json({ success: true, message: "Recebimento ja confirmado.", data: { pedido: order } });
+    return res.json({ success: true, message: "Recebimento já confirmado.", data: { pedido: order } });
   }
 
   const now = new Date();
@@ -276,11 +276,11 @@ export async function confirmReceipt(req: Request, res: Response) {
       include: orderInclude
     });
     await tx.orderHistory.create({ data: { orderId: order.id, previousStatus: order.status, newStatus: OrderStatus.DELIVERED, note: "Recebimento confirmado pelo cliente." } });
-    await tx.sellerPayout.updateMany({ where: { orderId: order.id, status: SellerPayoutStatus.BLOCKED }, data: { status: SellerPayoutStatus.AVAILABLE, releasedAt: now, note: "Valor disponivel apos confirmacao de recebimento." } });
+    await tx.sellerPayout.updateMany({ where: { orderId: order.id, status: SellerPayoutStatus.BLOCKED }, data: { status: SellerPayoutStatus.AVAILABLE, releasedAt: now, note: "Valor disponível após confirmação de recebimento." } });
     return pedido;
   });
 
-  res.json({ success: true, message: "Recebimento confirmado. Avaliacao liberada.", data: { pedido: updated } });
+  res.json({ success: true, message: "Recebimento confirmado. Avaliação liberada.", data: { pedido: updated } });
 }
 
 export async function artisanOrders(req: Request, res: Response) {
@@ -294,18 +294,18 @@ export async function artisanOrders(req: Request, res: Response) {
 
 export async function getArtisanOrder(req: Request, res: Response) {
   const order = await prisma.order.findFirst({ where: { id: String(req.params.id), items: { some: { sellerId: req.user!.sellerId } } }, include: orderInclude });
-  if (!order) throw new AppError("Pedido nao encontrado", 404);
+  if (!order) throw new AppError("Pedido não encontrado", 404);
   res.json({ success: true, data: { pedido: order } });
 }
 
 export async function updateArtisanOrderStatus(req: Request, res: Response) {
   const allowed: OrderStatus[] = [OrderStatus.IN_PRODUCTION, OrderStatus.SHIPPED, OrderStatus.DELIVERED];
   const status = String(req.body.status ?? "").toUpperCase() as OrderStatus;
-  if (!allowed.includes(status)) throw new AppError("Status invalido", 400, { status: "Artesao pode usar EM_PREPARO, ENVIADO ou ENTREGUE." });
+  if (!allowed.includes(status)) throw new AppError("Status inválido", 400, { status: "Artesão pode usar EM_PREPARO, ENVIADO ou ENTREGUE." });
   const order = await prisma.order.findFirst({ where: { id: String(req.params.id), items: { some: { sellerId: req.user!.sellerId } } } });
-  if (!order) throw new AppError("Pedido nao encontrado", 404);
+  if (!order) throw new AppError("Pedido não encontrado", 404);
   const updated = await prisma.order.update({ where: { id: order.id }, data: { status }, include: orderInclude });
-  await addHistory(order.id, order.status, status, "Status atualizado pelo artesao.");
+  await addHistory(order.id, order.status, status, "Status atualizado pela loja.");
   res.json({ success: true, message: "Status atualizado.", data: { pedido: updated } });
 }
 
@@ -322,7 +322,7 @@ export async function paymentWebhook(req: Request, res: Response) {
       console.info("[mercado-pago:webhook:ignored]", { topic, paymentId });
       return res.status(200).json({ success: true, message: "Evento ignorado." });
     }
-    if (!validarAssinaturaMercadoPago(req.headers, paymentId)) return res.status(401).json({ success: false, message: "Assinatura do webhook invalida." });
+    if (!validarAssinaturaMercadoPago(req.headers, paymentId)) return res.status(401).json({ success: false, message: "Assinatura do webhook inválida." });
     const payment = await consultarPagamento(paymentId) as {
       id?: string | number;
       status?: string;

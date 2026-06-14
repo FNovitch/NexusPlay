@@ -3,8 +3,8 @@
 @tailwind utilities;
 
 :root {
-  color: #1d2733;
-  background: #f5f6f7;
+  color: #242330;
+  background: #eef1ec;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -15,10 +15,8 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  background:
-    linear-gradient(180deg, rgba(254, 252, 252, 0.88), rgba(245, 246, 247, 0.98) 360px),
-    #f5f6f7;
-  color: #1d2733;
+  background: #eef1ec;
+  color: #242330;
 }
 
 button,
@@ -44,13 +42,7 @@ a {
 
 @layer base {
   ::selection {
-    background: rgba(56, 97, 111, 0.16);
-  }
-
-  h1,
-  h2,
-  h3 {
-    @apply font-serif;
+    background: rgba(240, 207, 114, 0.7);
   }
 
   input,
@@ -64,7 +56,7 @@ a {
   input:focus-visible,
   select:focus-visible,
   textarea:focus-visible {
-    outline: 3px solid rgba(56, 97, 111, 0.24);
+    outline: 3px solid rgba(240, 207, 114, 0.95);
     outline-offset: 2px;
   }
 }
@@ -75,75 +67,75 @@ a {
   }
 
   .section-y {
-    @apply py-12 sm:py-14;
+    @apply py-10 sm:py-12;
   }
 
   .panel {
-    @apply rounded-2xl border border-kriar-line bg-kriar-surface/95 shadow-soft backdrop-blur;
+    @apply rounded-lg border border-nexus-line bg-nexus-surface shadow-soft;
   }
 
   .panel-soft {
-    @apply rounded-2xl border border-kriar-line bg-kriar-surface/70 shadow-soft backdrop-blur;
+    @apply rounded-lg border border-nexus-line bg-nexus-surface shadow-soft;
   }
 
   .card-hover {
-    @apply transition duration-[250ms] ease-out hover:-translate-y-0.5 hover:border-kriar-primary/25 hover:shadow-card;
+    @apply transition duration-200 ease-out hover:border-nexus-metal hover:shadow-card;
   }
 
   .btn {
-    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-bold transition duration-[250ms] ease-out disabled:pointer-events-none disabled:opacity-60;
+    @apply inline-flex min-h-10 items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition duration-200 ease-out disabled:pointer-events-none disabled:opacity-60;
   }
 
   .btn-primary {
-    @apply btn bg-kriar-primary text-kriar-light shadow-sm hover:-translate-y-0.5 hover:bg-[#2f5360] hover:shadow-soft active:translate-y-0;
+    @apply btn bg-nexus-primary text-white shadow-soft hover:bg-[#1f1e2b] active:bg-[#171620];
   }
 
   .btn-secondary {
-    @apply btn border border-kriar-line bg-kriar-surface/90 text-kriar-contrast shadow-sm hover:-translate-y-0.5 hover:border-kriar-primary/35 hover:bg-kriar-surface active:translate-y-0;
+    @apply btn border border-nexus-line bg-nexus-surface text-nexus-contrast shadow-soft hover:border-nexus-metal hover:bg-nexus-paper active:bg-[#e2e6df];
   }
 
   .btn-ghost {
-    @apply btn text-kriar-muted hover:bg-kriar-primary/10 hover:text-kriar-primary;
+    @apply btn text-nexus-muted hover:bg-nexus-paper hover:text-nexus-contrast;
   }
 
   .btn-icon {
-    @apply inline-grid h-11 w-11 place-items-center rounded-full text-kriar-muted transition duration-[250ms] hover:-translate-y-0.5 hover:bg-kriar-primary/10 hover:text-kriar-primary active:translate-y-0;
+    @apply inline-grid h-10 w-10 place-items-center rounded-lg text-nexus-muted transition duration-200 hover:bg-nexus-paper hover:text-nexus-contrast;
   }
 
   .input-field {
-    @apply h-11 rounded-xl border border-kriar-line bg-kriar-surface px-3 text-sm text-kriar-contrast shadow-sm transition duration-[250ms] placeholder:text-kriar-muted/70 focus:border-kriar-primary focus:bg-kriar-surface;
+    @apply h-10 rounded-lg border border-nexus-line bg-nexus-surface px-3 text-sm text-nexus-contrast shadow-soft transition duration-200 placeholder:text-nexus-muted/70 focus:border-nexus-secondary focus:bg-nexus-surface;
   }
 
   .select-field {
-    @apply h-11 rounded-xl border border-kriar-line bg-kriar-surface px-3 text-sm font-semibold text-kriar-contrast shadow-sm transition duration-[250ms] focus:border-kriar-primary focus:bg-kriar-surface;
+    @apply h-10 rounded-lg border border-nexus-line bg-nexus-surface px-3 text-sm font-medium text-nexus-contrast shadow-soft transition duration-200 focus:border-nexus-secondary focus:bg-nexus-surface;
   }
 
   .text-field {
-    @apply rounded-xl border border-kriar-line bg-kriar-surface p-3 text-sm text-kriar-contrast shadow-sm transition duration-[250ms] placeholder:text-kriar-muted/70 focus:border-kriar-primary focus:bg-kriar-surface;
+    @apply rounded-lg border border-nexus-line bg-nexus-surface p-3 text-sm text-nexus-contrast shadow-soft transition duration-200 placeholder:text-nexus-muted/70 focus:border-nexus-secondary focus:bg-nexus-surface;
   }
 
   .badge {
-    @apply inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold;
+    @apply inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-semibold;
   }
 
   .badge-primary {
-    @apply badge bg-kriar-primary text-kriar-light;
+    @apply badge bg-nexus-primary text-white;
   }
 
   .badge-soft {
-    @apply badge bg-kriar-accent/20 text-kriar-contrast;
+    @apply badge bg-nexus-paper text-nexus-muted;
   }
 
   .badge-warm {
-    @apply badge bg-kriar-secondary/10 text-kriar-secondary;
+    @apply badge bg-nexus-accent text-nexus-contrast;
   }
 
   .eyebrow {
-    @apply text-xs font-black uppercase tracking-[0.16em] text-kriar-secondary;
+    @apply text-xs font-semibold uppercase tracking-[0.12em] text-nexus-secondary;
   }
 
   .muted-copy {
-    @apply text-kriar-muted;
+    @apply text-nexus-muted;
   }
 
   .table-modern {
@@ -151,10 +143,10 @@ a {
   }
 
   .table-modern th {
-    @apply bg-kriar-background px-4 py-3 text-xs font-black uppercase tracking-[0.12em] text-kriar-muted first:rounded-l-xl last:rounded-r-xl;
+    @apply bg-nexus-paper px-4 py-3 text-xs font-semibold uppercase tracking-[0.08em] text-nexus-muted first:rounded-l-lg last:rounded-r-lg;
   }
 
   .table-modern td {
-    @apply border-b border-kriar-line/70 px-4 py-4 align-middle;
+    @apply border-b border-nexus-line/70 px-4 py-4 align-middle;
   }
 }

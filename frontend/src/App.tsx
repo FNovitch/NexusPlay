@@ -34,8 +34,8 @@ const ArtisanOrders = lazy(() => import("./pages/ArtisanOrders").then((module) =
 
 function RouteFallback() {
   return (
-    <main className="min-h-[55vh] bg-kriar-background">
-      <div className="app-shell py-16 text-center text-sm font-bold text-kriar-muted">Carregando...</div>
+    <main className="min-h-[55vh] bg-nexus-background">
+      <div className="app-shell py-16 text-center text-sm font-bold text-nexus-muted">Carregando...</div>
     </main>
   );
 }
@@ -49,7 +49,7 @@ export function App() {
           <Route path="/" element={<Home />} />
           <Route path="/produto/:slug" element={<ProductDetail />} />
           <Route path="/loja/:slug" element={<SellerStore />} />
-          <Route path="/artesaos" element={<Sellers />} />
+          <Route path="/marcas" element={<Sellers />} />
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/pedido/:id/status" element={<CheckoutStatus />} />
           <Route path="/checkout/:status" element={<CheckoutStatus />} />
@@ -63,13 +63,13 @@ export function App() {
           <Route path="/esqueci-minha-senha" element={<ForgotPassword />} />
           <Route path="/resetar-senha" element={<ResetPassword />} />
           <Route path="/cliente" element={<CustomerDashboard />} />
-          <Route path="/artesao/login" element={<Login artisanMode />} />
-          <Route path="/artesao/cadastro" element={<ArtisanRegister />} />
-          <Route path="/artesao/perfil" element={<ArtisanProfile />} />
-          <Route path="/artesao/planos" element={<ArtisanPlans />} />
-          <Route path="/artesao/assinatura" element={<ArtisanSubscription />} />
-          <Route path="/artesao/assinatura/:status" element={<ArtisanSubscriptionStatus />} />
-          <Route path="/artesao/pedidos" element={<ArtisanOrders />} />
+          <Route path="/vendedor/login" element={<Login artisanMode />} />
+          <Route path="/vendedor/cadastro" element={<ArtisanRegister />} />
+          <Route path="/vendedor/perfil" element={<ArtisanProfile />} />
+          <Route path="/vendedor/planos" element={<ArtisanPlans />} />
+          <Route path="/vendedor/assinatura" element={<ArtisanSubscription />} />
+          <Route path="/vendedor/assinatura/:status" element={<ArtisanSubscriptionStatus />} />
+          <Route path="/vendedor/pedidos" element={<ArtisanOrders />} />
           <Route path="/vendedor" element={<SellerDashboard />} />
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin/login" element={<Navigate to="/login" replace />} />

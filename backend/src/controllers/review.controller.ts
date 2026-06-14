@@ -9,15 +9,15 @@ export async function createReview(req: Request, res: Response) {
   });
 
   if (!orderItem || orderItem.order.buyerId !== req.user!.id) {
-    throw new AppError("Voce so pode avaliar produtos comprados por voce", 403);
+    throw new AppError("Você só pode avaliar produtos comprados por você", 403);
   }
 
   if (orderItem.order.status !== "DELIVERED") {
-    throw new AppError("Produto so pode ser avaliado apos a entrega", 400, { order: "Pedido ainda nao foi entregue." });
+    throw new AppError("Produto só pode ser avaliado após a entrega", 400, { order: "Pedido ainda não foi entregue." });
   }
 
   if (orderItem.review) {
-    throw new AppError("Este item ja foi avaliado", 409, { review: "Avaliacao duplicada nao permitida." });
+    throw new AppError("Este item já foi avaliado", 409, { review: "Avaliação duplicada não permitida." });
   }
 
   const review = await prisma.review.create({

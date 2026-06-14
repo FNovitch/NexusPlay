@@ -5,8 +5,8 @@ import { AppError } from "../middlewares/error.js";
 import { consultarPagamento, criarPreferenciaAssinatura, getMercadoPagoInitPoint, getMercadoPagoWebhookPaymentId, getMercadoPagoWebhookTopic, validarAssinaturaMercadoPago } from "../services/mercado-pago.service.js";
 
 const planSeeds = [
-  { name: "Plano mensal", description: "Venda no Kriar por 30 dias.", price: 9.9, durationDays: 30, type: SubscriptionPlanType.MONTHLY },
-  { name: "Plano anual", description: "Venda no Kriar por 365 dias com desconto.", price: 99, durationDays: 365, type: SubscriptionPlanType.YEARLY }
+  { name: "Plano mensal", description: "Venda produtos gamer na NexusPlay por 30 dias.", price: 9.9, durationDays: 30, type: SubscriptionPlanType.MONTHLY },
+  { name: "Plano anual", description: "Venda produtos gamer na NexusPlay por 365 dias com desconto.", price: 99, durationDays: 365, type: SubscriptionPlanType.YEARLY }
 ];
 
 async function ensurePlans() {
@@ -53,7 +53,7 @@ export async function getArtisanSubscriptionStatus(req: Request, res: Response) 
     where: { userId: req.user!.id },
     include: { subscriptions: { include: { plan: true }, orderBy: { createdAt: "desc" }, take: 5 } }
   });
-  if (!artisan) throw new AppError("Perfil de artesao nao encontrado", 404);
+  if (!artisan) throw new AppError("Perfil de loja não encontrado", 404);
   res.json({ success: true, data: mapSubscriptionStatus(artisan) });
 }
 
@@ -64,8 +64,8 @@ export async function createSubscriptionCheckout(req: Request, res: Response) {
     prisma.artisan.findUnique({ where: { userId: req.user!.id }, include: { user: true } }),
     prisma.subscriptionPlan.findUnique({ where: { id: planId } })
   ]);
-  if (!artisan) throw new AppError("Perfil de artesao nao encontrado", 404);
-  if (!plan || !plan.active) throw new AppError("Plano nao encontrado", 404, { planId: "Escolha um plano valido." });
+  if (!artisan) throw new AppError("Perfil de loja não encontrado", 404);
+  if (!plan || !plan.active) throw new AppError("Plano não encontrado", 404, { planId: "Escolha um plano válido." });
 
   const subscription = await prisma.artisanSubscription.create({
     data: {
@@ -81,7 +81,7 @@ export async function createSubscriptionCheckout(req: Request, res: Response) {
     artesao: { nome: artisan.name, email: artisan.user.email }
   });
   const paymentLink = getMercadoPagoInitPoint(preference);
-  if (!paymentLink) throw new AppError("Nao foi possivel criar checkout da assinatura.", 500, { payment: "Mercado Pago nao retornou init_point." });
+  if (!paymentLink) throw new AppError("Não foi possível criar checkout da assinatura.", 500, { payment: "Mercado Pago não retornou init_point." });
 
   const updated = await prisma.artisanSubscription.update({
     where: { id: subscription.id },
@@ -97,7 +97,7 @@ export async function createSubscriptionCheckout(req: Request, res: Response) {
 
 export async function cancelSubscription(req: Request, res: Response) {
   const artisan = await prisma.artisan.findUnique({ where: { userId: req.user!.id } });
-  if (!artisan) throw new AppError("Perfil de artesao nao encontrado", 404);
+  if (!artisan) throw new AppError("Perfil de loja não encontrado", 404);
   await prisma.$transaction([
     prisma.artisanSubscription.updateMany({ where: { artisanId: artisan.id, status: ArtisanSubscriptionStatus.ACTIVE }, data: { status: ArtisanSubscriptionStatus.CANCELED } }),
     prisma.artisan.update({ where: { id: artisan.id }, data: { subscriptionActive: false, subscriptionExpiresAt: null } })
@@ -119,7 +119,7 @@ export async function subscriptionWebhook(req: Request, res: Response) {
       return res.status(200).json({ success: true, message: "Evento ignorado." });
     }
     if (!validarAssinaturaMercadoPago(req.headers, paymentId)) {
-      return res.status(401).json({ success: false, message: "Assinatura do webhook invalida." });
+      return res.status(401).json({ success: false, message: "Assinatura do webhook inválida." });
     }
     const payment = await consultarPagamento(paymentId) as {
       id?: string | number;

@@ -43,32 +43,32 @@ export const adminPermissionLevelSchema = z.enum(["SUPER_ADMIN", "MANAGER", "SUP
 
 export const passwordSchema = z
   .string()
-  .min(8, "A senha deve ter no minimo 8 caracteres")
+  .min(8, "A senha deve ter no mínimo 8 caracteres")
   .max(128)
-  .regex(/[A-Z]/, "A senha deve conter uma letra maiuscula")
-  .regex(/[a-z]/, "A senha deve conter uma letra minuscula")
-  .regex(/\d/, "A senha deve conter um numero")
+  .regex(/[A-Z]/, "A senha deve conter uma letra maiúscula")
+  .regex(/[a-z]/, "A senha deve conter uma letra minúscula")
+  .regex(/\d/, "A senha deve conter um número")
   .regex(/[^A-Za-z0-9]/, "A senha deve conter um caractere especial");
 
 export const cpfSchema = z
   .string()
   .transform(onlyDigits)
-  .refine(isValidCpf, "CPF invalido");
+  .refine(isValidCpf, "CPF inválido");
 
 export const documentSchema = z
   .string()
   .transform(onlyDigits)
-  .refine(isValidDocument, "Informe um CPF ou CNPJ valido");
+  .refine(isValidDocument, "Informe um CPF ou CNPJ válido");
 
 export const phoneSchema = z
   .string()
   .transform(onlyDigits)
-  .refine((value) => value.length === 10 || value.length === 11, "Informe um telefone brasileiro com DDD valido")
-  .refine((value) => !hasRepeatedDigits(value), "Telefone invalido");
+  .refine((value) => value.length === 10 || value.length === 11, "Informe um telefone brasileiro com DDD válido")
+  .refine((value) => !hasRepeatedDigits(value), "Telefone inválido");
 
 export const birthDateSchema = z
   .string()
-  .refine((value) => !Number.isNaN(Date.parse(value)), "Data de nascimento invalida");
+  .refine((value) => !Number.isNaN(Date.parse(value)), "Data de nascimento inválida");
 
 export const addressSchema = z.object({
   street: z.string().min(2, "Rua obrigatoria").max(160),
@@ -76,7 +76,7 @@ export const addressSchema = z.object({
   complement: z.string().max(120).nullish(),
   neighborhood: z.string().min(2, "Bairro obrigatorio").max(120),
   city: z.string().min(2, "Cidade obrigatoria").max(120),
-  state: z.string().min(2).max(2).transform((value) => value.toUpperCase()).refine((value) => validStates.has(value), "UF invalida"),
+  state: z.string().min(2).max(2).transform((value) => value.toUpperCase()).refine((value) => validStates.has(value), "UF inválida"),
   zipCode: z
     .string()
     .transform(onlyDigits)
@@ -182,7 +182,7 @@ export const legacyRegisterSchema = z.object({
       if (data.role === "ARTISAN" && !data.seller && !data.artisan) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: "Dados da loja/artesao sao obrigatorios",
+          message: "Dados da loja são obrigatórios",
           path: ["artisan"]
         });
       }
@@ -213,7 +213,7 @@ export const forgotPasswordSchema = z.object({
 export const resetPasswordSchema = z.object({
   body: z
     .object({
-      token: z.string().min(32, "Token invalido"),
+      token: z.string().min(32, "Token inválido"),
       password: passwordSchema,
       confirmPassword: z.string().min(1, "Confirme a nova senha")
     })
@@ -221,7 +221,7 @@ export const resetPasswordSchema = z.object({
       if (data.password !== data.confirmPassword) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: "A confirmacao deve ser igual a nova senha",
+          message: "A confirmação deve ser igual a nova senha",
           path: ["confirmPassword"]
         });
       }

@@ -70,7 +70,7 @@ export async function getProduct(req: Request, res: Response) {
   });
 
   if (!product) {
-    return res.status(404).json({ message: "Produto nao encontrado" });
+    return res.status(404).json({ message: "Produto não encontrado" });
   }
 
   const related = await prisma.product.findMany({

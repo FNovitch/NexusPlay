@@ -46,15 +46,15 @@ export async function registerArtisan(req: Request, res: Response) {
   ]);
 
   if (emailOwner) {
-    throw new AppError("E-mail ja cadastrado", 409, { email: "Este e-mail ja esta cadastrado." });
+    throw new AppError("E-mail já cadastrado", 409, { email: "Este e-mail já está cadastrado." });
   }
 
   if (documentOwner || cpfOwner) {
-    throw new AppError("CPF ou CNPJ ja cadastrado", 409, { document: "Este CPF ou CNPJ ja esta cadastrado." });
+    throw new AppError("CPF ou CNPJ já cadastrado", 409, { document: "Este CPF ou CNPJ já está cadastrado." });
   }
 
   if (phoneOwner) {
-    throw new AppError("Telefone ja cadastrado", 409, { phone: "Este telefone ja esta cadastrado." });
+    throw new AppError("Telefone já cadastrado", 409, { phone: "Este telefone já está cadastrado." });
   }
 
   const passwordHash = await bcrypt.hash(body.password, 12);
@@ -130,7 +130,7 @@ export async function registerArtisan(req: Request, res: Response) {
 
   res.status(201).json({
     success: true,
-    message: "Cadastro de artesao realizado com sucesso. Aguarde aprovacao.",
+    message: "Cadastro de loja realizado com sucesso. Aguarde aprovação.",
     data: publicArtisanSummary(artisan),
     artisan: mapArtisanToResponse(artisan)
   });
@@ -144,11 +144,11 @@ export async function loginArtisan(req: Request, res: Response) {
   });
 
   if (!user || user.role !== UserRole.ARTISAN || user.isDeleted || !(await bcrypt.compare(password, user.passwordHash))) {
-    throw new AppError("E-mail ou senha invalidos.", 401);
+    throw new AppError("E-mail ou senha inválidos.", 401);
   }
 
   if (!user.artisan || user.artisan.isDeleted) {
-    throw new AppError("Perfil de artesao nao encontrado", 404);
+    throw new AppError("Perfil de loja não encontrado", 404);
   }
 
   const token = signToken({ sub: user.id, role: user.role });
@@ -177,7 +177,7 @@ export async function getMyArtisanProfile(req: Request, res: Response) {
   });
 
   if (!artisan || artisan.isDeleted) {
-    throw new AppError("Perfil de artesao nao encontrado", 404);
+    throw new AppError("Perfil de loja não encontrado", 404);
   }
 
   res.json({ success: true, data: { artisan: mapArtisanToResponse(artisan) }, artisan: mapArtisanToResponse(artisan) });
@@ -191,20 +191,20 @@ export async function updateMyArtisanProfile(req: Request, res: Response) {
   });
 
   if (!current || current.isDeleted) {
-    throw new AppError("Perfil de artesao nao encontrado", 404);
+    throw new AppError("Perfil de loja não encontrado", 404);
   }
 
   if (body.document && body.document !== current.document) {
     const owner = await prisma.artisan.findFirst({ where: { document: body.document, id: { not: current.id } }, select: { id: true } });
     if (owner) {
-      throw new AppError("CPF ou CNPJ ja cadastrado", 409, { document: "Este CPF ou CNPJ ja esta cadastrado." });
+      throw new AppError("CPF ou CNPJ já cadastrado", 409, { document: "Este CPF ou CNPJ já está cadastrado." });
     }
   }
 
   if (body.phone && body.phone !== current.phone) {
     const owner = await prisma.artisan.findFirst({ where: { phone: body.phone, id: { not: current.id } }, select: { id: true } });
     if (owner) {
-      throw new AppError("Telefone ja cadastrado", 409, { phone: "Este telefone ja esta cadastrado." });
+      throw new AppError("Telefone já cadastrado", 409, { phone: "Este telefone já está cadastrado." });
     }
   }
 
@@ -273,7 +273,7 @@ export async function updateMyArtisanProfile(req: Request, res: Response) {
 
   res.json({
     success: true,
-    message: "Perfil de artesao atualizado com sucesso.",
+    message: "Perfil de loja atualizado com sucesso.",
     data: { artisan: mapArtisanToResponse(updated) },
     artisan: mapArtisanToResponse(updated)
   });

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="420" height="120" viewBox="0 0 420 120" role="img" aria-labelledby="title desc">
+  <title id="title">NexusPlay</title>
+  <desc id="desc">Logo minimalista da NexusPlay para marketplace gamer.</desc>
+  <rect x="8" y="18" width="84" height="84" rx="18" fill="#242330"/>
+  <path d="M28 76V44h10l24 32h10V44" fill="none" stroke="#f0cf72" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="72" cy="44" r="4" fill="#eef1ec"/>
+  <text x="116" y="68" font-family="Inter, Arial, sans-serif" font-size="42" font-weight="800" fill="#242330">NexusPlay</text>
+  <text x="118" y="91" font-family="Inter, Arial, sans-serif" font-size="15" font-weight="700" fill="#6f716f">gamer marketplace SaaS</text>
+</svg>

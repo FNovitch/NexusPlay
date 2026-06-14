@@ -8,6 +8,17 @@ export const api = axios.create({
 });
 
 const cache = new Map<string, unknown>();
+const demoCategorySlugs = new Set(categories.map((category) => category.slug));
+const legacyProductSlugs = new Set([
+  "teclado-mecanico-nebula-tkl",
+  "headset-pulse-71-rgb",
+  "mouse-gamer-vector-8k",
+  "deskmat-cybergrid-xl",
+  "luminaria-rgb-hexapack",
+  "controle-propad-x",
+  "action-figure-cacadora-estelar",
+  "camiseta-arcade-mode"
+]);
 
 function cached<T>(key: string, loader: () => Promise<T>) {
   const current = cache.get(key);
@@ -18,8 +29,21 @@ function cached<T>(key: string, loader: () => Promise<T>) {
   });
 }
 
+function removeLegacyProducts(items: Product[]) {
+  return items.filter((product) => !legacyProductSlugs.has(product.slug));
+}
+
+function mergeDemoCategories(apiCategories: typeof categories) {
+  const validApiCategories = apiCategories.filter((category) => demoCategorySlugs.has(category.slug));
+  const existing = new Set(validApiCategories.map((category) => category.slug));
+  return [
+    ...validApiCategories,
+    ...categories.filter((category) => !existing.has(category.slug))
+  ];
+}
+
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("kriar-token");
+  const token = localStorage.getItem("nexus-token");
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -31,7 +55,8 @@ export async function getProducts(params?: Record<string, string>) {
   return cached(key, async () => {
     try {
       const { data } = await api.get<{ products: Product[] }>("/products", { params });
-      return data.products.map(normalizeProduct);
+      const apiProducts = removeLegacyProducts(data.products.map(normalizeProduct));
+      return apiProducts.length > 0 ? apiProducts : products;
     } catch {
       if (!import.meta.env.DEV) return [];
       return products;
@@ -42,9 +67,12 @@ export async function getProducts(params?: Record<string, string>) {
 export async function getProduct(slug: string) {
   try {
     const { data } = await api.get<{ product: Product; related: Product[] }>(`/products/${slug}`);
+    if (legacyProductSlugs.has(data.product.slug)) {
+      throw new Error("Produto legado removido do catálogo.");
+    }
     return {
       product: normalizeProduct(data.product),
-      related: data.related.map(normalizeProduct)
+      related: removeLegacyProducts(data.related.map(normalizeProduct))
     };
   } catch {
     if (!import.meta.env.DEV) {
@@ -74,7 +102,12 @@ export async function getSellers() {
 export async function getSeller(slug: string) {
   try {
     const { data } = await api.get<{ seller: Seller & { products: Product[] } }>(`/sellers/${slug}`);
-    return { ...data.seller, products: data.seller.products.map(normalizeProduct) };
+    const apiProducts = removeLegacyProducts(data.seller.products.map(normalizeProduct));
+    const fallbackSeller = sellers.find((item) => item.slug === slug);
+    if (apiProducts.length > 0 || !fallbackSeller) {
+      return { ...data.seller, products: apiProducts };
+    }
+    return { ...fallbackSeller, products: products.filter((item) => item.sellerId === fallbackSeller.id) };
   } catch {
     if (!import.meta.env.DEV) {
       throw new Error("Loja não encontrada.");
@@ -89,7 +122,7 @@ export async function getCategories() {
   return cached("categories", async () => {
     try {
       const { data } = await api.get<{ categories: typeof categories }>("/categories");
-      return data.categories;
+      return mergeDemoCategories(data.categories);
     } catch {
       if (!import.meta.env.DEV) return [];
       return categories;

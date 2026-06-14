@@ -17,7 +17,7 @@ export function PasswordField({ className = "", ...props }: PasswordFieldProps) 
       />
       <button
         type="button"
-        className="absolute right-2 top-1/2 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-full text-kriar-muted transition hover:bg-kriar-primary/10 hover:text-kriar-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-kriar-primary/40"
+        className="absolute right-1.5 top-1/2 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-lg text-nexus-muted transition hover:bg-nexus-paper hover:text-nexus-contrast focus:outline-none focus-visible:ring-2 focus-visible:ring-nexus-secondary/30"
         onClick={() => setVisible((current) => !current)}
         aria-label={visible ? "Ocultar senha" : "Mostrar senha"}
         aria-pressed={visible}

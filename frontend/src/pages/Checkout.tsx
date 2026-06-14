@@ -1,8 +1,9 @@
 import { CreditCard, Lock, PackageCheck, Truck } from "lucide-react";
 import { useState } from "react";
-import { Link, Navigate } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import { productImageUrl } from "../api/products";
 import { EmptyState } from "../components/EmptyState";
+import { createDemoOrder, isDemoToken } from "../data/demoOrders";
 import { fetchAddressByCep, maskCep, onlyDigits, parseApiError } from "../lib/artisanForm";
 import { api } from "../lib/api";
 import { cartTotal, groupedBySeller, useCart } from "../store/cart";
@@ -40,7 +41,9 @@ type FreightGroup = {
 export function Checkout() {
   const { items } = useCart();
   const user = useAuth((state) => state.user);
+  const token = useAuth((state) => state.token);
   const showToast = useToast((state) => state.show);
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [address, setAddress] = useState(initialAddress);
   const [error, setError] = useState("");
@@ -73,12 +76,22 @@ export function Checkout() {
       return;
     }
     if (onlyDigits(address.zipCode).length !== 8) {
-      setError("Informe um CEP válido para calcular o frete.");
+      setError("Informe um CEP válido para calcular a entrega.");
       return;
     }
     setFreightLoading(true);
     setError("");
     setSelectedFreight({});
+
+    if (isDemoToken(token)) {
+      const demoGroups = buildDemoFreightGroups(groups);
+      setFreightGroups(demoGroups);
+      setSelectedFreight(demoGroups.reduce<Record<string, FreightOption>>((acc, group) => ({ ...acc, [group.groupId]: group.opcoes[0] }), {}));
+      showToast({ title: "Entrega Simulada", description: "Opção demo adicionada ao pedido.", variant: "success" });
+      setFreightLoading(false);
+      return;
+    }
+
     try {
       const { data } = await api.post<{ success: boolean; data: { grupos: FreightGroup[] } }>("/frete/calcular", {
         cepDestino: onlyDigits(address.zipCode),
@@ -87,7 +100,7 @@ export function Checkout() {
       const nextGroups = Array.isArray(data.data?.grupos) ? data.data.grupos : [];
       if (nextGroups.length === 0) {
         setFreightGroups([]);
-        setError("Nao encontramos opcoes de entrega ou retirada para este carrinho.");
+        setError("Não encontramos opções de entrega ou retirada para este carrinho.");
         return;
       }
 
@@ -98,17 +111,25 @@ export function Checkout() {
       }, {}));
 
       if (nextGroups.some((group) => group.opcoes.length === 0)) {
-        setError("Nao encontramos frete ou retirada para um dos vendedores do carrinho.");
+        setError("Não encontramos entrega ou retirada para uma das lojas do carrinho.");
       } else {
-        showToast({ title: "Frete calculado", description: "Escolha a melhor opcao para cada vendedor.", variant: "success" });
+        showToast({ title: "Entrega Calculada", description: "Escolha a melhor opção para cada loja.", variant: "success" });
       }
     } catch (requestError: unknown) {
+      if (import.meta.env.DEV) {
+        const demoGroups = buildDemoFreightGroups(groups);
+        setFreightGroups(demoGroups);
+        setSelectedFreight(demoGroups.reduce<Record<string, FreightOption>>((acc, group) => ({ ...acc, [group.groupId]: group.opcoes[0] }), {}));
+        setError("");
+        showToast({ title: "Entrega Simulada", description: "A API de frete não respondeu, então usamos dados demo.", variant: "success" });
+        return;
+      }
       const parsed = parseApiError(requestError);
-      const message = parsed.errors.cepDestino ?? parsed.errors.frete ?? parsed.errors.produto ?? parsed.errors.itens ?? parsed.message ?? "Nao foi possivel calcular o frete.";
+      const message = parsed.errors.cepDestino ?? parsed.errors.frete ?? parsed.errors.produto ?? parsed.errors.itens ?? parsed.message ?? "Não foi possível calcular o frete.";
       setFreightGroups([]);
       setSelectedFreight({});
       setError(message);
-      showToast({ title: "Erro no frete", description: message, variant: "warning" });
+      showToast({ title: "Erro no Frete", description: message, variant: "warning" });
       if (import.meta.env.DEV || import.meta.env.VITE_FREIGHT_DEBUG === "true") {
         console.error("[checkout:freight:error]", requestError);
       }
@@ -127,11 +148,20 @@ export function Checkout() {
       return;
     }
     if (freightGroups.length === 0 || freightGroups.some((group) => !selectedFreight[group.groupId])) {
-      setError("Calcule e selecione uma opção de frete para cada vendedor.");
+      setError("Calcule e selecione uma opção de entrega para cada loja.");
       return;
     }
     setLoading(true);
     setError("");
+
+    if (isDemoToken(token)) {
+      const order = createDemoOrder(items, shippingTotal);
+      showToast({ title: "Pedido Simulado Criado", description: `${order.orderCode} foi aprovado na demo.`, variant: "success" });
+      navigate(`/pedido/${order.id}/status?resultado=sucesso`);
+      setLoading(false);
+      return;
+    }
+
     try {
       const { data } = await api.post("/pedidos/checkout", {
         shippingAddress: { ...address, zipCode: onlyDigits(address.zipCode) },
@@ -161,7 +191,7 @@ export function Checkout() {
       const response = requestError && typeof requestError === "object" && "response" in requestError ? requestError.response as { data?: { message?: string; errors?: Record<string, string> } } : undefined;
       const message = response?.data?.errors ? Object.values(response.data.errors)[0] : response?.data?.message;
       setError(message ?? "Não foi possível concluir o pedido.");
-      showToast({ title: "Erro no pedido", description: message ?? "Confira os dados e tente novamente.", variant: "warning" });
+      showToast({ title: "Erro no Pedido", description: message ?? "Confira os dados e tente novamente.", variant: "warning" });
     } finally {
       setLoading(false);
     }
@@ -170,7 +200,7 @@ export function Checkout() {
   if (items.length === 0) {
     return (
       <main className="app-shell grid min-h-[60vh] place-items-center py-16">
-        <EmptyState icon={<PackageCheck className="h-6 w-6" />} title="Seu carrinho está vazio" description="Explore a vitrine para encontrar peças artesanais selecionadas." action={<Link to="/" className="btn-primary">Ver produtos</Link>} />
+        <EmptyState icon={<PackageCheck className="h-6 w-6" />} title="Seu Carrinho Está Vazio" description="Explore o catálogo para encontrar periféricos, colecionáveis e acessórios." action={<Link to="/" className="btn-primary">Ver Produtos</Link>} />
       </main>
     );
   }
@@ -178,13 +208,13 @@ export function Checkout() {
   return (
     <main className="app-shell grid gap-8 py-10 lg:grid-cols-[1fr_390px]">
       <section>
-        <p className="eyebrow mb-2">Checkout Pro</p>
-        <h1 className="text-3xl font-black tracking-tight text-kriar-contrast">Finalizar pedido</h1>
-        <p className="mt-2 max-w-2xl text-kriar-muted">Revise itens, endereço e siga para o ambiente seguro do Mercado Pago.</p>
-        {error && <div className="mt-4 rounded-xl bg-red-50 p-3 text-sm font-bold text-red-700">{error}</div>}
+        <p className="eyebrow mb-2">Checkout NexusPlay</p>
+        <h1 className="text-3xl font-semibold tracking-normal text-nexus-contrast">Finalizar Pedido</h1>
+        <p className="mt-2 max-w-2xl text-nexus-muted">Revise itens, endereço e conclua um Pedido Simulado na Demo.</p>
+        {error && <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm font-medium text-red-700">{error}</div>}
 
         <section className="panel mt-7 grid gap-3 p-5 md:grid-cols-2">
-          <h2 className="text-xl font-black text-kriar-primary md:col-span-2">Endereço de entrega</h2>
+          <h2 className="text-xl font-semibold text-nexus-contrast md:col-span-2">Endereço de Entrega</h2>
           <input className="input-field" placeholder="CEP" value={address.zipCode} onBlur={lookupCep} onChange={(e) => setAddress({ ...address, zipCode: maskCep(e.target.value) })} />
           <input className="input-field" placeholder="Rua" value={address.street} onChange={(e) => setAddress({ ...address, street: e.target.value })} />
           <input className="input-field" placeholder="Número" value={address.number} onChange={(e) => setAddress({ ...address, number: e.target.value })} />
@@ -193,20 +223,20 @@ export function Checkout() {
           <input className="input-field" placeholder="Cidade" value={address.city} onChange={(e) => setAddress({ ...address, city: e.target.value })} />
           <input className="input-field" maxLength={2} placeholder="UF" value={address.state} onChange={(e) => setAddress({ ...address, state: e.target.value.toUpperCase() })} />
           <button type="button" className="btn-secondary md:w-max" onClick={calculateFreight} disabled={freightLoading}>
-            <Truck className="h-5 w-5" /> {freightLoading ? "Calculando..." : "Calcular frete"}
+            <Truck className="h-5 w-5" /> {freightLoading ? "Calculando..." : "Calcular Entrega"}
           </button>
         </section>
 
         {freightGroups.length > 0 && (
           <section className="panel mt-7 p-5">
-            <h2 className="mb-4 text-xl font-black text-kriar-primary">Escolha o frete</h2>
+            <h2 className="mb-4 text-xl font-semibold text-nexus-contrast">Escolha a Entrega</h2>
             <div className="grid gap-5">
               {freightGroups.map((group) => (
-                <div key={group.groupId} className="rounded-2xl border border-kriar-line p-4">
-                  <strong className="text-kriar-contrast">{group.loja}</strong>
+                <div key={group.groupId} className="rounded-lg border border-nexus-line p-4">
+                  <strong className="font-semibold text-nexus-contrast">{group.loja}</strong>
                   <div className="mt-3 grid gap-3">
                     {group.opcoes.map((option) => (
-                      <label key={`${group.groupId}-${option.id}`} className="flex cursor-pointer items-center gap-3 rounded-xl bg-kriar-background/70 p-3">
+                      <label key={`${group.groupId}-${option.id}`} className="flex cursor-pointer items-center gap-3 rounded-lg bg-nexus-paper p-3">
                         <input
                           type="radio"
                           name={`freight-${group.groupId}`}
@@ -224,17 +254,17 @@ export function Checkout() {
                           />
                         )}
                         <span className="min-w-0 flex-1">
-                          <span className="block font-black text-kriar-contrast">{option.empresa} - {option.nome}</span>
+                          <span className="block font-semibold text-nexus-contrast">{option.empresa} - {option.nome}</span>
                           {option.tipo === "PICKUP" || option.melhorEnvioServiceId === 0 ? (
-                            <span className="block text-sm text-kriar-muted">
+                            <span className="block text-sm text-nexus-muted">
                               Retirada sem custo{option.enderecoRetirada ? ` · ${option.enderecoRetirada}` : ""}
                               {option.instrucoesRetirada ? ` · ${option.instrucoesRetirada}` : ""}
                             </span>
                           ) : (
-                            <span className="text-sm text-kriar-muted">Prazo: {option.prazo} dias úteis</span>
+                            <span className="text-sm text-nexus-muted">Prazo: {option.prazo} dias úteis</span>
                           )}
                         </span>
-                        <span className="font-black text-kriar-primary">{currency.format(option.preco)}</span>
+                        <span className="font-semibold text-nexus-contrast">{currency.format(option.preco)}</span>
                       </label>
                     ))}
                   </div>
@@ -247,24 +277,24 @@ export function Checkout() {
         <div className="mt-7 space-y-5">
           {Object.entries(groups).map(([seller, sellerItems]) => (
             <div key={seller} className="panel p-4 sm:p-5">
-              <h2 className="mb-4 font-black text-kriar-primary">{seller}</h2>
+              <h2 className="mb-4 font-semibold text-nexus-contrast">{seller}</h2>
               <div className="space-y-3">
                 {sellerItems.map((item) => (
-                  <div key={`${item.product.id}-${JSON.stringify(item.selectedVariations ?? {})}`} className="flex items-center gap-3 rounded-[20px] bg-kriar-background/70 p-3">
+                  <div key={`${item.product.id}-${JSON.stringify(item.selectedVariations ?? {})}`} className="flex items-center gap-3 rounded-lg bg-nexus-paper p-3">
                     <img
                       src={productImageUrl(item.product)}
                       alt=""
                       loading="lazy"
                       decoding="async"
                       onError={handleImageError}
-                      className="h-16 w-16 rounded-xl object-cover"
+                      className="h-16 w-16 rounded-lg object-cover"
                     />
                     <div className="min-w-0 flex-1">
-                      <strong className="line-clamp-1 text-kriar-contrast">{item.product.name}</strong>
-                      <p className="text-sm text-kriar-muted">Quantidade: {item.quantity}</p>
-                      {item.selectedVariations && <p className="text-xs font-bold text-kriar-muted">{Object.entries(item.selectedVariations).map(([n, o]) => `${n}: ${o}`).join(" · ")}</p>}
+                      <strong className="line-clamp-1 text-nexus-contrast">{item.product.name}</strong>
+                      <p className="text-sm text-nexus-muted">Quantidade: {item.quantity}</p>
+                      {item.selectedVariations && <p className="text-xs font-medium text-nexus-muted">{Object.entries(item.selectedVariations).map(([n, o]) => `${n}: ${o}`).join(" · ")}</p>}
                     </div>
-                    <span className="font-black text-kriar-primary">{currency.format(item.product.price * item.quantity)}</span>
+                    <span className="font-semibold text-nexus-contrast">{currency.format(item.product.price * item.quantity)}</span>
                   </div>
                 ))}
               </div>
@@ -274,14 +304,36 @@ export function Checkout() {
       </section>
 
       <aside className="panel h-max p-5 lg:sticky lg:top-24">
-        <div className="mb-5 flex items-center gap-3 text-kriar-primary"><Lock className="h-5 w-5" /><strong className="text-kriar-contrast">Mercado Pago</strong></div>
-        <div className="space-y-3 border-y border-kriar-line py-4 text-sm">
-          <div className="flex justify-between"><span className="text-kriar-muted">Produtos</span><span className="font-bold">{currency.format(cartTotal(items))}</span></div>
-          <div className="flex justify-between"><span className="text-kriar-muted">Frete</span><span className="font-bold">{currency.format(shippingTotal)}</span></div>
+        <div className="mb-5 flex items-center gap-3 text-nexus-secondary"><Lock className="h-5 w-5" /><strong className="text-nexus-contrast">{isDemoToken(token) ? "Pedido Simulado" : "Mercado Pago"}</strong></div>
+        <div className="space-y-3 border-y border-nexus-line py-4 text-sm">
+          <div className="flex justify-between"><span className="text-nexus-muted">Produtos</span><span className="font-medium">{currency.format(cartTotal(items))}</span></div>
+          <div className="flex justify-between"><span className="text-nexus-muted">Entrega</span><span className="font-medium">{currency.format(shippingTotal)}</span></div>
         </div>
-        <div className="my-5 flex items-center justify-between text-xl font-black text-kriar-contrast"><span>Total</span><span>{currency.format(cartTotal(items) + shippingTotal)}</span></div>
-        <button onClick={handleCheckout} disabled={loading} className="btn-primary w-full"><CreditCard className="h-5 w-5" />{loading ? "Criando pedido..." : "Finalizar pedido"}</button>
+        <div className="my-5 flex items-center justify-between text-xl font-semibold text-nexus-contrast"><span>Total</span><span>{currency.format(cartTotal(items) + shippingTotal)}</span></div>
+        <button onClick={handleCheckout} disabled={loading} className="btn-primary w-full"><CreditCard className="h-5 w-5" />{loading ? "Criando Pedido..." : isDemoToken(token) ? "Simular Pedido" : "Finalizar Pedido"}</button>
       </aside>
     </main>
   );
+}
+
+function buildDemoFreightGroups(groups: Record<string, ReturnType<typeof groupedBySeller>[string]>): FreightGroup[] {
+  return Object.entries(groups).map(([sellerName, sellerItems], index) => ({
+    groupId: `demo-freight-${index + 1}`,
+    sellerId: sellerItems[0]?.product.sellerId ?? `seller-${index + 1}`,
+    artesaoId: sellerItems[0]?.product.artisanId ?? null,
+    loja: sellerName,
+    cepOrigem: "01001000",
+    cepDestino: "01001000",
+    opcoes: [
+      {
+        id: `demo-option-${index + 1}`,
+        nome: "Entrega Local Simulada",
+        empresa: "NexusPlay Demo",
+        preco: 17,
+        prazo: 2,
+        melhorEnvioServiceId: 0,
+        tipo: "SHIPPING"
+      }
+    ]
+  }));
 }

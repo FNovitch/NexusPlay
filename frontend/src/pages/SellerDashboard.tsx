@@ -3,6 +3,7 @@ import type { LucideIcon } from "lucide-react";
 import type React from "react";
 import { useEffect, useMemo, useState } from "react";
 import { normalizeProduct, productImageUrl, productSalesCount, productSellerSlug } from "../api/products";
+import { isDemoToken } from "../data/demoOrders";
 import { products } from "../data/mock";
 import { parseApiError } from "../lib/artisanForm";
 import { api, getCategories } from "../lib/api";
@@ -18,7 +19,8 @@ const currency = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "
 
 export function SellerDashboard() {
   const user = useAuth((state) => state.user);
-  const fallbackProducts = useMemo(() => products.filter((item) => productSellerSlug(item) === "atelie-raiz-digital"), []);
+  const token = useAuth((state) => state.token);
+  const fallbackProducts = useMemo(() => products.filter((item) => productSellerSlug(item) === "nexus-gear"), []);
   const [myProducts, setMyProducts] = useState<Product[]>(fallbackProducts);
   const [categories, setCategories] = useState<Category[]>([]);
   const [showForm, setShowForm] = useState(false);
@@ -47,9 +49,9 @@ export function SellerDashboard() {
     revenue: fallbackProducts.reduce((sum, product) => sum + productSalesCount(product) * product.price, 0),
     orders: 38,
     rating: "4.9",
-    status: "pendente",
-    artisanName: user?.name ?? "Vendedor",
-    storeName: "Sua loja"
+    status: "aprovado",
+    artisanName: user?.name ?? "Vendedor demo",
+    storeName: "Nexus Gear"
   });
 
   useEffect(() => {
@@ -66,7 +68,7 @@ export function SellerDashboard() {
           orders: data.metrics?.orders ?? 0,
           rating: data.seller?.rating?.toFixed?.(1) ?? "0.0",
           status: data.seller?.status === "APPROVED" ? "aprovado" : data.seller?.status === "REJECTED" ? "recusado" : "pendente",
-          artisanName: data.seller?.user?.name ?? user?.name ?? "Vendedor",
+          artisanName: data.seller?.user?.name ?? user?.name ?? "Vendedor demo",
           storeName: data.seller?.storeName ?? "Sua loja"
         });
         setMyProducts((data.topProducts ?? []).map(normalizeProduct));
@@ -90,7 +92,7 @@ export function SellerDashboard() {
   }, [fallbackProducts]);
 
   if (!user || user.role !== "ARTISAN") {
-    return <Navigate to="/artesao/login" replace />;
+    return <Navigate to="/vendedor/login" replace />;
   }
 
   function resetForm() {
@@ -160,25 +162,57 @@ export function SellerDashboard() {
     setFormMessage("");
     const category = categories.find((item) => item.id === form.categoryId);
     if (!category) {
-      setFormMessage("Selecione uma categoria valida.");
+      setFormMessage("Selecione uma categoria válida.");
       return;
     }
     if (form.existingImages.length - form.removeImageIds.length + form.images.length === 0) {
       const message = editingProduct ? "Mantenha pelo menos uma imagem do produto." : "Envie pelo menos uma imagem.";
       setImageError(message);
       setFormMessage(message);
-      showToast({ title: "Imagem obrigatoria", description: message, variant: "warning" });
+      showToast({ title: "Imagem Obrigatória", description: message, variant: "warning" });
       return;
     }
     if (form.existingImages.length - form.removeImageIds.length + form.images.length > 3) {
-      const message = "Maximo de 3 imagens permitidas.";
+      const message = "Máximo de 3 imagens permitidas.";
       setImageError(message);
       setFormMessage(message);
-      showToast({ title: "Limite de imagens", description: message, variant: "warning" });
+      showToast({ title: "Limite de Imagens", description: message, variant: "warning" });
       return;
     }
 
     setSaving(true);
+
+    if (isDemoToken(token)) {
+      const categoryForProduct = categories.find((item) => item.id === form.categoryId) ?? category;
+      const demoProduct = normalizeProduct({
+        id: editingProduct?.id ?? `demo-product-${Date.now()}`,
+        sellerId: editingProduct?.sellerId ?? "seller-1",
+        categoryId: categoryForProduct.id,
+        name: form.name,
+        slug: editingProduct?.slug ?? form.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""),
+        description: form.description,
+        price: Number(form.price),
+        stock: Number(form.stock),
+        images: form.images.length > 0 ? form.images.map((image) => URL.createObjectURL(image)) : form.existingImages,
+        weight: Number(form.weight),
+        dimensions: { width: Number(form.width), height: Number(form.height), length: Number(form.length) },
+        variations: form.variations.map((variation) => ({
+          name: variation.name,
+          options: variation.options.split(",").map((option) => option.trim()).filter(Boolean)
+        })).filter((variation) => variation.name.trim() && variation.options.length > 0),
+        rating: editingProduct?.rating ?? 4.8,
+        salesCount: editingProduct?.salesCount ?? 0,
+        seller: { id: "seller-1", storeName: dashboard.storeName, slug: "nexus-gear", rating: 4.9, salesCount: 516 },
+        category: categoryForProduct
+      });
+      setMyProducts((current) => editingProduct ? current.map((product) => product.id === demoProduct.id ? demoProduct : product) : [demoProduct, ...current]);
+      showToast({ title: editingProduct ? "Produto Atualizado na Demo." : "Produto Cadastrado na Demo.", description: "A alteração aparece no painel durante esta sessão.", variant: "success" });
+      setSaving(false);
+      setShowForm(false);
+      resetForm();
+      return;
+    }
+
     try {
       const payload = new FormData();
       payload.append("name", form.name);
@@ -217,7 +251,7 @@ export function SellerDashboard() {
 
       const savedProduct = normalizeProduct(data.product);
       setMyProducts((current) => editingProduct ? current.map((product) => product.id === savedProduct.id ? savedProduct : product) : [savedProduct, ...current]);
-      showToast({ title: "Produto cadastrado com sucesso.", description: "O produto foi salvo e enviado para avaliacao.", variant: "success" });
+      showToast({ title: "Produto Cadastrado com Sucesso.", description: "O produto foi salvo e enviado para avaliação.", variant: "success" });
       setShowForm(false);
       resetForm();
     } catch (requestError) {
@@ -230,15 +264,15 @@ export function SellerDashboard() {
         "Erro ao salvar produto.";
       const friendly =
         message.includes("Autentica") || message.includes("Token")
-          ? "Faca login novamente."
+          ? "Faça login novamente."
           : message.includes("Assinatura")
-            ? "Voce precisa ter uma assinatura ativa."
+            ? "Você precisa ter uma assinatura ativa."
             : message.includes("Storage") || message.includes("Cloudinary")
               ? "Falha ao enviar imagem."
               : message;
       setFormMessage(friendly);
       if (parsed.errors.images) setImageError(parsed.errors.images);
-      showToast({ title: "Erro ao salvar produto.", description: friendly, variant: "warning" });
+      showToast({ title: "Erro ao Salvar Produto.", description: friendly, variant: "warning" });
       if (import.meta.env.DEV || import.meta.env.VITE_PRODUCT_DEBUG === "true") {
         console.error("[product-form:error]", requestError);
       }
@@ -248,11 +282,11 @@ export function SellerDashboard() {
   }
 
   const metrics: Array<[LucideIcon, string | number, string]> = [
-    [WalletCards, currency.format(dashboard.revenue), "faturamento"],
-    [Package, myProducts.length, "produtos ativos"],
-    [ClipboardList, dashboard.orders, "pedidos"],
-    [TrendingUp, dashboard.rating, "avaliação"],
-    [ShieldCheck, dashboard.status, "status da conta"]
+    [WalletCards, currency.format(dashboard.revenue), "Faturamento"],
+    [Package, myProducts.length, "Produtos Ativos"],
+    [ClipboardList, dashboard.orders, "Pedidos"],
+    [TrendingUp, dashboard.rating, "Avaliação"],
+    [ShieldCheck, dashboard.status, "Status da Conta"]
   ];
 
   return (
@@ -260,37 +294,37 @@ export function SellerDashboard() {
       <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <p className="eyebrow mb-2">Operação</p>
-          <h1 className="text-3xl font-black tracking-tight text-kriar-contrast">Painel do vendedor</h1>
-          <p className="mt-2 text-kriar-muted">{dashboard.artisanName} · {dashboard.storeName}</p>
+          <h1 className="text-3xl font-semibold tracking-normal text-nexus-contrast">Painel da Loja</h1>
+          <p className="mt-2 text-nexus-muted">{dashboard.artisanName} · {dashboard.storeName}</p>
           {dashboard.status !== "aprovado" && (
-            <p className="mt-2 max-w-2xl rounded-xl border border-kriar-line bg-kriar-background px-4 py-3 text-sm font-bold text-kriar-contrast">
+            <p className="mt-2 max-w-2xl rounded-lg border border-nexus-line bg-nexus-paper px-4 py-3 text-sm font-medium text-nexus-contrast">
               {dashboard.status === "recusado"
-                ? "Seu cadastro foi recusado. Atualize o perfil ou fale com o suporte antes de vender."
+                ? "Seu cadastro foi recusado. Atualize o perfil ou fale com o suporte antes de publicar."
                 : "Seu cadastro está pendente de aprovação. Você pode preparar o perfil e os produtos enquanto aguarda."}
             </p>
           )}
           {subscription && !subscription.canSell && (
-            <p className="mt-2 max-w-2xl rounded-xl border border-kriar-line bg-red-50 px-4 py-3 text-sm font-bold text-red-700">
-              Seu período grátis terminou. Escolha um plano para continuar vendendo na KRIAR.
+            <p className="mt-2 max-w-2xl rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+              Seu período grátis terminou. Escolha um plano para continuar publicando seus produtos.
             </p>
           )}
         </div>
         <div className="flex flex-wrap gap-3">
-          <Link to="/artesao/perfil" className="btn-secondary">
+          <Link to="/vendedor/perfil" className="btn-secondary">
             <Settings className="h-5 w-5" /> Perfil
           </Link>
-          <Link to="/artesao/pedidos" className="btn-secondary">Pedidos</Link>
-          <Link to="/artesao/assinatura" className="btn-secondary">Assinatura</Link>
+          <Link to="/vendedor/pedidos" className="btn-secondary">Pedidos</Link>
+          <Link to="/vendedor/assinatura" className="btn-secondary">Assinatura</Link>
           <button className="btn-primary" onClick={startCreateProduct} disabled={subscription ? !subscription.canSell : false}>
-            <ImagePlus className="h-5 w-5" /> {showForm && !editingProduct ? "Fechar cadastro" : "Cadastrar produto"}
+            <ImagePlus className="h-5 w-5" /> {showForm && !editingProduct ? "Fechar Cadastro" : "Cadastrar Produto"}
           </button>
         </div>
       </div>
 
       {showForm && (
         <form onSubmit={submitProduct} className="panel mb-8 grid gap-4 p-5 md:grid-cols-2">
-          {formMessage && <p className="md:col-span-2 rounded-xl border border-kriar-line bg-kriar-background px-4 py-3 text-sm font-bold text-kriar-contrast">{formMessage}</p>}
-          <input className="input-field" required placeholder="Nome do produto" value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} />
+          {formMessage && <p className="md:col-span-2 rounded-lg border border-nexus-line bg-nexus-paper px-4 py-3 text-sm font-medium text-nexus-contrast">{formMessage}</p>}
+          <input className="input-field" required placeholder="Nome do Produto" value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} />
           <select className="select-field" required value={form.categoryId} onChange={(event) => setForm({ ...form, categoryId: event.target.value })}>
             {categories.map((category) => (
               <option key={category.id} value={category.id}>{category.name}</option>
@@ -316,9 +350,9 @@ export function SellerDashboard() {
           {form.existingImages.filter((image) => !image.id || !form.removeImageIds.includes(image.id)).length > 0 && (
             <div className="grid gap-3 md:col-span-2 sm:grid-cols-3">
               {form.existingImages.filter((image) => !image.id || !form.removeImageIds.includes(image.id)).map((image) => (
-                <div key={image.id ?? image.url} className="rounded-xl border border-kriar-line p-2">
+                <div key={image.id ?? image.url} className="rounded-lg border border-nexus-line p-2">
                   <img src={image.url} alt="" loading="lazy" decoding="async" onError={handleImageError} className="aspect-video w-full rounded-lg object-cover" />
-                  {image.id && <button type="button" className="mt-2 text-xs font-bold text-kriar-secondary" onClick={() => removeExistingImage(image)}>Remover imagem</button>}
+                  {image.id && <button type="button" className="mt-2 text-xs font-bold text-nexus-secondary" onClick={() => removeExistingImage(image)}>Remover Imagem</button>}
                 </div>
               ))}
             </div>
@@ -326,17 +360,17 @@ export function SellerDashboard() {
           {form.images.length > 0 && (
             <div className="grid gap-3 md:col-span-2 sm:grid-cols-3">
               {form.images.map((image) => (
-                <div key={image.name} className="rounded-xl border border-kriar-line p-2">
+                <div key={image.name} className="rounded-lg border border-nexus-line p-2">
                   <img src={URL.createObjectURL(image)} alt="" loading="lazy" decoding="async" onError={handleImageError} className="aspect-video w-full rounded-lg object-cover" />
-                  <button type="button" className="mt-2 text-xs font-bold text-kriar-secondary" onClick={() => setForm({ ...form, images: form.images.filter((item) => item !== image) })}>Remover imagem</button>
+                  <button type="button" className="mt-2 text-xs font-bold text-nexus-secondary" onClick={() => setForm({ ...form, images: form.images.filter((item) => item !== image) })}>Remover Imagem</button>
                 </div>
               ))}
             </div>
           )}
           <div className="md:col-span-2">
             <div className="mb-2 flex items-center justify-between">
-              <strong className="text-sm text-kriar-contrast">Variações</strong>
-              <button type="button" className="btn-secondary px-3 py-1 text-xs" onClick={() => setForm({ ...form, variations: [...form.variations, { name: "", options: "" }] })}>Adicionar variação</button>
+              <strong className="text-sm text-nexus-contrast">Variações</strong>
+              <button type="button" className="btn-secondary px-3 py-1 text-xs" onClick={() => setForm({ ...form, variations: [...form.variations, { name: "", options: "" }] })}>Adicionar Variação</button>
             </div>
             <div className="grid gap-2">
               {form.variations.map((variation, index) => (
@@ -349,19 +383,19 @@ export function SellerDashboard() {
             </div>
           </div>
           <textarea className="text-field min-h-28 md:col-span-2" required minLength={10} placeholder="Descrição" value={form.description} onChange={(event) => setForm({ ...form, description: event.target.value })} />
-          <button className="btn-primary md:w-max" disabled={saving || categories.length === 0}>{saving ? "Salvando..." : editingProduct ? "Salvar produto" : "Cadastrar produto"}</button>
-          {editingProduct && <button type="button" className="btn-secondary md:w-max" onClick={() => { setShowForm(false); resetForm(); }}>Cancelar edição</button>}
+          <button className="btn-primary md:w-max" disabled={saving || categories.length === 0}>{saving ? "Salvando..." : editingProduct ? "Salvar Produto" : "Cadastrar Produto"}</button>
+          {editingProduct && <button type="button" className="btn-secondary md:w-max" onClick={() => { setShowForm(false); resetForm(); }}>Cancelar Edição</button>}
         </form>
       )}
 
       <div className="grid gap-4 md:grid-cols-5">
         {metrics.map(([Icon, value, label]) => (
-          <div key={String(label)} className="panel p-5">
-            <span className="mb-4 grid h-11 w-11 place-items-center rounded-xl bg-kriar-primary/10 text-kriar-primary">
-              <Icon className="h-5 w-5" />
+          <div key={String(label)} className="panel p-4">
+            <span className="mb-3 grid h-8 w-8 place-items-center rounded-lg bg-nexus-paper text-nexus-secondary">
+              <Icon className="h-4 w-4" />
             </span>
-            <strong className="block text-2xl font-black tracking-tight text-kriar-contrast">{String(value)}</strong>
-            <span className="text-sm font-bold text-kriar-muted">{String(label)}</span>
+            <strong className="block text-xl font-semibold tracking-normal text-nexus-contrast">{String(value)}</strong>
+            <span className="text-sm font-medium text-nexus-muted">{String(label)}</span>
           </div>
         ))}
       </div>
@@ -369,8 +403,8 @@ export function SellerDashboard() {
       <section className="panel mt-8 p-4 sm:p-5">
         <div className="mb-5 flex items-center justify-between gap-4">
           <div>
-            <h2 className="text-xl font-black tracking-tight text-kriar-primary">Produtos mais vendidos</h2>
-            <p className="mt-1 text-sm text-kriar-muted">Visão rápida de estoque, vendas e status.</p>
+            <h2 className="text-xl font-semibold tracking-normal text-nexus-contrast">Produtos Publicados</h2>
+            <p className="mt-1 text-sm text-nexus-muted">Visão rápida de estoque, pedidos e status.</p>
           </div>
         </div>
         <div className="overflow-x-auto">
@@ -379,7 +413,7 @@ export function SellerDashboard() {
               <tr>
                 <th>Produto</th>
                 <th>Estoque</th>
-                <th>Vendas</th>
+                <th>Pedidos</th>
                 <th>Preço</th>
                 <th>Status</th>
                 <th>Ações</th>
@@ -390,13 +424,13 @@ export function SellerDashboard() {
                 <tr key={product.id}>
                   <td>
                     <div className="flex items-center gap-3">
-                      <img src={productImageUrl(product)} alt="" loading="lazy" decoding="async" onError={handleImageError} className="h-12 w-12 rounded-xl object-cover" />
-                      <strong className="text-kriar-contrast">{product.name}</strong>
+                      <img src={productImageUrl(product)} alt="" loading="lazy" decoding="async" onError={handleImageError} className="h-12 w-12 rounded-lg object-cover" />
+                      <strong className="font-medium text-nexus-contrast">{product.name}</strong>
                     </div>
                   </td>
                   <td>{product.stock}</td>
                   <td>{productSalesCount(product)}</td>
-                  <td className="font-bold text-kriar-primary">{currency.format(product.price)}</td>
+                  <td className="font-medium text-nexus-contrast">{currency.format(product.price)}</td>
                   <td><span className="badge-soft">{product.status}</span></td>
                   <td><button className="btn-secondary px-3 py-1 text-xs" onClick={() => startEditProduct(product)}>Editar</button></td>
                 </tr>

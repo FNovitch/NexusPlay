@@ -53,22 +53,22 @@ export function ResetPassword() {
     <main className="app-shell grid min-h-[68vh] place-items-center py-12">
       <form onSubmit={submit} className="panel w-full max-w-md p-6">
         <p className="eyebrow mb-2">Cliente</p>
-        <h1 className="text-3xl font-black tracking-tight text-kriar-contrast">Criar nova senha</h1>
-        <p className="mt-3 text-sm leading-6 text-kriar-muted">Sua nova senha precisa ser forte para proteger compras, pedidos e avaliações.</p>
-        {message && <div className="mt-5 rounded-xl bg-emerald-50 px-4 py-3 text-sm font-bold text-emerald-800">{message}</div>}
-        {error && <div className="mt-5 rounded-xl bg-red-50 px-4 py-3 text-sm font-bold text-red-800">{error}</div>}
+        <h1 className="text-3xl font-semibold tracking-normal text-nexus-contrast">Criar nova senha</h1>
+        <p className="mt-3 text-sm leading-6 text-nexus-muted">Sua nova senha precisa ser forte para proteger compras, pedidos e avaliações.</p>
+        {message && <div className="mt-5 rounded-lg bg-emerald-50 px-4 py-3 text-sm font-bold text-emerald-800">{message}</div>}
+        {error && <div className="mt-5 rounded-lg bg-red-50 px-4 py-3 text-sm font-bold text-red-800">{error}</div>}
         <label className="mt-5 block">
-          <span className="mb-1.5 block text-sm font-black text-kriar-contrast">Nova senha</span>
+          <span className="mb-1.5 block text-sm font-medium text-nexus-contrast">Nova senha</span>
           <PasswordField value={password} onChange={(event) => setPassword(event.target.value)} autoComplete="new-password" />
         </label>
         <label className="mt-4 block">
-          <span className="mb-1.5 block text-sm font-black text-kriar-contrast">Confirmar nova senha</span>
+          <span className="mb-1.5 block text-sm font-medium text-nexus-contrast">Confirmar nova senha</span>
           <PasswordField value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} autoComplete="new-password" />
         </label>
         <button className="btn-primary mt-5 w-full" disabled={loading}>
           <KeyRound className="h-5 w-5" /> {loading ? "Salvando..." : "Alterar senha"}
         </button>
-        <Link to="/esqueci-minha-senha" className="mt-4 block text-center text-sm font-bold text-kriar-primary">Solicitar novo link</Link>
+        <Link to="/esqueci-minha-senha" className="mt-4 block text-center text-sm font-bold text-nexus-primary">Solicitar novo link</Link>
       </form>
     </main>
   );

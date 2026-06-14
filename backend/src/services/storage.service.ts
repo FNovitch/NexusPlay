@@ -15,7 +15,7 @@ export type StoredImage = {
 
 function assertCloudinaryConfigured() {
   if (!isCloudinaryConfigured) {
-    throw new AppError("Falha ao enviar imagem.", 500, { images: "Configure Cloudinary em producao ou rode localmente em ambiente de desenvolvimento." });
+    throw new AppError("Falha ao enviar imagem.", 500, { images: "Configure Cloudinary em produção ou rode localmente em ambiente de desenvolvimento." });
   }
 }
 
@@ -50,7 +50,7 @@ export function uploadImageToCloudinary(file: Express.Multer.File): Promise<Stor
       },
       (error, result?: UploadApiResponse) => {
         if (error || !result) {
-          reject(error ?? new Error("Cloudinary nao retornou dados do upload."));
+          reject(error ?? new Error("Cloudinary não retornou dados do upload."));
           return;
         }
 

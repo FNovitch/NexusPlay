@@ -66,12 +66,12 @@ export function ArtisanProfile() {
           pickupInstructions: artisan.pickupInstructions ?? ""
         });
       })
-      .catch(() => setMessage("Não foi possível carregar o perfil do vendedor."))
+      .catch(() => setMessage("Não foi possível carregar o perfil da loja."))
       .finally(() => setLoading(false));
   }, []);
 
   if (!user || user.role !== "ARTISAN") {
-    return <Navigate to="/artesao/login" replace />;
+    return <Navigate to="/vendedor/login" replace />;
   }
 
   function update(field: keyof typeof form, value: string | boolean) {
@@ -164,7 +164,7 @@ export function ArtisanProfile() {
   }
 
   if (loading) {
-    return <main className="app-shell py-16 text-kriar-muted">Carregando perfil...</main>;
+    return <main className="app-shell py-16 text-nexus-muted">Carregando perfil...</main>;
   }
 
   const errorText = (field: string) => errors[field] ? <span className="mt-1 block text-xs font-bold text-red-700">{errors[field]}</span> : null;
@@ -173,17 +173,17 @@ export function ArtisanProfile() {
     <main className="app-shell section-y">
       <div className="mb-8">
         <p className="eyebrow mb-2">Configurações</p>
-        <h1 className="text-3xl font-black tracking-tight text-kriar-contrast">Perfil do vendedor</h1>
+        <h1 className="text-3xl font-semibold tracking-normal text-nexus-contrast">Perfil da loja</h1>
       </div>
 
       <form onSubmit={submit} className="panel grid gap-4 p-5 sm:p-7 md:grid-cols-2">
-        {message && <div className="rounded-xl border border-kriar-line bg-kriar-background px-4 py-3 text-sm font-bold text-kriar-contrast md:col-span-2">{message}</div>}
+        {message && <div className="rounded-lg border border-nexus-line bg-nexus-background px-4 py-3 text-sm font-bold text-nexus-contrast md:col-span-2">{message}</div>}
         <label>
           <input required className="input-field w-full" placeholder="Nome completo" value={form.name} onChange={(event) => update("name", event.target.value)} />
           {errorText("name")}
         </label>
         <label>
-          <input required className="input-field w-full" placeholder="Nome da loja/ateliê" value={form.storeName} onChange={(event) => update("storeName", event.target.value)} />
+          <input required className="input-field w-full" placeholder="Nome da loja" value={form.storeName} onChange={(event) => update("storeName", event.target.value)} />
           {errorText("storeName")}
         </label>
         <label>
@@ -227,8 +227,8 @@ export function ArtisanProfile() {
           <input required className="input-field w-full" maxLength={2} placeholder="UF" value={form.state} onChange={(event) => update("state", event.target.value.toUpperCase())} />
           {errorText("address.state")}
         </label>
-        <label className="flex items-center gap-3 text-sm font-black text-kriar-contrast">
-          <input type="checkbox" checked={form.acceptsLocalPickup} onChange={(event) => update("acceptsLocalPickup", event.target.checked)} className="h-5 w-5 accent-kriar-primary" />
+        <label className="flex items-center gap-3 text-sm font-medium text-nexus-contrast">
+          <input type="checkbox" checked={form.acceptsLocalPickup} onChange={(event) => update("acceptsLocalPickup", event.target.checked)} className="h-5 w-5 accent-nexus-primary" />
           Aceito retirada local
         </label>
         <label className="md:col-span-2">

@@ -19,14 +19,14 @@ export function ToastViewport() {
 
         return (
           <div key={toast.id} className="panel flex items-start gap-3 p-4">
-            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-kriar-primary/10 text-kriar-primary">
+            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-nexus-paper text-nexus-secondary">
               <Icon className="h-4 w-4" />
             </span>
             <div className="min-w-0 flex-1">
-              <strong className="block text-sm text-kriar-contrast">{toast.title}</strong>
-              {toast.description && <p className="mt-1 text-sm leading-5 text-kriar-muted">{toast.description}</p>}
+              <strong className="block text-sm text-nexus-contrast">{toast.title}</strong>
+              {toast.description && <p className="mt-1 text-sm leading-5 text-nexus-muted">{toast.description}</p>}
             </div>
-            <button onClick={() => dismiss(toast.id)} className="rounded-lg p-1 text-kriar-muted hover:bg-kriar-primary/10 hover:text-kriar-primary" aria-label="Fechar aviso">
+            <button onClick={() => dismiss(toast.id)} className="rounded-lg p-1 text-nexus-muted hover:bg-nexus-paper hover:text-nexus-contrast" aria-label="Fechar aviso">
               <X className="h-4 w-4" />
             </button>
           </div>

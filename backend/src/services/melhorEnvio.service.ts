@@ -85,7 +85,7 @@ function melhorEnvioUrl(path: string) {
 
 function headers() {
   if (!env.MELHOR_ENVIO_TOKEN) {
-    throw new AppError("Melhor Envio nao configurado.", 500, { frete: "Configure MELHOR_ENVIO_TOKEN no backend." });
+    throw new AppError("Melhor Envio não configurado.", 500, { frete: "Configure MELHOR_ENVIO_TOKEN no backend." });
   }
 
   return {
@@ -104,8 +104,8 @@ function dimensionsOf(product: Product) {
   const weight = Number(product.weight);
 
   if (width <= 0 || height <= 0 || length <= 0 || weight <= 0) {
-    throw new AppError("Nao foi possivel calcular o frete.", 400, {
-      produto: `${product.name} precisa de peso, largura, altura e comprimento validos.`
+    throw new AppError("Não foi possível calcular o frete.", 400, {
+      produto: `${product.name} precisa de peso, largura, altura e comprimento válidos.`
     });
   }
 
@@ -204,14 +204,14 @@ function mapOptions(response: MelhorEnvioResponse): FreightOption[] {
 
 export function tratarErroMelhorEnvio(error: unknown): AppError {
   if (error instanceof AppError) return error;
-  return new AppError("Nao foi possivel calcular o frete.", 400, {
-    frete: error instanceof Error ? error.message : "Melhor Envio indisponivel."
+  return new AppError("Não foi possível calcular o frete.", 400, {
+    frete: error instanceof Error ? error.message : "Melhor Envio indisponível."
   });
 }
 
 export async function listarTransportadoras() {
   const response = await fetch(melhorEnvioUrl("/v2/me/shipment/companies"), { headers: headers(), signal: AbortSignal.timeout(15000) });
-  if (!response.ok) throw new AppError("Nao foi possivel listar transportadoras.", response.status);
+  if (!response.ok) throw new AppError("Não foi possível listar transportadoras.", response.status);
   return response.json();
 }
 
@@ -234,7 +234,7 @@ async function calcularGrupo(cepDestino: string, products: ProductWithSeller[], 
   const first = products[0];
   const cepOrigem = originZip(first);
   if (!validarCep(cepOrigem)) {
-    throw new AppError("Nao foi possivel calcular o frete.", 400, { cepOrigem: "CEP de origem invalido." });
+    throw new AppError("Não foi possível calcular o frete.", 400, { cepOrigem: "CEP de origem inválido." });
   }
 
   const productsWithQuantity = products.map((product) => ({
@@ -296,7 +296,7 @@ async function calcularGrupo(cepDestino: string, products: ProductWithSeller[], 
       });
       if (!response.ok) {
         freightDebug("melhor-envio:error", { status: response.status, sellerId: first.sellerId });
-        throw new AppError("Nao foi possivel calcular o frete.", response.status, { frete: "Transportadora indisponivel para este carrinho." });
+        throw new AppError("Não foi possível calcular o frete.", response.status, { frete: "Transportadora indisponível para este carrinho." });
       }
       shippingOptions = mapOptions(data as MelhorEnvioResponse);
     } catch (error) {
@@ -325,10 +325,10 @@ async function calcularGrupo(cepDestino: string, products: ProductWithSeller[], 
 export async function calcularFrete(payload: { cepDestino: string; itens: FreightItemInput[] }) {
   const cepDestino = normalizarCep(payload.cepDestino);
   if (!validarCep(cepDestino)) {
-    throw new AppError("Nao foi possivel calcular o frete.", 400, { cepDestino: "CEP invalido ou nao atendido." });
+    throw new AppError("Não foi possível calcular o frete.", 400, { cepDestino: "CEP inválido ou não atendido." });
   }
   if (!Array.isArray(payload.itens) || payload.itens.length === 0) {
-    throw new AppError("Nao foi possivel calcular o frete.", 400, { itens: "Carrinho vazio." });
+    throw new AppError("Não foi possível calcular o frete.", 400, { itens: "Carrinho vazio." });
   }
 
   const productIds = payload.itens.map((item) => item.produtoId);
@@ -337,11 +337,11 @@ export async function calcularFrete(payload: { cepDestino: string; itens: Freigh
     include: { seller: { include: { artisans: { include: { addresses: true }, take: 1 } } } }
   });
   if (products.length !== productIds.length) {
-    throw new AppError("Nao foi possivel calcular o frete.", 404, { produtos: "Um ou mais produtos nao foram encontrados." });
+    throw new AppError("Não foi possível calcular o frete.", 404, { produtos: "Um ou mais produtos não foram encontrados." });
   }
   const inactive = products.find((product) => product.status !== ProductStatus.ACTIVE);
   if (inactive) {
-    throw new AppError("Nao foi possivel calcular o frete.", 400, { produto: `${inactive.name} nao esta ativo.` });
+    throw new AppError("Não foi possível calcular o frete.", 400, { produto: `${inactive.name} não está ativo.` });
   }
 
   const bySeller = products.reduce<Record<string, ProductWithSeller[]>>((acc, product) => {

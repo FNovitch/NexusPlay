@@ -34,7 +34,7 @@ export async function adminLogin(req: Request, res: Response) {
   const { email, password } = req.body;
   const user = await prisma.user.findUnique({ where: { email }, include: { adminProfile: true } });
   if (!user || user.role !== UserRole.ADMIN || user.isDeleted || !user.adminProfile?.active || !(await bcrypt.compare(password, user.passwordHash))) {
-    throw new AppError("E-mail ou senha invalidos.", 401);
+    throw new AppError("E-mail ou senha inválidos.", 401);
   }
   await prisma.admin.update({ where: { userId: user.id }, data: { lastLogin: new Date() } });
   const token = signToken({ sub: user.id, role: user.role });
@@ -57,7 +57,7 @@ export async function changeAdminPassword(req: Request, res: Response) {
   const { currentPassword, newPassword } = req.body;
   const user = await prisma.user.findUniqueOrThrow({ where: { id: req.user!.id } });
   if (!(await bcrypt.compare(currentPassword, user.passwordHash))) {
-    throw new AppError("Senha atual invalida.", 401, { currentPassword: "Senha atual invalida." });
+    throw new AppError("Senha atual inválida.", 401, { currentPassword: "Senha atual inválida." });
   }
   await prisma.user.update({ where: { id: user.id }, data: { passwordHash: await bcrypt.hash(newPassword, 12) } });
   success(res, null, "Senha alterada com sucesso.");
@@ -77,7 +77,7 @@ export async function adminDashboard(_req: Request, res: Response) {
     pedidosPendentes,
     pedidosEntregues,
     faturamento,
-    avaliacoesRecentes,
+    avaliaçõesRecentes,
     ultimosPedidos,
     novosCadastros,
     artesaosPendentesLista
@@ -102,7 +102,7 @@ export async function adminDashboard(_req: Request, res: Response) {
 
   success(res, {
     metrics: { totalClientes, totalArtesaos, artesaosPendentes, artesaosAprovados, artesaosRecusados, totalProdutos, produtosAtivos, produtosPendentes, totalPedidos, pedidosPendentes, pedidosEntregues, faturamentoTotal: Number(faturamento._sum.total ?? 0) },
-    avaliacoesRecentes,
+    avaliaçõesRecentes,
     ultimosPedidos,
     novosCadastros,
     artesaosPendentesLista
@@ -124,7 +124,7 @@ export async function listAdminCustomers(req: Request, res: Response) {
 
 export async function getAdminCustomer(req: Request, res: Response) {
   const item = await prisma.customer.findUnique({ where: { id: paramId(req) }, include: { user: true, addresses: true } });
-  if (!item || item.isDeleted) throw new AppError("Cliente nao encontrado", 404);
+  if (!item || item.isDeleted) throw new AppError("Cliente não encontrado", 404);
   const [recentOrders, orderSummary, paymentSummary] = await Promise.all([
     prisma.order.findMany({
       where: { buyerId: item.userId },
@@ -184,7 +184,7 @@ export async function listAdminArtisans(req: Request, res: Response) {
 
 export async function getAdminArtisan(req: Request, res: Response) {
   const item = await prisma.artisan.findUnique({ where: { id: paramId(req) }, include: { user: true, addresses: true, store: true } });
-  if (!item || item.isDeleted) throw new AppError("Artesao nao encontrado", 404);
+  if (!item || item.isDeleted) throw new AppError("Artesão não encontrado", 404);
   const productOwnerFilter = item.storeId ? { OR: [{ artisanId: item.id }, { sellerId: item.storeId }] } : { artisanId: item.id };
   const [recentProducts, subscriptions, payoutSummary, paymentSummary] = await Promise.all([
     prisma.product.findMany({
@@ -218,29 +218,29 @@ async function updateArtisanAndStore(id: string, data: { status?: SellerStatus; 
 }
 
 export async function approveArtisan(req: Request, res: Response) {
-  success(res, await updateArtisanAndStore(paramId(req), { status: SellerStatus.APPROVED, active: true, blocked: false, rejectionReason: null }), "Artesao aprovado.");
+  success(res, await updateArtisanAndStore(paramId(req), { status: SellerStatus.APPROVED, active: true, blocked: false, rejectionReason: null }), "Artesão aprovado.");
 }
 
 export async function rejectArtisan(req: Request, res: Response) {
   const reason = String(req.body.reason ?? req.body.motivo ?? "").trim();
   if (!reason) throw new AppError("Motivo obrigatorio", 400, { reason: "Informe o motivo da recusa." });
-  success(res, await updateArtisanAndStore(paramId(req), { status: SellerStatus.REJECTED, rejectionReason: reason }), "Artesao recusado.");
+  success(res, await updateArtisanAndStore(paramId(req), { status: SellerStatus.REJECTED, rejectionReason: reason }), "Artesão recusado.");
 }
 
 export async function blockArtisan(req: Request, res: Response) {
   const reason = String(req.body.reason ?? req.body.motivo ?? "").trim();
   if (!reason) throw new AppError("Motivo obrigatorio", 400, { reason: "Informe o motivo do bloqueio." });
-  success(res, await updateArtisanAndStore(paramId(req), { blocked: true, blockReason: reason }), "Artesao bloqueado.");
+  success(res, await updateArtisanAndStore(paramId(req), { blocked: true, blockReason: reason }), "Artesão bloqueado.");
 }
 
 export async function unblockArtisan(req: Request, res: Response) {
-  success(res, await updateArtisanAndStore(paramId(req), { blocked: false, blockReason: null, active: true }), "Artesao desbloqueado.");
+  success(res, await updateArtisanAndStore(paramId(req), { blocked: false, blockReason: null, active: true }), "Artesão desbloqueado.");
 }
 
 export async function deleteArtisan(req: Request, res: Response) {
   const artisan = await prisma.artisan.update({ where: { id: paramId(req) }, data: { isDeleted: true, active: false } });
   await prisma.user.update({ where: { id: artisan.userId }, data: { isDeleted: true } });
-  success(res, null, "Artesao desativado.");
+  success(res, null, "Artesão desativado.");
 }
 
 export async function listAdminProducts(req: Request, res: Response) {
@@ -264,7 +264,7 @@ export async function getAdminProduct(req: Request, res: Response) {
       _count: { select: { favorites: true, orderItems: true, reviews: true } }
     }
   });
-  if (!item) throw new AppError("Produto nao encontrado", 404);
+  if (!item) throw new AppError("Produto não encontrado", 404);
   success(res, item);
 }
 
@@ -315,7 +315,7 @@ export async function getAdminOrder(req: Request, res: Response) {
       shippingQuotes: { include: { artisan: true }, orderBy: { createdAt: "desc" } }
     }
   });
-  if (!item) throw new AppError("Pedido nao encontrado", 404);
+  if (!item) throw new AppError("Pedido não encontrado", 404);
   success(res, item);
 }
 
@@ -331,7 +331,7 @@ export async function updateAdminOrderStatus(req: Request, res: Response) {
   };
   const raw = String(req.body.status ?? "").toUpperCase();
   const status = aliases[raw] ?? raw as OrderStatus;
-  if (!Object.values(OrderStatus).includes(status)) throw new AppError("Status invalido", 400, { status: "Status de pedido invalido." });
+  if (!Object.values(OrderStatus).includes(status)) throw new AppError("Status inválido", 400, { status: "Status de pedido inválido." });
   const current = await prisma.order.findUniqueOrThrow({ where: { id: paramId(req) } });
   const item = await prisma.order.update({ where: { id: paramId(req) }, data: { status } });
   await prisma.orderHistory.create({ data: { orderId: item.id, previousStatus: current.status, newStatus: status, note: "Status atualizado pelo administrador." } });
@@ -346,16 +346,16 @@ export async function listAdminReviews(req: Request, res: Response) {
 }
 
 export async function hideReview(req: Request, res: Response) {
-  success(res, await prisma.review.update({ where: { id: paramId(req) }, data: { hidden: true } }), "Avaliacao ocultada.");
+  success(res, await prisma.review.update({ where: { id: paramId(req) }, data: { hidden: true } }), "Avaliação ocultada.");
 }
 
 export async function showReview(req: Request, res: Response) {
-  success(res, await prisma.review.update({ where: { id: paramId(req) }, data: { hidden: false } }), "Avaliacao exibida.");
+  success(res, await prisma.review.update({ where: { id: paramId(req) }, data: { hidden: false } }), "Avaliação exibida.");
 }
 
 export async function deleteReviewAdmin(req: Request, res: Response) {
   await prisma.review.delete({ where: { id: paramId(req) } });
-  success(res, null, "Avaliacao excluida.");
+  success(res, null, "Avaliação excluída.");
 }
 
 export async function listAdminCategories(req: Request, res: Response) {
@@ -388,7 +388,7 @@ export async function deleteAdminCategory(req: Request, res: Response) {
     return success(res, item, "Categoria desativada pois possui produtos vinculados.");
   }
   await prisma.category.delete({ where: { id: paramId(req) } });
-  success(res, null, "Categoria excluida.");
+  success(res, null, "Categoria excluída.");
 }
 
 export async function listAdminSubscriptions(req: Request, res: Response) {
@@ -405,7 +405,7 @@ export async function listAdminSubscriptions(req: Request, res: Response) {
 
 export async function activateAdminSubscription(req: Request, res: Response) {
   const subscription = await prisma.artisanSubscription.findUnique({ where: { id: paramId(req) }, include: { plan: true } });
-  if (!subscription || !subscription.plan) throw new AppError("Assinatura nao encontrada", 404);
+  if (!subscription || !subscription.plan) throw new AppError("Assinatura não encontrada", 404);
   const startDate = new Date();
   const expirationDate = new Date(startDate);
   expirationDate.setDate(expirationDate.getDate() + subscription.plan.durationDays);
