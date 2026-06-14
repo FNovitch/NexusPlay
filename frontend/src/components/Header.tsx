@@ -53,7 +53,7 @@ export function Header() {
     }`;
 
   return (
-    <header className="sticky top-0 z-40 border-b border-nexus-line bg-white/92 backdrop-blur-xl">
+    <header className="sticky top-0 z-40 border-b border-nexus-line bg-white">
       <div className="app-shell flex items-center gap-3 py-3 lg:gap-5">
         <Brand />
 
