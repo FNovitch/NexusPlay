@@ -34,7 +34,7 @@ export async function register(req: Request, res: Response) {
       const artisanData = artisan ?? {
         storeName: seller.storeName,
         storeDescription: seller.story ?? seller.bio,
-        craftCategories: ["Artesanato"],
+        craftCategories: ["Acessorios gamer"],
         document: "00000000000",
         phone: "0000000000",
         acceptsLocalPickup: false,

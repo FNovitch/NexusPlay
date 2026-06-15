@@ -49,6 +49,7 @@ export const checkoutSchema = z.object({
     shippingSelections: z.array(z.object({
       groupId: z.string().min(1),
       sellerId: z.string().min(1).optional(),
+      sellerProfileId: z.string().min(1).nullish(),
       artesaoId: z.string().min(1).nullish(),
       cepOrigem: z.string().min(8),
       cepDestino: z.string().min(8),

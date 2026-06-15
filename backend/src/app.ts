@@ -14,7 +14,13 @@ import { errorHandler, notFound } from "./middlewares/error.js";
 import { uploadRoot } from "./middlewares/upload.js";
 
 const app = express();
-const allowedOrigins = new Set([env.FRONTEND_URL, "http://localhost:5173", "http://127.0.0.1:5173"]);
+const allowedOrigins = new Set([
+  env.FRONTEND_URL,
+  "http://localhost:5173",
+  "http://127.0.0.1:5173",
+  "http://localhost:5174",
+  "http://127.0.0.1:5174"
+]);
 
 app.set("trust proxy", 1);
 app.use(helmet());

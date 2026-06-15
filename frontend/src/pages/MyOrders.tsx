@@ -14,7 +14,7 @@ export function MyOrders() {
   const [orders, setOrders] = useState<Order[]>([]);
 
   useEffect(() => {
-    api.get("/pedidos/meus-pedidos").then(({ data }) => setOrders(data.data?.pedidos ?? data.orders ?? [])).catch(() => setOrders(readDemoOrders()));
+    api.get("/orders/my-orders").then(({ data }) => setOrders(data.data?.pedidos ?? data.orders ?? [])).catch(() => setOrders(readDemoOrders()));
   }, []);
 
   if (!user) return <Navigate to="/cliente/login" replace />;

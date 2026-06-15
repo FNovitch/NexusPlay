@@ -26,16 +26,16 @@ export async function getSubscriptionPlans() {
 }
 
 export async function getSubscriptionStatus() {
-  const { data } = await api.get<{ data: SubscriptionStatus }>("/artesao/subscription/status");
+  const { data } = await api.get<{ data: SubscriptionStatus }>("/seller/subscription/status");
   return data.data;
 }
 
 export async function createSubscriptionCheckout(planId: string) {
-  const { data } = await api.post<{ data: { initPoint: string; subscriptionId: string } }>("/artesao/subscription/checkout", { planId });
+  const { data } = await api.post<{ data: { initPoint: string; subscriptionId: string } }>("/seller/subscription/checkout", { planId });
   return data.data;
 }
 
 export async function cancelSubscription() {
-  const { data } = await api.post("/artesao/subscription/cancel");
+  const { data } = await api.post("/seller/subscription/cancel");
   return data;
 }

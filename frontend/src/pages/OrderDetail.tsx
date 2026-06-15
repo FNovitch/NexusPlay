@@ -13,22 +13,22 @@ export function OrderDetail() {
   const [message, setMessage] = useState("");
 
   useEffect(() => {
-    api.get(`/pedidos/${id}`).then(({ data }) => setOrder(data.data?.pedido)).catch(() => setMessage("Pedido não encontrado."));
+    api.get(`/orders/${id}`).then(({ data }) => setOrder(data.data?.pedido)).catch(() => setMessage("Pedido não encontrado."));
   }, [id]);
 
   if (!user) return <Navigate to="/cliente/login" replace />;
   if (!order) return <main className="app-shell py-16 text-nexus-muted">{message || "Carregando pedido..."}</main>;
 
   async function cancel() {
-    await api.put(`/pedidos/${order.id}/cancelar`);
-    const { data } = await api.get(`/pedidos/${order.id}`);
+    await api.put(`/orders/${order.id}/cancel`);
+    const { data } = await api.get(`/orders/${order.id}`);
     setOrder(data.data.pedido);
   }
 
   async function confirmReceipt() {
     setMessage("");
     try {
-      const { data } = await api.put(`/pedidos/${order.id}/confirmar-recebimento`);
+      const { data } = await api.put(`/orders/${order.id}/confirm-receipt`);
       setOrder(data.data.pedido);
       setMessage("Recebimento confirmado. As avaliações foram liberadas.");
     } catch {

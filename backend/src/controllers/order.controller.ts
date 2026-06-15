@@ -9,6 +9,7 @@ type CartPayloadItem = { productId: string; quantity: number; customizationNotes
 type ShippingSelection = {
   groupId: string;
   sellerId?: string;
+  sellerProfileId?: string | null;
   artesaoId?: string | null;
   cepOrigem: string;
   cepDestino: string;
@@ -142,7 +143,7 @@ export async function createOrder(req: Request, res: Response) {
     return {
       groupId: grupo.groupId,
       sellerId: grupo.sellerId,
-      artisanId: grupo.artesaoId,
+      artisanId: grupo.sellerProfileId ?? grupo.artesaoId,
       originZipCode: grupo.cepOrigem,
       destinationZipCode: grupo.cepDestino,
       carrier: option.empresa,
@@ -301,7 +302,7 @@ export async function getArtisanOrder(req: Request, res: Response) {
 export async function updateArtisanOrderStatus(req: Request, res: Response) {
   const allowed: OrderStatus[] = [OrderStatus.IN_PRODUCTION, OrderStatus.SHIPPED, OrderStatus.DELIVERED];
   const status = String(req.body.status ?? "").toUpperCase() as OrderStatus;
-  if (!allowed.includes(status)) throw new AppError("Status inválido", 400, { status: "Artesão pode usar EM_PREPARO, ENVIADO ou ENTREGUE." });
+  if (!allowed.includes(status)) throw new AppError("Status inválido", 400, { status: "A loja pode usar IN_PRODUCTION, SHIPPED ou DELIVERED." });
   const order = await prisma.order.findFirst({ where: { id: String(req.params.id), items: { some: { sellerId: req.user!.sellerId } } } });
   if (!order) throw new AppError("Pedido não encontrado", 404);
   const updated = await prisma.order.update({ where: { id: order.id }, data: { status }, include: orderInclude });

@@ -31,7 +31,8 @@ type FreightOption = {
 type FreightGroup = {
   groupId: string;
   sellerId: string;
-  artesaoId: string | null;
+  sellerProfileId: string | null;
+  artesaoId?: string | null;
   loja: string;
   cepOrigem: string;
   cepDestino: string;
@@ -93,7 +94,7 @@ export function Checkout() {
     }
 
     try {
-      const { data } = await api.post<{ success: boolean; data: { grupos: FreightGroup[] } }>("/frete/calcular", {
+      const { data } = await api.post<{ success: boolean; data: { grupos: FreightGroup[] } }>("/shipping/calculate", {
         cepDestino: onlyDigits(address.zipCode),
         itens: items.map((item) => ({ produtoId: item.product.id, quantidade: item.quantity, variacaoSelecionada: item.selectedVariations }))
       });
@@ -163,7 +164,7 @@ export function Checkout() {
     }
 
     try {
-      const { data } = await api.post("/pedidos/checkout", {
+      const { data } = await api.post("/orders/checkout", {
         shippingAddress: { ...address, zipCode: onlyDigits(address.zipCode) },
         shippingTotal,
         shippingSelections: freightGroups.map((group) => {
@@ -171,7 +172,8 @@ export function Checkout() {
           return {
             groupId: group.groupId,
             sellerId: group.sellerId,
-            artesaoId: group.artesaoId,
+            sellerProfileId: group.sellerProfileId ?? group.artesaoId ?? null,
+            artesaoId: group.sellerProfileId ?? group.artesaoId ?? null,
             cepOrigem: group.cepOrigem,
             cepDestino: group.cepDestino,
             transportadora: option.empresa,
@@ -320,7 +322,7 @@ function buildDemoFreightGroups(groups: Record<string, ReturnType<typeof grouped
   return Object.entries(groups).map(([sellerName, sellerItems], index) => ({
     groupId: `demo-freight-${index + 1}`,
     sellerId: sellerItems[0]?.product.sellerId ?? `seller-${index + 1}`,
-    artesaoId: sellerItems[0]?.product.artisanId ?? null,
+    sellerProfileId: sellerItems[0]?.product.artisanId ?? null,
     loja: sellerName,
     cepOrigem: "01001000",
     cepDestino: "01001000",
