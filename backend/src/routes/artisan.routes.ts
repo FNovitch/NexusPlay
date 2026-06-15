@@ -12,6 +12,11 @@ import { artisanUpdateSchema, loginSchema, registerArtisanSchema } from "./schem
 
 export const artisanRoutes = Router();
 
+artisanRoutes.post("/sellers/register", validate(registerArtisanSchema), asyncHandler(registerArtisan));
+artisanRoutes.post("/sellers/login", validate(loginSchema), asyncHandler(loginArtisan));
+artisanRoutes.get("/sellers/me", authenticate, requireArtisan, asyncHandler(getMyArtisanProfile));
+artisanRoutes.patch("/sellers/me", authenticate, requireArtisan, validate(artisanUpdateSchema), asyncHandler(updateMyArtisanProfile));
+
 artisanRoutes.post("/artisans/register", validate(registerArtisanSchema), asyncHandler(registerArtisan));
 artisanRoutes.post("/artisans/login", validate(loginSchema), asyncHandler(loginArtisan));
 artisanRoutes.get("/artisans/me", authenticate, requireArtisan, asyncHandler(getMyArtisanProfile));

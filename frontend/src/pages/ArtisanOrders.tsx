@@ -7,12 +7,12 @@ import { useAuth } from "../store/auth";
 export function ArtisanOrders() {
   const user = useAuth((state) => state.user);
   const [orders, setOrders] = useState<any[]>([]);
-  useEffect(() => { api.get("/artesao/pedidos").then(({ data }) => setOrders(data.data?.pedidos ?? [])).catch(() => setOrders(readDemoOrders())); }, []);
+  useEffect(() => { api.get("/seller/orders").then(({ data }) => setOrders(data.data?.pedidos ?? [])).catch(() => setOrders(readDemoOrders())); }, []);
   if (!user || user.role !== "ARTISAN") return <Navigate to="/vendedor/login" replace />;
 
   async function update(id: string, status: string) {
-    await api.put(`/artesao/pedidos/${id}/status`, { status });
-    const { data } = await api.get("/artesao/pedidos");
+    await api.put(`/seller/orders/${id}/status`, { status });
+    const { data } = await api.get("/seller/orders");
     setOrders(data.data?.pedidos ?? []);
   }
 

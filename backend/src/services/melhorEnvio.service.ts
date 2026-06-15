@@ -25,6 +25,7 @@ export type FreightOption = {
 export type FreightGroup = {
   groupId: string;
   sellerId: string;
+  sellerProfileId: string | null;
   artesaoId: string | null;
   loja: string;
   cepOrigem: string;
@@ -246,6 +247,7 @@ async function calcularGrupo(cepDestino: string, products: ProductWithSeller[], 
     return {
       groupId: first.sellerId,
       sellerId: first.sellerId,
+      sellerProfileId: first.seller.artisans[0]?.id ?? null,
       artesaoId: first.seller.artisans[0]?.id ?? null,
       loja: first.seller.storeName,
       cepOrigem,
@@ -314,6 +316,7 @@ async function calcularGrupo(cepDestino: string, products: ProductWithSeller[], 
   return {
     groupId: first.sellerId,
     sellerId: first.sellerId,
+    sellerProfileId: first.seller.artisans[0]?.id ?? null,
     artesaoId: first.seller.artisans[0]?.id ?? null,
     loja: first.seller.storeName,
     cepOrigem,

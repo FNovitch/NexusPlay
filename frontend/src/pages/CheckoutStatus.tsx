@@ -68,7 +68,7 @@ export function CheckoutStatus() {
       return;
     }
     try {
-      const { data } = await api.get(`/pedidos/${id}`);
+      const { data } = await api.get(`/orders/${id}`);
       setOrder(data.data?.pedido);
     } catch {
       setError("Não foi possível carregar este pedido.");

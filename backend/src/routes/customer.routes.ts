@@ -24,6 +24,13 @@ const passwordResetLimiter = rateLimit({
   message: { success: false, message: "Muitas solicitacoes. Tente novamente em alguns minutos." }
 });
 
+customerRoutes.post("/customers/register", validate(registerCustomerSchema), asyncHandler(registerCustomer));
+customerRoutes.post("/customers/login", loginLimiter, validate(loginSchema), asyncHandler(loginCustomer));
+customerRoutes.post("/customers/forgot-password", passwordResetLimiter, validate(forgotPasswordSchema), asyncHandler(forgotCustomerPassword));
+customerRoutes.post("/customers/reset-password", passwordResetLimiter, validate(resetPasswordSchema), asyncHandler(resetCustomerPassword));
+customerRoutes.get("/customers/me", authenticate, requireCustomer, asyncHandler(getCustomerProfile));
+customerRoutes.put("/customers/me", authenticate, requireCustomer, validate(customerUpdateSchema), asyncHandler(updateCustomerProfile));
+
 customerRoutes.post("/clientes/cadastro", validate(registerCustomerSchema), asyncHandler(registerCustomer));
 customerRoutes.post("/clientes/login", loginLimiter, validate(loginSchema), asyncHandler(loginCustomer));
 customerRoutes.post("/clientes/esqueci-senha", passwordResetLimiter, validate(forgotPasswordSchema), asyncHandler(forgotCustomerPassword));
