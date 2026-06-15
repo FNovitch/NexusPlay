@@ -1,13 +1,19 @@
 import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { api } from "../lib/api";
+import { demoMode } from "../config/env";
 import { readDemoOrders } from "../data/demoOrders";
 import { useAuth } from "../store/auth";
 
 export function ArtisanOrders() {
   const user = useAuth((state) => state.user);
   const [orders, setOrders] = useState<any[]>([]);
-  useEffect(() => { api.get("/seller/orders").then(({ data }) => setOrders(data.data?.pedidos ?? [])).catch(() => setOrders(readDemoOrders())); }, []);
+  useEffect(() => {
+    api
+      .get("/seller/orders")
+      .then(({ data }) => setOrders(data.data?.pedidos ?? []))
+      .catch(() => setOrders(demoMode ? readDemoOrders() : []));
+  }, []);
   if (!user || user.role !== "ARTISAN") return <Navigate to="/vendedor/login" replace />;
 
   async function update(id: string, status: string) {

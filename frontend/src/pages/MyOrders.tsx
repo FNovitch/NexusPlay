@@ -2,6 +2,7 @@ import { PackageCheck } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { api } from "../lib/api";
+import { demoMode } from "../config/env";
 import { readDemoOrders } from "../data/demoOrders";
 import { useAuth } from "../store/auth";
 
@@ -14,7 +15,10 @@ export function MyOrders() {
   const [orders, setOrders] = useState<Order[]>([]);
 
   useEffect(() => {
-    api.get("/orders/my-orders").then(({ data }) => setOrders(data.data?.pedidos ?? data.orders ?? [])).catch(() => setOrders(readDemoOrders()));
+    api
+      .get("/orders/my-orders")
+      .then(({ data }) => setOrders(data.data?.pedidos ?? data.orders ?? []))
+      .catch(() => setOrders(demoMode ? readDemoOrders() : []));
   }, []);
 
   if (!user) return <Navigate to="/cliente/login" replace />;

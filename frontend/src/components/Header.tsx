@@ -1,18 +1,26 @@
 import { Boxes, Heart, LogOut, Menu, Search, ShoppingBag, Sparkles, Store, UserRound, X } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type React from "react";
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
-import { productImageUrl } from "../api/products";
-import { products } from "../data/mock";
+import { demoMode } from "../config/env";
+import { api } from "../lib/api";
 import { useAuth } from "../store/auth";
 import { useCart } from "../store/cart";
 import { useWishlist } from "../store/wishlist";
-import { handleImageError } from "../utils/media";
+import { handleImageError, resolveImageUrl } from "../utils/media";
 import { Brand } from "./Brand";
+
+type SearchSuggestion = {
+  id: string;
+  name: string;
+  slug: string;
+  images?: Array<{ url?: string } | string>;
+};
 
 export function Header() {
   const [query, setQuery] = useState("");
+  const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([]);
   const [menu, setMenu] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
   const openCart = useCart((state) => state.open);
@@ -22,9 +30,28 @@ export function Header() {
   const logout = useAuth((state) => state.logout);
   const navigate = useNavigate();
 
-  const suggestions = useMemo(() => {
-    if (query.trim().length < 2) return [];
-    return products.filter((item) => item.name.toLowerCase().includes(query.toLowerCase())).slice(0, 5);
+  useEffect(() => {
+    const term = query.trim();
+    if (term.length < 2) {
+      setSuggestions([]);
+      return;
+    }
+
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => {
+      api
+        .get<{ suggestions: SearchSuggestion[] }>("/products/autocomplete", {
+          params: { q: term },
+          signal: controller.signal
+        })
+        .then(({ data }) => setSuggestions(data.suggestions ?? []))
+        .catch(() => setSuggestions([]));
+    }, 200);
+
+    return () => {
+      window.clearTimeout(timer);
+      controller.abort();
+    };
   }, [query]);
 
   const accountPath = user?.role === "ADMIN" ? "/admin/dashboard" : user?.role === "ARTISAN" ? "/vendedor" : user?.role === "CUSTOMER" ? "/cliente" : "/login";
@@ -87,7 +114,7 @@ export function Header() {
                   onClick={() => setQuery("")}
                 >
                   <img
-                    src={productImageUrl(item)}
+                    src={suggestionImageUrl(item)}
                     alt=""
                     loading="lazy"
                     decoding="async"
@@ -102,10 +129,10 @@ export function Header() {
         </form>
 
         <div className="ml-auto flex items-center gap-1 md:ml-0">
-          <button className="btn-icon relative" aria-label="Favoritos">
+          <Link to="/favoritos" className="btn-icon relative" aria-label="Favoritos">
             <Heart className="h-5 w-5" />
             {wishlistCount > 0 && <Counter value={wishlistCount} />}
-          </button>
+          </Link>
           <button onClick={openCart} className="btn-icon relative" aria-label="Carrinho">
             <ShoppingBag className="h-5 w-5" />
             {cartCount > 0 && <Counter value={cartCount} />}
@@ -167,7 +194,7 @@ export function Header() {
               <MenuLink icon={Store} to="/marcas" onClick={() => setMenu(false)}>Marcas</MenuLink>
               <MenuLink icon={UserRound} to={accountPath} onClick={() => setMenu(false)}>{accountLabel}</MenuLink>
               <button className="flex min-h-10 items-center gap-2 rounded-lg px-3 py-2 text-left text-nexus-muted transition duration-200 hover:bg-nexus-paper hover:text-nexus-contrast" onClick={() => { openCart(); setMenu(false); }}><ShoppingBag className="h-4 w-4" /> Carrinho</button>
-              <span className="flex min-h-10 items-center gap-2 rounded-lg px-3 py-2 text-nexus-muted"><Heart className="h-4 w-4" /> Favoritos</span>
+              <MenuLink icon={Heart} to="/favoritos" onClick={() => setMenu(false)}>Favoritos</MenuLink>
               {user?.role === "CUSTOMER" && <MenuLink to="/meus-pedidos" onClick={() => setMenu(false)}>Meus pedidos</MenuLink>}
               {!user && <MenuLink to="/cliente/cadastro" onClick={() => setMenu(false)}>Criar conta</MenuLink>}
               <MenuLink icon={Sparkles} to={user?.role === "ARTISAN" ? "/vendedor" : "/vendedor/cadastro"} onClick={() => setMenu(false)}>
@@ -180,12 +207,23 @@ export function Header() {
           </div>
         </div>
       )}
+      {demoMode && (
+        <div className="border-t border-nexus-line bg-nexus-paper px-4 py-2 text-center text-xs font-semibold uppercase tracking-[0.08em] text-nexus-muted">
+          Modo demonstracao ativo: alguns fluxos podem usar dados simulados.
+        </div>
+      )}
     </header>
   );
 }
 
 function Counter({ value }: { value: number }) {
   return <span className="absolute -right-1 -top-1 grid min-h-4 min-w-4 place-items-center rounded-full bg-nexus-secondary px-1 text-[10px] font-semibold text-white">{value}</span>;
+}
+
+function suggestionImageUrl(item: SearchSuggestion) {
+  const image = item.images?.[0];
+  const url = typeof image === "string" ? image : image?.url;
+  return resolveImageUrl(url);
 }
 
 function MenuLink({ to, onClick, children, icon: Icon }: { to: string; onClick: () => void; children: React.ReactNode; icon?: LucideIcon }) {

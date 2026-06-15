@@ -10,7 +10,7 @@
   "scripts": {
     "dev": "powershell -Command \"Start-Process powershell -ArgumentList '-NoExit','-Command','npm run dev --workspace backend'; Start-Process powershell -ArgumentList '-NoExit','-Command','npm run dev --workspace frontend'\"",
     "build": "npm run build --workspace backend && npm run build --workspace frontend",
-    "lint": "npm run lint --workspace frontend",
+    "lint": "npm run lint --workspace backend && npm run lint --workspace frontend",
     "db:generate": "npm run prisma:generate --workspace backend",
     "db:migrate": "npm run prisma:migrate --workspace backend",
     "create:admin": "npm run create:admin --workspace backend",

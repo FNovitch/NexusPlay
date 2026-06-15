@@ -2,6 +2,7 @@ import { AlertCircle, CheckCircle2, Clock, PackageCheck, RefreshCw } from "lucid
 import { useEffect, useMemo, useState } from "react";
 import { Link, Navigate, useParams, useSearchParams } from "react-router-dom";
 import { EmptyState } from "../components/EmptyState";
+import { demoMode } from "../config/env";
 import { findDemoOrder, lastDemoOrderId } from "../data/demoOrders";
 import { api } from "../lib/api";
 import { useAuth } from "../store/auth";
@@ -37,7 +38,7 @@ export function CheckoutStatus() {
   const [error, setError] = useState("");
   const [pollCount, setPollCount] = useState(0);
   const result = searchParams.get("resultado") ?? status;
-  const fallbackOrderId = lastDemoOrderId();
+  const fallbackOrderId = demoMode ? lastDemoOrderId() : null;
 
   useEffect(() => {
     if (result === "sucesso") clear();
@@ -61,7 +62,7 @@ export function CheckoutStatus() {
     if (!id) return;
     if (showLoading) setLoading(true);
     setError("");
-    const demoOrder = findDemoOrder(id);
+    const demoOrder = demoMode ? findDemoOrder(id) : null;
     if (demoOrder) {
       setOrder(demoOrder);
       setLoading(false);

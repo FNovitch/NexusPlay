@@ -1,10 +1,11 @@
 import axios from "axios";
 import { products, sellers, categories } from "../data/mock";
 import { normalizeProduct } from "../api/products";
+import { apiBaseUrl, demoMode } from "../config/env";
 import type { Product, Seller } from "../types";
 
 export const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL ?? "http://localhost:4000/api/v1"
+  baseURL: apiBaseUrl
 });
 
 const cache = new Map<string, unknown>();
@@ -56,10 +57,9 @@ export async function getProducts(params?: Record<string, string>) {
     try {
       const { data } = await api.get<{ products: Product[] }>("/products", { params });
       const apiProducts = removeLegacyProducts(data.products.map(normalizeProduct));
-      return apiProducts.length > 0 ? apiProducts : products;
+      return apiProducts.length > 0 ? apiProducts : demoMode ? products : [];
     } catch {
-      if (!import.meta.env.DEV) return [];
-      return products;
+      return demoMode ? products : [];
     }
   });
 }
@@ -75,7 +75,7 @@ export async function getProduct(slug: string) {
       related: removeLegacyProducts(data.related.map(normalizeProduct))
     };
   } catch {
-    if (!import.meta.env.DEV) {
+    if (!demoMode) {
       throw new Error("Produto não encontrado.");
     }
 
@@ -93,8 +93,7 @@ export async function getSellers() {
       const { data } = await api.get<{ sellers: Seller[] }>("/sellers");
       return data.sellers;
     } catch {
-      if (!import.meta.env.DEV) return [];
-      return sellers;
+      return demoMode ? sellers : [];
     }
   });
 }
@@ -109,7 +108,7 @@ export async function getSeller(slug: string) {
     }
     return { ...fallbackSeller, products: products.filter((item) => item.sellerId === fallbackSeller.id) };
   } catch {
-    if (!import.meta.env.DEV) {
+    if (!demoMode) {
       throw new Error("Loja não encontrada.");
     }
 
@@ -124,8 +123,7 @@ export async function getCategories() {
       const { data } = await api.get<{ categories: typeof categories }>("/categories");
       return mergeDemoCategories(data.categories);
     } catch {
-      if (!import.meta.env.DEV) return [];
-      return categories;
+      return demoMode ? categories : [];
     }
   });
 }

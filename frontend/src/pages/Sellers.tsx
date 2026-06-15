@@ -17,6 +17,7 @@ export function Sellers() {
         eyebrow="Lojas"
         title="Marcas gamer em destaque"
         description="Catálogos fictícios com periféricos, colecionáveis, acessórios de setup e identidade própria."
+        headingLevel={1}
       />
       <div className="grid gap-5 md:grid-cols-3">
         {sellers.map((seller) => (

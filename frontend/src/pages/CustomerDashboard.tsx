@@ -2,6 +2,7 @@ import { ClipboardList, Star, UserRound } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { api } from "../lib/api";
+import { demoMode } from "../config/env";
 import { readDemoOrders } from "../data/demoOrders";
 import { useAuth } from "../store/auth";
 
@@ -10,7 +11,10 @@ export function CustomerDashboard() {
   const [orders, setOrders] = useState<Array<{ id: string; status: string; items: unknown[] }>>([]);
 
   useEffect(() => {
-    api.get("/orders").then(({ data }) => setOrders(data.orders ?? [])).catch(() => setOrders(readDemoOrders()));
+    api
+      .get("/orders")
+      .then(({ data }) => setOrders(data.orders ?? []))
+      .catch(() => setOrders(demoMode ? readDemoOrders() : []));
   }, []);
 
   if (!user || user.role !== "CUSTOMER") {

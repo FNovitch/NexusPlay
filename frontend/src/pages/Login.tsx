@@ -3,6 +3,7 @@ import type React from "react";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { PasswordField } from "../components/PasswordField";
+import { demoMode } from "../config/env";
 import { demoCredentials } from "../data/demoOrders";
 import { parseApiError } from "../lib/artisanForm";
 import { useAuth } from "../store/auth";
@@ -111,9 +112,11 @@ export function Login({ artisanMode = false }: LoginProps) {
         <button disabled={loading} className="btn-primary w-full">
           <LogIn className="h-5 w-5" /> {loading ? "Entrando..." : "Entrar"}
         </button>
-        <button type="button" className="btn-secondary mt-3 w-full" onClick={() => enterDemo(artisanMode ? "ARTISAN" : "CUSTOMER")}>
-          Usar conta demo
-        </button>
+        {demoMode && (
+          <button type="button" className="btn-secondary mt-3 w-full" onClick={() => enterDemo(artisanMode ? "ARTISAN" : "CUSTOMER")}>
+            Usar conta demo
+          </button>
+        )}
         <div className="mt-4 grid gap-2 text-sm">
           {artisanMode ? (
             <button type="button" className="min-h-10 rounded-lg px-3 py-2 text-left font-medium text-nexus-secondary transition duration-200 hover:bg-nexus-paper" onClick={() => navigate("/vendedor/cadastro")}>

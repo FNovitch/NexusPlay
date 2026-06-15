@@ -1,0 +1,505 @@
+
+
+Use como base o diagnóstico anterior, mas não tente transformar o projeto em uma aplicação pronta para produção comercial. O objetivo é deixá-lo estável, apresentável, seguro no nível necessário para uma demonstração pública e fácil de entender por recrutadores.
+
+Preserve a arquitetura, o design e as funcionalidades já existentes. Não recrie o projeto do zero e não adicione funcionalidades complexas que não sejam necessárias para a apresentação no portfólio.
+
+## Objetivo final
+
+Ao concluir, o projeto deve:
+
+* Possuir front-end, back-end e banco preparados para deploy.
+* Abrir sem erros críticos no navegador.
+* Ter build do front-end e do back-end funcionando.
+* Permitir uma demonstração clara dos principais fluxos.
+* Não possuir botões importantes sem funcionamento.
+* Não expor credenciais ou dados sensíveis.
+* Deixar claro quando uma funcionalidade utiliza dados de demonstração.
+* Ter um README profissional.
+* Poder ser apresentado honestamente como uma aplicação full stack em ambiente demonstrativo.
+
+## Prioridade 1 — Bloqueadores básicos para deploy
+
+Corrija apenas os problemas realmente necessários para publicar o projeto com segurança.
+
+### Variáveis de ambiente
+
+Revise os arquivos de configuração do front-end e do back-end.
+
+Garanta que:
+
+* `DATABASE_URL` seja usada na conexão com o banco.
+* `JWT_SECRET` seja obrigatório em produção.
+* `FRONTEND_URL` seja usada no CORS.
+* `VITE_API_URL` seja usada pelo front-end.
+* Não existam senhas, tokens, chaves ou URLs privadas diretamente no código.
+* Os arquivos `.env` estejam ignorados pelo Git.
+* Exista um `.env.example` no front-end e no back-end.
+* Os exemplos não contenham valores secretos reais.
+
+O front-end pode usar `localhost` como fallback apenas em desenvolvimento. Em build de produção, deve utilizar a variável de ambiente configurada.
+
+### CORS
+
+Revise:
+
+`backend/src/app.ts`
+
+Configure o CORS para:
+
+* Permitir localhost somente em desenvolvimento.
+* Permitir somente o domínio do front-end em produção.
+* Utilizar `FRONTEND_URL`.
+* Não deixar uma configuração aberta para qualquer origem.
+
+### Login e autenticação
+
+Adicione rate limit ao endpoint genérico de login em:
+
+`backend/src/routes/auth.routes.ts`
+
+Use uma implementação semelhante às rotas de login que já possuem limitação.
+
+Garanta também que:
+
+* `JWT_SECRET` não tenha fallback inseguro.
+* Tokens e senhas não apareçam nos logs.
+* O logout limpe corretamente o estado salvo no front-end.
+* Uma sessão inválida não continue permitindo acesso às páginas protegidas.
+
+### Mercado Pago
+
+Como o projeto será usado para portfólio, não é necessário ativar pagamentos reais.
+
+Ajuste o comportamento para que:
+
+* Em modo demonstração, o checkout possa ser simulado ou utilizar sandbox.
+* Em produção real, o webhook exija `MERCADO_PAGO_WEBHOOK_SECRET`.
+* Caso as credenciais não estejam configuradas, a aplicação exiba uma mensagem clara em vez de quebrar silenciosamente.
+* Nenhum pagamento real seja executado durante os testes.
+
+Documente no README que a integração está preparada para sandbox ou demonstração.
+
+### Uploads
+
+Não é obrigatório permitir uploads públicos durante a apresentação.
+
+Escolha a solução mais simples e estável:
+
+* Caso o Cloudinary já esteja integrado e funcional, mantenha-o configurável por variáveis de ambiente.
+* Caso não esteja configurado, utilize produtos e imagens previamente cadastrados para a demonstração.
+* Não dependa de armazenamento local temporário em produção.
+* Não bloqueie o deploy apenas para permitir que visitantes enviem novas imagens.
+
+## Prioridade 2 — Separar demonstração de erro real
+
+O projeto atualmente utiliza dados mockados e fallbacks em algumas telas.
+
+Crie uma variável explícita no front-end:
+
+`VITE_DEMO_MODE`
+
+Comportamento esperado:
+
+### Quando `VITE_DEMO_MODE=true`
+
+* O projeto pode utilizar dados demonstrativos.
+* A interface deve indicar discretamente que está em modo de demonstração.
+* Contas, pedidos e produtos simulados podem ser utilizados.
+* Funcionalidades externas podem ser simuladas.
+
+### Quando `VITE_DEMO_MODE=false`
+
+* Falhas da API não devem ser substituídas silenciosamente por dados falsos.
+* O usuário deve visualizar uma mensagem de erro adequada.
+* Pedidos fictícios não devem aparecer quando a API estiver indisponível.
+* A aplicação deve utilizar os dados reais do back-end.
+
+Revise principalmente:
+
+`frontend/src/lib/api.ts`
+`frontend/src/data/demoOrders.ts`
+`frontend/src/pages/Login.tsx`
+`frontend/src/pages/MyOrders.tsx`
+`frontend/src/pages/ArtisanOrders.tsx`
+
+Não remova todos os mocks obrigatoriamente. Apenas deixe seu uso explícito e controlado.
+
+## Prioridade 3 — Principais fluxos da demonstração
+
+Garanta que os seguintes fluxos funcionem de forma clara:
+
+1. Visualização da página inicial.
+2. Navegação pelo catálogo.
+3. Visualização de produtos.
+4. Cadastro de usuário.
+5. Login.
+6. Logout.
+7. Acesso às páginas protegidas.
+8. Visualização de pedidos.
+9. Fluxo principal do vendedor.
+10. Fluxo básico do administrador.
+11. Checkout em modo demonstração ou sandbox.
+
+Não é necessário implementar todas as funcionalidades de uma plataforma comercial.
+
+### Rotas protegidas
+
+Centralize a proteção das rotas, caso isso possa ser feito sem grande refatoração.
+
+Crie componentes equivalentes a:
+
+* `ProtectedRoute`;
+* `AdminRoute`;
+* `SellerRoute`.
+
+Caso a arquitetura atual já funcione corretamente, faça apenas os ajustes necessários para evitar:
+
+* Exibição temporária de páginas protegidas;
+* Acesso sem autenticação;
+* Repetição excessiva de verificações;
+* Redirecionamentos incorretos.
+
+### Revalidação da sessão
+
+Revise:
+
+`frontend/src/store/auth.ts`
+
+Ao carregar a aplicação:
+
+* Revalide o usuário com `/me` ou endpoint equivalente.
+* Atualize os dados da sessão quando forem válidos.
+* Limpe a sessão quando o token estiver inválido ou expirado.
+* Mostre um carregamento curto durante a validação.
+
+Não altere a autenticação para cookie `httpOnly` nesta etapa caso isso exija uma refatoração ampla.
+
+## Prioridade 4 — Remover funcionalidades visualmente quebradas
+
+Não deixe elementos importantes sem funcionamento.
+
+### Favoritos
+
+Atualmente o back-end possui favoritos, mas o front-end utiliza Zustand/localStorage e o botão do header não leva a uma página funcional.
+
+Escolha a alternativa mais simples e segura:
+
+#### Alternativa preferencial
+
+* Criar uma página simples de favoritos.
+* Fazer o botão do header navegar para ela.
+* Utilizar o estado local já existente.
+* Para usuários autenticados, integrar ao back-end somente se isso puder ser feito sem grande complexidade.
+
+#### Alternativa simplificada
+
+* Remover temporariamente o botão do header.
+* Remover chamadas visuais para favoritos.
+* Documentar a funcionalidade como melhoria futura.
+
+Não implemente sincronização complexa caso isso aumente muito o escopo.
+
+### Busca
+
+A busca do header atualmente utiliza dados mockados.
+
+Transforme-a em uma busca simples e funcional:
+
+* Pesquisar produtos já carregados no catálogo; ou
+* Utilizar um endpoint existente do back-end.
+
+Não é necessário criar autocomplete avançado.
+
+Garanta apenas:
+
+* Campo funcional;
+* Resultados coerentes;
+* Mensagem quando nenhum produto for encontrado;
+* Nenhum resultado fictício quando o modo demonstração estiver desativado.
+
+### Botões e links
+
+Revise o projeto e corrija:
+
+* Botões sem ação;
+* Links apontando para páginas inexistentes;
+* Imagens quebradas;
+* Rotas com erro;
+* Páginas vazias;
+* Textos provisórios;
+* Referências ao projeto antigo.
+
+Quando uma funcionalidade não for necessária para a demonstração, prefira remover o acesso visual em vez de manter algo quebrado.
+
+## Prioridade 5 — Banco e dados de demonstração
+
+Prepare o banco apenas no nível necessário para o deploy.
+
+Garanta que:
+
+* O Prisma utilize `DATABASE_URL`.
+* `prisma generate` funcione.
+* `prisma migrate deploy` possa ser executado.
+* Não seja necessário usar `prisma migrate dev` em produção.
+* O schema seja validado.
+
+Crie ou ajuste um seed seguro e idempotente para cadastrar:
+
+* Categorias;
+* Planos necessários;
+* Produtos demonstrativos aprovados;
+* Um usuário administrador demonstrativo, somente quando configurado;
+* Um vendedor demonstrativo;
+* Um cliente demonstrativo.
+
+Requisitos:
+
+* Não usar dados pessoais reais.
+* Não apagar dados existentes.
+* Não duplicar registros a cada execução.
+* Não colocar senhas reais diretamente no repositório.
+* Utilizar variáveis de ambiente para credenciais demo quando necessário.
+* Não executar o seed automaticamente sem intenção.
+
+Não é necessário implementar backup automatizado para esta versão de portfólio.
+
+Apenas documente que backup seria necessário em uma aplicação comercial.
+
+## Prioridade 6 — SEO, responsividade e apresentação
+
+Faça ajustes básicos para que o projeto pareça profissional.
+
+### SEO
+
+Adicione ou revise:
+
+* Título principal;
+* Description;
+* Favicon;
+* Open Graph básico;
+* Twitter Card básico;
+* Títulos por página, se isso puder ser feito de maneira simples.
+
+Não crie uma solução avançada de SEO.
+
+### Semântica
+
+Revise:
+
+`frontend/src/pages/Sellers.tsx`
+
+Garanta que a página possua:
+
+* Um `h1` claro;
+* Hierarquia correta de títulos;
+* Texto coerente;
+* Estrutura acessível.
+
+Revise também:
+
+* `alt` das imagens principais;
+* Labels de formulários;
+* Botões com texto acessível;
+* Estados de foco;
+* Mensagens de erro.
+
+### Responsividade
+
+Teste as páginas principais em:
+
+* Desktop;
+* Tablet;
+* Celular.
+
+Corrija apenas problemas visuais importantes, como:
+
+* Conteúdo cortado;
+* Overflow horizontal;
+* Botões inacessíveis;
+* Textos sobrepostos;
+* Header quebrado;
+* Formulários impossíveis de usar;
+* Imagens deformadas.
+
+Não refaça todo o design.
+
+## Prioridade 7 — Preparação do deploy
+
+Prepare o projeto para a seguinte estrutura:
+
+* Front-end: Vercel.
+* Back-end: Render ou Railway.
+* Banco: Neon, Supabase Postgres ou Railway Postgres.
+* Imagens: Cloudinary somente se necessário.
+* Pagamentos: Mercado Pago sandbox ou simulação.
+* Frete: Melhor Envio sandbox ou simulação.
+* E-mail: opcional para a demonstração.
+
+Revise os scripts dos `package.json`.
+
+### Front-end
+
+Garanta:
+
+* `npm run dev`;
+* `npm run build`;
+* `npm run lint`;
+* `npm run preview`.
+
+### Back-end
+
+Garanta:
+
+* `npm run dev`;
+* `npm run build`;
+* `npm run start`;
+* `npm run lint`;
+* Script para `prisma generate`;
+* Script para `prisma migrate deploy`;
+* Script de seed separado.
+
+O back-end em produção deve executar os arquivos JavaScript compilados.
+
+Garanta também:
+
+* Uso de `process.env.PORT`;
+* Endpoint `/health`;
+* Configuração de SPA no front-end para evitar erro 404 ao atualizar uma rota.
+* Documentação dos comandos de build e start.
+
+Não faça o deploy real sem credenciais ou autorização.
+
+## Prioridade 8 — Validações
+
+Ao finalizar, execute o que estiver disponível.
+
+### Front-end
+
+* TypeScript;
+* Build do Vite;
+* ESLint;
+* Testes existentes.
+
+### Back-end
+
+* TypeScript;
+* Build;
+* ESLint;
+* Testes existentes;
+* `prisma validate`;
+* `prisma generate`.
+
+O ESLint apresentou anteriormente um erro de ambiente no Windows:
+
+`CreateProcessAsUserW failed: 1312`
+
+Tente executá-lo novamente usando comandos alternativos compatíveis com o ambiente.
+
+Caso o erro seja do executor e o ESLint não chegue a iniciar:
+
+* Não altere as regras para esconder o problema.
+* Registre no relatório que o lint não foi executado.
+* Informe o comando exato que devo executar localmente.
+
+Não declare que um teste passou caso ele não tenha sido executado.
+
+## Prioridade 9 — README para recrutadores
+
+Atualize o README para ser simples, profissional e direto.
+
+Inclua:
+
+1. Nome do projeto.
+2. Uma descrição curta.
+3. Problema que o projeto resolve.
+4. Principais funcionalidades.
+5. Tecnologias utilizadas.
+6. Perfis disponíveis:
+
+   * Cliente;
+   * Vendedor;
+   * Administrador.
+7. Imagens ou espaço para screenshots.
+8. Link da aplicação.
+9. Link da API, se necessário.
+10. Como executar localmente.
+11. Variáveis de ambiente.
+12. Como rodar migrations.
+13. Como executar o seed.
+14. Como gerar o build.
+15. Como funciona o modo demonstração.
+16. Credenciais demo, somente se forem seguras.
+17. Limitações conhecidas.
+18. Melhorias futuras.
+19. Decisões técnicas importantes.
+20. Aviso de que pagamentos, frete e serviços externos podem funcionar em sandbox ou simulação.
+
+Não use frases apelativas pedindo emprego.
+
+Apresente o projeto como:
+
+“Uma aplicação full stack de marketplace desenvolvida para demonstrar autenticação, diferentes níveis de acesso, catálogo, gestão de produtos, pedidos e integrações externas em ambiente demonstrativo.”
+
+## Fora do escopo desta etapa
+
+Não implemente agora:
+
+* Backup automatizado;
+* Monitoramento profissional;
+* Logs estruturados avançados;
+* Recuperação de desastre;
+* Infraestrutura para grande volume de usuários;
+* Pagamento real;
+* Disparo real de e-mails;
+* Frete de produção;
+* Dashboard avançado;
+* Cobertura completa de testes;
+* Migração obrigatória para cookies `httpOnly`;
+* Sincronização complexa de favoritos;
+* Sistema de busca avançado;
+* Novas funcionalidades sem relação direta com o portfólio.
+
+Esses itens podem ser documentados como melhorias futuras.
+
+## Relatório final
+
+Ao concluir, apresente:
+
+1. Resumo do que foi feito.
+2. Alterações no front-end.
+3. Alterações no back-end.
+4. Alterações no banco e Prisma.
+5. Correções básicas de segurança.
+6. Como o modo demonstração funciona.
+7. Quais fluxos foram testados.
+8. Funcionalidades removidas ou simplificadas.
+9. Arquivos criados, alterados e removidos.
+10. Comandos executados.
+11. Resultado do build do front-end.
+12. Resultado do build do back-end.
+13. Resultado do lint.
+14. Resultado dos testes.
+15. Resultado do Prisma.
+16. Variáveis de ambiente necessárias.
+17. O que ainda depende de configuração manual.
+18. Passo a passo para publicar:
+
+    * Banco;
+    * Back-end;
+    * Front-end.
+19. Limitações conhecidas.
+20. Sugestão de commits organizados.
+
+Ao final, classifique o projeto usando uma destas opções:
+
+* Não está pronto;
+* Pronto apenas para execução local;
+* Pronto para deploy de portfólio;
+* Pronto para produção comercial.
+
+O resultado esperado para esta etapa é:
+
+**Pronto para deploy de portfólio.**
+
+Não classifique como produção comercial apenas porque o build passou. Avalie com honestidade o que realmente foi testado.

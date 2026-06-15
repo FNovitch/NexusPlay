@@ -172,7 +172,9 @@ export async function consultarPagamento(paymentId: string) {
 export const getPayment = consultarPagamento;
 
 export function validarAssinaturaMercadoPago(headers: Record<string, unknown>, rawId?: string) {
-  if (!env.MERCADO_PAGO_WEBHOOK_SECRET || env.MERCADO_PAGO_WEBHOOK_SECRET === "opcional") return true;
+  if (!env.MERCADO_PAGO_WEBHOOK_SECRET || env.MERCADO_PAGO_WEBHOOK_SECRET === "opcional") {
+    return env.NODE_ENV !== "production";
+  }
   const signature = String(headers["x-signature"] ?? "");
   const requestId = String(headers["x-request-id"] ?? "");
   if (!signature || !requestId || !rawId) return false;

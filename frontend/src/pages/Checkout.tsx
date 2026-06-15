@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import { productImageUrl } from "../api/products";
 import { EmptyState } from "../components/EmptyState";
+import { demoMode } from "../config/env";
 import { createDemoOrder, isDemoToken } from "../data/demoOrders";
 import { fetchAddressByCep, maskCep, onlyDigits, parseApiError } from "../lib/artisanForm";
 import { api } from "../lib/api";
@@ -117,7 +118,7 @@ export function Checkout() {
         showToast({ title: "Entrega Calculada", description: "Escolha a melhor opção para cada loja.", variant: "success" });
       }
     } catch (requestError: unknown) {
-      if (import.meta.env.DEV) {
+      if (demoMode) {
         const demoGroups = buildDemoFreightGroups(groups);
         setFreightGroups(demoGroups);
         setSelectedFreight(demoGroups.reduce<Record<string, FreightOption>>((acc, group) => ({ ...acc, [group.groupId]: group.opcoes[0] }), {}));

@@ -29,6 +29,7 @@ const envSchema = z.object({
   JWT_EXPIRES_IN: z.string().default("7d"),
   FRONTEND_URL: z.string().url().default("http://localhost:5173"),
   BACKEND_URL: z.string().url().default("http://localhost:4000"),
+  CORS_ORIGINS: z.string().optional(),
   MERCADO_PAGO_ACCESS_TOKEN: z.string().optional(),
   MERCADO_PAGO_PUBLIC_KEY: z.string().optional(),
   MERCADO_PAGO_WEBHOOK_SECRET: z.string().optional(),
@@ -49,6 +50,16 @@ const envSchema = z.object({
   MELHOR_ENVIO_SANDBOX: z.coerce.boolean().default(true),
   MELHOR_ENVIO_USER_AGENT: z.string().default("NexusPlay Marketplace (suporte@nexusplay.demo)"),
   MELHOR_ENVIO_CEP_ORIGEM: z.string().default("55900000"),
+}).superRefine((value, ctx) => {
+  if (value.NODE_ENV !== "production") return;
+
+  if (value.MERCADO_PAGO_ACCESS_TOKEN && !value.MERCADO_PAGO_WEBHOOK_SECRET) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["MERCADO_PAGO_WEBHOOK_SECRET"],
+      message: "MERCADO_PAGO_WEBHOOK_SECRET e obrigatoria quando Mercado Pago estiver ativo em producao."
+    });
+  }
 });
 
 const parsedEnv = envSchema.safeParse(process.env);
