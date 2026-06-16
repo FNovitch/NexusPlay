@@ -2,7 +2,7 @@
 
 Marketplace full stack para portfólio, construído para demonstrar uma experiência SaaS gamer de ponta a ponta: catálogo público, lojas, carrinho, checkout, pedidos, painel do vendedor, assinaturas e administração.
 
-![Status](https://img.shields.io/badge/status-pronto%20para%20demo-22c55e?style=for-the-badge)
+![Status](https://img.shields.io/badge/status-em%20andamento-f59e0b?style=for-the-badge)
 ![React](https://img.shields.io/badge/React-18-61dafb?style=for-the-badge&logo=react&logoColor=111827)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178c6?style=for-the-badge&logo=typescript&logoColor=white)
 ![Node.js](https://img.shields.io/badge/Node.js-20-339933?style=for-the-badge&logo=node.js&logoColor=white)
@@ -13,6 +13,10 @@ Marketplace full stack para portfólio, construído para demonstrar uma experiê
 O NexusPlay resolve o problema de apresentar um projeto full stack com fluxos reais o suficiente para uma avaliação técnica: usuários, vendedores, produtos, pedidos, pagamento, frete, upload de imagens e painel administrativo convivem em uma mesma aplicação.
 
 O projeto também possui um modo demo no frontend para apresentação rápida, mas o backend está preparado para rodar com PostgreSQL, migrations, seed de vitrine e integrações externas configuradas por variáveis de ambiente.
+
+## Estado Atual
+
+O projeto está em andamento e já possui a base funcional do marketplace implementada. A aplicação conta com catálogo gamer/geek, autenticação, áreas de cliente, vendedor e administrador, seed demonstrativo e configuração para integrações externas. As próximas etapas são publicar o ambiente, validar os fluxos em produção e adicionar materiais visuais da demonstração.
 
 ## Funcionalidades
 
@@ -33,22 +37,6 @@ O projeto também possui um modo demo no frontend para apresentação rápida, m
 - Cliente: cadastro, login, carrinho, checkout, pedidos e confirmação de recebimento.
 - Vendedor: cadastro de loja, perfil, assinatura, produtos e pedidos recebidos.
 - Administrador: painel para aprovar lojas/produtos e acompanhar a operação.
-
-## Links Da Demonstração
-
-- Aplicação: adicione aqui a URL do frontend após o deploy.
-- API: adicione aqui a URL do backend após o deploy.
-- Health check: `/health`
-
-## Screenshots
-
-Adicione imagens reais após publicar a aplicação:
-
-- Home e catálogo.
-- Detalhe do produto.
-- Checkout.
-- Painel do vendedor.
-- Painel administrativo.
 
 ## Tecnologias
 
@@ -89,7 +77,6 @@ Integrações:
 ```txt
 .
 ├── backend
-│   ├── api                 # Entry point para deploy serverless
 │   ├── prisma              # Schema, migrations e seed
 │   ├── scripts             # Criação segura de administrador
 │   └── src
@@ -280,17 +267,6 @@ Passos:
 - Favoritos usam estado local para manter o escopo simples; sincronização com backend é melhoria futura.
 - A autenticação permanece com JWT em localStorage para evitar uma refatoração ampla nesta etapa.
 
-## Demo Para Recrutadores
-
-O frontend possui botão de conta demo para navegação rápida sem credenciais reais. Para uma apresentação mais forte, crie também:
-
-- Um administrador real por CLI, com senha privada.
-- Um vendedor aprovado no banco.
-- Produtos públicos pelo seed.
-- Um roteiro curto mostrando: catálogo, carrinho, checkout, painel do vendedor e admin.
-
-Não publique credenciais administrativas no README. Se precisar de acesso demonstrativo, use uma conta limitada e troque a senha periodicamente.
-
 ## Limitações Conhecidas
 
 - Não é uma aplicação pronta para produção comercial.
@@ -303,7 +279,7 @@ Não publique credenciais administrativas no README. Se precisar de acesso demon
 
 - Sincronizar favoritos por usuário.
 - Adicionar testes automatizados E2E.
-- Criar screenshots e vídeo demonstrativo do deploy final.
+- Criar screenshots e vídeo demonstrativo da aplicação publicada.
 - Evoluir logs estruturados e monitoramento.
 - Migrar autenticação para cookie `httpOnly` em uma fase posterior.
 
@@ -321,17 +297,10 @@ npm run create:admin
 
 ## Status De Qualidade
 
-Verificado nesta preparação:
+Verificado durante a preparação do projeto:
 
 - Build completo do backend e frontend.
 - Configuração de produção mais restritiva.
 - Seed seguro de catálogo para deploy.
 - Metatags básicas, favicon e Open Graph.
 - Revalidação de sessão no frontend.
-
-Pendências recomendadas:
-
-- Rodar ESLint no ambiente local se o executor do Windows bloquear o comando.
-- Adicionar screenshots reais do deploy ao README.
-- Gravar um vídeo curto de demonstração.
-- Integrar favoritos do frontend ao backend ou remover o botão caso não faça parte da demo.
