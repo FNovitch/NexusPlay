@@ -5,7 +5,7 @@ import morgan from "morgan";
 import compression from "compression";
 import cookieParser from "cookie-parser";
 import hpp from "hpp";
-import rateLimit from "express-rate-limit";
+import { rateLimit } from "express-rate-limit";
 
 import { env } from "./config/env.js";
 import { prisma } from "./lib/prisma.js";
