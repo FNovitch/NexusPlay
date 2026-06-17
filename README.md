@@ -1,6 +1,6 @@
 # NexusPlay
 
-Marketplace full stack para portfólio, construído para demonstrar uma experiência SaaS gamer de ponta a ponta: catálogo público, lojas, carrinho, checkout, pedidos, painel do vendedor, assinaturas e administração.
+Marketplace full stack geek/gamer feito para portfólio. A ideia do projeto é simular uma plataforma onde clientes compram produtos de várias lojas, vendedores gerenciam seus itens e um administrador acompanha a operação.
 
 ![Status](https://img.shields.io/badge/status-em%20andamento-f59e0b?style=for-the-badge)
 ![React](https://img.shields.io/badge/React-18-61dafb?style=for-the-badge&logo=react&logoColor=111827)
@@ -8,37 +8,48 @@ Marketplace full stack para portfólio, construído para demonstrar uma experiê
 ![Node.js](https://img.shields.io/badge/Node.js-20-339933?style=for-the-badge&logo=node.js&logoColor=white)
 ![Prisma](https://img.shields.io/badge/Prisma-ORM-2d3748?style=for-the-badge&logo=prisma&logoColor=white)
 
-## Visão Geral
+## Sobre o projeto
 
-O NexusPlay resolve o problema de apresentar um projeto full stack com fluxos reais o suficiente para uma avaliação técnica: usuários, vendedores, produtos, pedidos, pagamento, frete, upload de imagens e painel administrativo convivem em uma mesma aplicação.
+O NexusPlay foi criado para praticar e mostrar um fluxo mais completo de aplicação web, indo além de um CRUD simples. Ele tem catálogo público, carrinho, checkout, pedidos, painel de vendedor, painel administrativo e algumas integrações que podem ser usadas em modo real ou configuradas para demonstração.
 
-O projeto também possui um modo demo no frontend para apresentação rápida, mas o backend está preparado para rodar com PostgreSQL, migrations, seed de vitrine e integrações externas configuradas por variáveis de ambiente.
+Também existe um modo demo no frontend, útil para apresentar o projeto mesmo sem deixar todos os serviços externos funcionando. Ainda assim, o backend foi preparado para rodar com PostgreSQL, migrations, seed inicial e variáveis de ambiente.
 
-## Estado Atual
+## Status atual
 
-O projeto está em andamento e já possui a base funcional do marketplace implementada. A aplicação conta com catálogo gamer/geek, autenticação, áreas de cliente, vendedor e administrador, seed demonstrativo e configuração para integrações externas. As próximas etapas são publicar o ambiente, validar os fluxos em produção e adicionar materiais visuais da demonstração.
+O projeto ainda está em andamento, mas a base principal já foi implementada. Hoje ele já conta com:
+
+- Catálogo geek/gamer.
+- Login e cadastro.
+- Perfis de cliente, vendedor e administrador.
+- Carrinho e pedidos.
+- Painéis separados por tipo de usuário.
+- Seed com dados de demonstração.
+- Configuração para Mercado Pago, Melhor Envio, Cloudinary e envio de email.
+
+As próximas melhorias são publicar uma versão online, testar melhor os fluxos em produção e adicionar imagens ou vídeo de demonstração.
 
 ## Funcionalidades
 
-- Catálogo público com produtos, categorias, lojas e detalhes.
+- Catálogo público com produtos, categorias, lojas e página de detalhes.
 - Cadastro e login de cliente, vendedor e administrador.
-- Carrinho agrupado por loja, cálculo de entrega e checkout.
-- Histórico de pedidos, status e confirmação de recebimento.
-- Painel do vendedor com perfil, produtos, pedidos e assinatura.
-- Upload de imagens com Cloudinary em produção.
-- Painel administrativo para clientes, lojas, produtos, pedidos, avaliações, categorias, assinaturas, pagamentos e repasses.
+- Carrinho separado por loja.
+- Cálculo de entrega e checkout.
+- Histórico de pedidos e confirmação de recebimento.
+- Painel do vendedor para loja, produtos, pedidos e assinatura.
+- Upload de imagens com Cloudinary.
+- Painel administrativo para acompanhar clientes, lojas, produtos, pedidos, avaliações, categorias, assinaturas, pagamentos e repasses.
 - Integração com Mercado Pago Checkout Pro.
 - Integração com Melhor Envio para frete.
 - Recuperação de senha por SMTP.
-- Seed seguro para categorias, planos e catálogo público de demonstração.
+- Seed seguro para categorias, planos e catálogo demo.
 
-## Perfis Disponíveis
+## Perfis da aplicação
 
-- Cliente: cadastro, login, carrinho, checkout, pedidos e confirmação de recebimento.
-- Vendedor: cadastro de loja, perfil, assinatura, produtos e pedidos recebidos.
-- Administrador: painel para aprovar lojas/produtos e acompanhar a operação.
+- Cliente: pode se cadastrar, fazer login, adicionar produtos ao carrinho, finalizar compra e acompanhar pedidos.
+- Vendedor: pode cadastrar loja, editar perfil, gerenciar produtos e acompanhar pedidos recebidos.
+- Administrador: pode acessar um painel para aprovar e acompanhar dados importantes da plataforma.
 
-## Tecnologias
+## Tecnologias utilizadas
 
 Frontend:
 
@@ -72,7 +83,7 @@ Integrações:
 - Cloudinary
 - SMTP/Nodemailer
 
-## Arquitetura
+## Estrutura
 
 ```txt
 .
@@ -81,8 +92,8 @@ Integrações:
 │   ├── scripts             # Criação segura de administrador
 │   └── src
 │       ├── config          # Variáveis e integrações
-│       ├── controllers     # Regras HTTP
-│       ├── middlewares     # Auth, validação, erros, upload
+│       ├── controllers     # Controllers das rotas
+│       ├── middlewares     # Auth, validação, erros e upload
 │       ├── modules         # Schemas, mappers e tipos
 │       ├── routes          # Rotas da API
 │       └── services        # Email, storage, pagamento e frete
@@ -91,7 +102,7 @@ Integrações:
 │   └── src
 │       ├── components
 │       ├── config
-│       ├── data            # Dados demo usados apenas como fallback/local
+│       ├── data            # Dados demo usados como fallback/local
 │       ├── pages
 │       ├── services
 │       └── store
@@ -99,7 +110,7 @@ Integrações:
 └── package.json
 ```
 
-## Como Rodar Localmente
+## Como rodar localmente
 
 Pré-requisitos:
 
@@ -107,20 +118,20 @@ Pré-requisitos:
 - PostgreSQL
 - npm
 
-Instalação:
+Instale as dependências:
 
 ```bash
 npm install
 ```
 
-Configure as variáveis:
+Crie os arquivos de ambiente:
 
 ```bash
 cp backend/.env.example backend/.env
 cp frontend/.env.example frontend/.env
 ```
 
-No backend, preencha pelo menos:
+No backend, configure pelo menos:
 
 ```env
 NODE_ENV=development
@@ -132,7 +143,7 @@ FRONTEND_URL="http://localhost:5173"
 BACKEND_URL="http://localhost:4000"
 ```
 
-Use sempre um banco ou schema dedicado para o NexusPlay. O backend bloqueia `DATABASE_URL` sem `schema`, com `schema=public` ou com schema diferente de `DATABASE_SCHEMA` para evitar impacto em bancos compartilhados.
+Use um banco ou schema dedicado para o NexusPlay. O backend bloqueia `DATABASE_URL` sem `schema`, com `schema=public` ou com schema diferente de `DATABASE_SCHEMA`, para evitar mexer sem querer em outro projeto.
 
 No frontend:
 
@@ -142,7 +153,7 @@ VITE_BACKEND_URL="http://localhost:4000"
 VITE_DEMO_MODE=true
 ```
 
-Banco de dados:
+Prepare o banco:
 
 ```bash
 npm run db:generate
@@ -150,13 +161,13 @@ npm run db:migrate
 npm run seed
 ```
 
-Criar administrador:
+Crie um administrador:
 
 ```bash
 npm run create:admin
 ```
 
-Ambiente de desenvolvimento:
+Rode o backend e o frontend:
 
 ```bash
 npm run dev --workspace backend
@@ -169,7 +180,7 @@ URLs locais:
 - Backend: `http://localhost:4000`
 - Health check: `http://localhost:4000/health`
 
-## Variáveis De Ambiente
+## Variáveis de ambiente
 
 Backend:
 
@@ -216,80 +227,91 @@ Frontend:
 - `VITE_MELHOR_ENVIO_ENABLED`
 - `VITE_DEMO_MODE`
 
-Em `NODE_ENV=production`, configure corretamente `DATABASE_URL`, `JWT_SECRET`, `FRONTEND_URL`, `BACKEND_URL` e `CORS_ORIGINS`. Credenciais de Mercado Pago, SMTP, Cloudinary e Melhor Envio são necessárias apenas quando esses fluxos reais ou sandbox estiverem ativos. Se `MERCADO_PAGO_ACCESS_TOKEN` estiver configurado em produção, `MERCADO_PAGO_WEBHOOK_SECRET` também é obrigatório.
+Em produção, configure com cuidado `DATABASE_URL`, `JWT_SECRET`, `FRONTEND_URL`, `BACKEND_URL` e `CORS_ORIGINS`. As credenciais do Mercado Pago, SMTP, Cloudinary e Melhor Envio só precisam estar preenchidas quando esses fluxos forem usados de verdade ou em sandbox.
 
-Use `backend/.env.example` e `frontend/.env.example` como base. Mantenha ambientes separados pelo valor de `DATABASE_URL` e `DATABASE_SCHEMA`: desenvolvimento pode usar `nexusplay_dev`, teste `nexusplay_test` e produção `nexusplay`. `DATABASE_URL` deve apontar para o mesmo schema definido em `DATABASE_SCHEMA`; não use `public` nem compartilhe schema com outro projeto.
+Se `MERCADO_PAGO_ACCESS_TOKEN` estiver configurado em produção, `MERCADO_PAGO_WEBHOOK_SECRET` também é obrigatório.
 
-## Modo Demonstração
+Use `backend/.env.example` e `frontend/.env.example` como base. A ideia é manter ambientes separados, por exemplo:
 
-`VITE_DEMO_MODE=true` ativa recursos pensados para apresentação:
+- Desenvolvimento: `nexusplay_dev`
+- Teste: `nexusplay_test`
+- Produção: `nexusplay`
+
+O valor de `DATABASE_URL` precisa apontar para o mesmo schema definido em `DATABASE_SCHEMA`. Evite usar `public` ou compartilhar schema com outro projeto.
+
+## Modo demonstração
+
+`VITE_DEMO_MODE=true` ativa alguns recursos para facilitar a apresentação:
 
 - Botões de conta demo no login.
-- Fallbacks locais quando a API não estiver disponível.
+- Fallbacks locais quando a API não está disponível.
 - Pedidos simulados para tokens demo.
 - Aviso discreto no topo da interface.
 
-`VITE_DEMO_MODE=false` desativa fallbacks silenciosos. Nesse modo, falhas da API aparecem como erro ou estado vazio, sem substituir dados reais por mocks.
+Com `VITE_DEMO_MODE=false`, os fallbacks são desligados. Nesse caso, se a API falhar, o frontend mostra erro ou estado vazio em vez de trocar dados reais por mocks.
 
 ## Segurança
 
-- Senhas são armazenadas com bcrypt.
-- JWT usa segredo obrigatório vindo do ambiente.
-- Rotas administrativas exigem usuário `ADMIN`.
-- Login possui rate limiting.
-- Webhooks do Mercado Pago exigem assinatura em produção.
-- CORS deve apontar apenas para os domínios HTTPS do frontend em produção.
-- `.env` e `.env.*` são ignorados pelo Git.
-- O seed não cria administrador automaticamente.
-- Migrations e seed são bloqueados quando `DATABASE_URL` usa o schema `public` ou não declara um schema dedicado.
+Alguns cuidados que já foram colocados no projeto:
 
-## Deploy Sugerido
+- Senhas salvas com bcrypt.
+- JWT usando segredo vindo do ambiente.
+- Rotas administrativas protegidas para usuário `ADMIN`.
+- Rate limiting no login.
+- Webhooks do Mercado Pago com assinatura obrigatória em produção.
+- CORS configurável por ambiente.
+- Arquivos `.env` ignorados pelo Git.
+- Seed sem criação automática de administrador.
+- Bloqueio de migrations e seed quando o banco usa schema `public` ou não declara schema dedicado.
 
-Opção de baixo custo para portfólio:
+## Deploy sugerido
+
+Uma opção simples para publicar como portfólio:
 
 - Frontend: Vercel ou Netlify.
 - Backend: Render, Railway ou Fly.io.
 - Banco: Neon, Supabase Postgres ou Railway Postgres.
 - Imagens: Cloudinary.
-- Email: Resend, Brevo ou SMTP compatível, opcional para a demonstração.
+- Email: Resend, Brevo ou SMTP compatível.
 
-Passos:
+Passos gerais:
 
-1. Criar o banco PostgreSQL e reservar um schema dedicado, por exemplo `nexusplay`.
-2. Cadastrar as variáveis de ambiente do backend.
+1. Criar o banco PostgreSQL com um schema dedicado, por exemplo `nexusplay`.
+2. Configurar as variáveis de ambiente do backend.
 3. Rodar `npm run db:migrate --workspace backend`.
 4. Rodar `npm run seed --workspace backend`.
 5. Criar o primeiro administrador com `npm run create:admin --workspace backend`.
 6. Publicar o backend e testar `/health`.
-7. Cadastrar `VITE_API_URL` e `VITE_BACKEND_URL` no frontend.
+7. Configurar `VITE_API_URL` e `VITE_BACKEND_URL` no frontend.
 8. Publicar o frontend.
 9. Atualizar `FRONTEND_URL`, `BACKEND_URL` e `CORS_ORIGINS` com os domínios finais.
 10. Testar cadastro, login, painel, produto, frete, checkout e pedidos.
 
-## Decisões Técnicas
+## Algumas decisões do projeto
 
-- O backend mantém integrações reais configuráveis, mas o projeto é apresentado como ambiente demonstrativo.
-- O seed é idempotente e cria dados públicos de vitrine, vendedor demo e cliente demo. Ele não apaga dados legados de outros projetos. Admin demo só é criado com `SEED_DEMO_ADMIN_EMAIL` e `SEED_DEMO_ADMIN_PASSWORD`.
-- Produtos de demonstração usam imagens remotas para evitar depender de upload público no primeiro deploy.
-- Favoritos usam estado local para manter o escopo simples; sincronização com backend é melhoria futura.
-- A autenticação permanece com JWT em localStorage para evitar uma refatoração ampla nesta etapa.
+- O backend tem integrações reais configuráveis, mas o projeto foi pensado principalmente para demonstração.
+- O seed cria dados de vitrine, vendedor demo e cliente demo sem apagar dados antigos de outros projetos.
+- O admin demo só é criado quando `SEED_DEMO_ADMIN_EMAIL` e `SEED_DEMO_ADMIN_PASSWORD` estão definidos.
+- Os produtos demo usam imagens remotas para facilitar o primeiro deploy.
+- Favoritos ficam no estado local por enquanto.
+- A autenticação usa JWT em `localStorage` para manter o escopo mais simples nesta versão.
 
-## Limitações Conhecidas
+## Limitações conhecidas
 
-- Não é uma aplicação pronta para produção comercial.
-- Pagamento, frete e email podem rodar em sandbox ou simulação.
+- Ainda não é uma aplicação pronta para uso comercial real.
+- Pagamento, frete e email podem depender de sandbox ou simulação.
 - Favoritos ainda não sincronizam com o backend.
-- Não há backup automatizado documentado para ambiente comercial.
-- Não há cobertura completa de testes automatizados.
-- Limpezas destrutivas no schema compartilhado `public` devem ser feitas apenas com backup e SQL controlado fora do seed.
+- Não há backup automatizado documentado.
+- Ainda não existe cobertura completa de testes automatizados.
+- Qualquer limpeza destrutiva em banco compartilhado deve ser feita manualmente, com backup e cuidado.
 
-## Melhorias Futuras
+## Melhorias futuras
 
 - Sincronizar favoritos por usuário.
 - Adicionar testes automatizados E2E.
 - Criar screenshots e vídeo demonstrativo da aplicação publicada.
-- Evoluir logs estruturados e monitoramento.
-- Migrar autenticação para cookie `httpOnly` em uma fase posterior.
+- Melhorar logs e monitoramento.
+- Migrar autenticação para cookie `httpOnly` em uma próxima etapa.
 
 ## Scripts
 
@@ -303,12 +325,12 @@ npm run seed
 npm run create:admin
 ```
 
-## Status De Qualidade
+## Qualidade
 
-Verificado durante a preparação do projeto:
+Durante a preparação do projeto foram verificados:
 
 - Build completo do backend e frontend.
 - Configuração de produção mais restritiva.
-- Seed seguro de catálogo para deploy.
+- Seed seguro para catálogo de demonstração.
 - Metatags básicas, favicon e Open Graph.
 - Revalidação de sessão no frontend.
