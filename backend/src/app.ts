@@ -1,11 +1,11 @@
 import express from "express";
 import cors from "cors";
-import helmet from "helmet";
 import morgan from "morgan";
 import compression from "compression";
 import cookieParser from "cookie-parser";
 import hpp from "hpp";
 import { rateLimit } from "express-rate-limit";
+import { createRequire } from "node:module";
 
 import { env } from "./config/env.js";
 import { prisma } from "./lib/prisma.js";
@@ -13,6 +13,9 @@ import { router } from "./routes/index.js";
 import { errorHandler, notFound } from "./middlewares/error.js";
 import { sanitizeInput } from "./middlewares/sanitize.js";
 import { uploadRoot } from "./middlewares/upload.js";
+
+const require = createRequire(import.meta.url);
+const helmet = require("helmet") as typeof import("helmet").default;
 
 const app = express();
 const devOrigins = [
