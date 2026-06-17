@@ -137,19 +137,6 @@ const demoProducts = [
   ["streamlab-station", "audio-streaming", "Webcam FocusCam 2K", "webcam-focuscam-2k", 329.9, 19, 4.74, 83, "https://images.unsplash.com/photo-1587826080692-f439cd0b70da?auto=format&fit=crop&w=900&q=80"]
 ] as const;
 
-const legacyCategorySlugs = ["perifericos", "audio-gamer", "setup-rgb", "colecionaveis", "vestuario-gamer"];
-const legacyProductSlugs = [
-  "teclado-mecanico-nebula-tkl",
-  "headset-pulse-71-rgb",
-  "mouse-gamer-vector-8k",
-  "deskmat-cybergrid-xl",
-  "luminaria-rgb-hexapack",
-  "controle-propad-x",
-  "controle-propad-x-wireless",
-  "action-figure-cacadora-estelar",
-  "camiseta-arcade-mode"
-];
-const legacySellerSlugs = ["kriar", "kriar-market", "kriar-artesanato", "kriar-store", "atelier-kriar", "atelie-kriar"];
 const plans = [
   { name: "Plano mensal", description: "Publique produtos gamer na NexusPlay por 30 dias.", price: 9.9, durationDays: 30, type: SubscriptionPlanType.MONTHLY },
   { name: "Plano anual", description: "Publique produtos gamer na NexusPlay por 365 dias com desconto.", price: 99, durationDays: 365, type: SubscriptionPlanType.YEARLY }
@@ -168,71 +155,20 @@ function productDimensions(index: number) {
 }
 
 async function seedCoreData() {
-  await Promise.all(demoCategories.map((category) =>
-    prisma.category.upsert({
+  for (const category of demoCategories) {
+    await prisma.category.upsert({
       where: { slug: category.slug },
       update: { name: category.name, description: category.description, active: true },
       create: { ...category, active: true }
-    })
-  ));
+    });
+  }
 
-  await Promise.all(plans.map((plan) =>
-    prisma.subscriptionPlan.upsert({
+  for (const plan of plans) {
+    await prisma.subscriptionPlan.upsert({
       where: { type: plan.type },
       update: { name: plan.name, description: plan.description, price: plan.price, durationDays: plan.durationDays, active: true },
       create: plan
-    })
-  ));
-}
-
-async function cleanupLegacyKriarData() {
-  const legacyProducts = await prisma.product.findMany({
-    where: {
-      OR: [
-        { slug: { in: legacyProductSlugs } },
-        { category: { slug: { in: legacyCategorySlugs } } },
-        { seller: { slug: { in: legacySellerSlugs } } }
-      ]
-    },
-    include: { orderItems: { select: { id: true } } }
-  });
-
-  for (const product of legacyProducts) {
-    if (product.orderItems.length > 0) {
-      await prisma.product.update({
-        where: { id: product.id },
-        data: { status: ProductStatus.INACTIVE, stock: 0 }
-      });
-    } else {
-      await prisma.product.delete({ where: { id: product.id } });
-    }
-  }
-
-  const legacySellers = await prisma.seller.findMany({
-    where: { slug: { in: legacySellerSlugs } },
-    include: { orderItems: { select: { id: true } }, products: { include: { orderItems: { select: { id: true } } } } }
-  });
-
-  for (const seller of legacySellers) {
-    const hasHistory = seller.orderItems.length > 0 || seller.products.some((product) => product.orderItems.length > 0);
-    if (hasHistory) {
-      await prisma.seller.update({ where: { id: seller.id }, data: { status: SellerStatus.REJECTED } });
-      await prisma.product.updateMany({ where: { sellerId: seller.id }, data: { status: ProductStatus.INACTIVE, stock: 0 } });
-    } else {
-      const userId = seller.userId;
-      await prisma.seller.delete({ where: { id: seller.id } });
-      await prisma.user.delete({ where: { id: userId } }).catch(() => undefined);
-    }
-  }
-
-  for (const slug of legacyCategorySlugs) {
-    const category = await prisma.category.findUnique({ where: { slug }, include: { _count: { select: { products: true } } } });
-    if (!category) continue;
-    if (category._count.products === 0) {
-      await prisma.category.delete({ where: { id: category.id } });
-    } else {
-      await prisma.category.update({ where: { id: category.id }, data: { active: false } });
-    }
+    });
   }
 }
 
@@ -368,7 +304,7 @@ async function seedShowcaseCatalog() {
 
     const image = {
       url: imageUrl,
-      publicId: `seed/${slug}`,
+      publicId: `seed:nexusplay:${slug}`,
       filename: `${slug}.jpg`,
       alt: name
     };
@@ -469,12 +405,11 @@ async function seedOptionalDemoAdmin() {
 
 async function main() {
   await seedCoreData();
-  await cleanupLegacyKriarData();
   await seedShowcaseCatalog();
   await seedDemoCustomer();
   await seedOptionalDemoAdmin();
 
-  console.log("Seed concluido: catalogo gamer/geek expandido, lojas demo e limpeza controlada do Kriar aplicados.");
+  console.log("Seed concluido: catalogo gamer/geek expandido e lojas demo aplicados.");
 }
 
 main()

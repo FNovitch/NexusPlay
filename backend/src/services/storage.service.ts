@@ -19,6 +19,19 @@ function assertCloudinaryConfigured() {
   }
 }
 
+function cloudinaryProjectPrefix() {
+  return env.CLOUDINARY_FOLDER.split("/")[0]?.trim();
+}
+
+function assertOwnedCloudinaryPublicId(publicId: string) {
+  if (publicId.startsWith("seed:nexusplay:")) return;
+
+  const projectPrefix = cloudinaryProjectPrefix();
+  if (projectPrefix && !publicId.startsWith(`${projectPrefix}/`)) {
+    throw new AppError("Imagem fora do escopo do NexusPlay.", 400, { images: "O publicId informado nao pertence a pasta configurada para este projeto." });
+  }
+}
+
 async function saveImageLocally(file: Express.Multer.File): Promise<StoredImage> {
   const extension = path.extname(file.originalname).toLowerCase() || ".png";
   const safeName = `${Date.now()}-${crypto.randomUUID()}${extension}`;
@@ -73,5 +86,6 @@ export async function deleteImageFromCloudinary(publicId: string) {
   }
 
   assertCloudinaryConfigured();
+  assertOwnedCloudinaryPublicId(publicId);
   await cloudinaryClient.uploader.destroy(publicId, { resource_type: "image" });
 }

@@ -116,8 +116,8 @@ npm install
 Configure as variáveis:
 
 ```bash
-cp .env.example backend/.env
-cp .env.example frontend/.env
+cp backend/.env.example backend/.env
+cp frontend/.env.example frontend/.env
 ```
 
 No backend, preencha pelo menos:
@@ -125,11 +125,14 @@ No backend, preencha pelo menos:
 ```env
 NODE_ENV=development
 PORT=4000
-DATABASE_URL="postgresql://USER:PASSWORD@HOST:5432/nexusplay?schema=public"
+DATABASE_URL="postgresql://USER:PASSWORD@HOST:5432/nexusplay_dev?schema=nexusplay_dev"
+DATABASE_SCHEMA="nexusplay_dev"
 JWT_SECRET="uma_chave_com_pelo_menos_32_caracteres"
 FRONTEND_URL="http://localhost:5173"
 BACKEND_URL="http://localhost:4000"
 ```
+
+Use sempre um banco ou schema dedicado para o NexusPlay. O backend bloqueia `DATABASE_URL` sem `schema`, com `schema=public` ou com schema diferente de `DATABASE_SCHEMA` para evitar impacto em bancos compartilhados.
 
 No frontend:
 
@@ -173,6 +176,7 @@ Backend:
 - `NODE_ENV`
 - `PORT`
 - `DATABASE_URL`
+- `DATABASE_SCHEMA`
 - `JWT_SECRET`
 - `JWT_EXPIRES_IN`
 - `FRONTEND_URL`
@@ -214,6 +218,8 @@ Frontend:
 
 Em `NODE_ENV=production`, configure corretamente `DATABASE_URL`, `JWT_SECRET`, `FRONTEND_URL`, `BACKEND_URL` e `CORS_ORIGINS`. Credenciais de Mercado Pago, SMTP, Cloudinary e Melhor Envio são necessárias apenas quando esses fluxos reais ou sandbox estiverem ativos. Se `MERCADO_PAGO_ACCESS_TOKEN` estiver configurado em produção, `MERCADO_PAGO_WEBHOOK_SECRET` também é obrigatório.
 
+Use `backend/.env.example` e `frontend/.env.example` como base. Mantenha ambientes separados pelo valor de `DATABASE_URL` e `DATABASE_SCHEMA`: desenvolvimento pode usar `nexusplay_dev`, teste `nexusplay_test` e produção `nexusplay`. `DATABASE_URL` deve apontar para o mesmo schema definido em `DATABASE_SCHEMA`; não use `public` nem compartilhe schema com outro projeto.
+
 ## Modo Demonstração
 
 `VITE_DEMO_MODE=true` ativa recursos pensados para apresentação:
@@ -235,6 +241,7 @@ Em `NODE_ENV=production`, configure corretamente `DATABASE_URL`, `JWT_SECRET`, `
 - CORS deve apontar apenas para os domínios HTTPS do frontend em produção.
 - `.env` e `.env.*` são ignorados pelo Git.
 - O seed não cria administrador automaticamente.
+- Migrations e seed são bloqueados quando `DATABASE_URL` usa o schema `public` ou não declara um schema dedicado.
 
 ## Deploy Sugerido
 
@@ -248,7 +255,7 @@ Opção de baixo custo para portfólio:
 
 Passos:
 
-1. Criar o banco PostgreSQL.
+1. Criar o banco PostgreSQL e reservar um schema dedicado, por exemplo `nexusplay`.
 2. Cadastrar as variáveis de ambiente do backend.
 3. Rodar `npm run db:migrate --workspace backend`.
 4. Rodar `npm run seed --workspace backend`.
@@ -262,7 +269,7 @@ Passos:
 ## Decisões Técnicas
 
 - O backend mantém integrações reais configuráveis, mas o projeto é apresentado como ambiente demonstrativo.
-- O seed é idempotente e cria dados públicos de vitrine, vendedor demo e cliente demo. Admin demo só é criado com `SEED_DEMO_ADMIN_EMAIL` e `SEED_DEMO_ADMIN_PASSWORD`.
+- O seed é idempotente e cria dados públicos de vitrine, vendedor demo e cliente demo. Ele não apaga dados legados de outros projetos. Admin demo só é criado com `SEED_DEMO_ADMIN_EMAIL` e `SEED_DEMO_ADMIN_PASSWORD`.
 - Produtos de demonstração usam imagens remotas para evitar depender de upload público no primeiro deploy.
 - Favoritos usam estado local para manter o escopo simples; sincronização com backend é melhoria futura.
 - A autenticação permanece com JWT em localStorage para evitar uma refatoração ampla nesta etapa.
@@ -274,6 +281,7 @@ Passos:
 - Favoritos ainda não sincronizam com o backend.
 - Não há backup automatizado documentado para ambiente comercial.
 - Não há cobertura completa de testes automatizados.
+- Limpezas destrutivas no schema compartilhado `public` devem ser feitas apenas com backup e SQL controlado fora do seed.
 
 ## Melhorias Futuras
 

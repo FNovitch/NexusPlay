@@ -44,7 +44,7 @@ function mergeDemoCategories(apiCategories: typeof categories) {
 }
 
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("nexus-token");
+  const token = localStorage.getItem("nexusplay-auth-token");
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }

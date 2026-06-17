@@ -30,19 +30,19 @@ export const useAuth = create<AuthState>()(
       login: async (email, password) => {
         const { data } = await api.post<{ data?: { token: string; user: User }; token?: string; user?: User }>("/login", { email, password });
         const session = data.data ?? { token: data.token!, user: data.user! };
-        localStorage.setItem("nexus-token", session.token);
+        localStorage.setItem("nexusplay-auth-token", session.token);
         set({ token: session.token, user: session.user, sessionChecked: true });
         return session.user;
       },
       refreshSession: async () => {
-        const token = localStorage.getItem("nexus-token");
+        const token = localStorage.getItem("nexusplay-auth-token");
         if (!token) {
           set({ sessionChecked: true });
           return;
         }
         if (token.startsWith("demo-")) {
           if (!demoMode) {
-            localStorage.removeItem("nexus-token");
+            localStorage.removeItem("nexusplay-auth-token");
             set({ token: undefined, user: undefined, sessionChecked: true });
           } else {
             set({ sessionChecked: true });
@@ -57,22 +57,22 @@ export const useAuth = create<AuthState>()(
             set({ token, user, sessionChecked: true });
             return;
           }
-          localStorage.removeItem("nexus-token");
+          localStorage.removeItem("nexusplay-auth-token");
           set({ token: undefined, user: undefined, sessionChecked: true });
         } catch {
-          localStorage.removeItem("nexus-token");
+          localStorage.removeItem("nexusplay-auth-token");
           set({ token: undefined, user: undefined, sessionChecked: true });
         }
       },
       setSession: (token, user) => {
-        localStorage.setItem("nexus-token", token);
+        localStorage.setItem("nexusplay-auth-token", token);
         set({ token, user, sessionChecked: true });
       },
       logout: () => {
-        localStorage.removeItem("nexus-token");
+        localStorage.removeItem("nexusplay-auth-token");
         set({ token: undefined, user: undefined, sessionChecked: true });
       }
     }),
-    { name: "nexus-auth" }
+    { name: "nexusplay-auth" }
   )
 );

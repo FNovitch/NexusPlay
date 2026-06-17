@@ -12,8 +12,8 @@
     "create:admin": "tsx scripts/create-admin.ts",
     "postinstall": "prisma generate",
     "prisma:generate": "prisma generate",
-    "prisma:migrate": "prisma migrate deploy",
-    "prisma:seed": "tsx prisma/seed.ts"
+    "prisma:migrate": "tsx scripts/assert-database-schema.ts && prisma migrate deploy",
+    "prisma:seed": "tsx scripts/assert-database-schema.ts && tsx prisma/seed.ts"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
@@ -50,6 +50,6 @@
     "typescript": "^5.7.2"
   },
   "prisma": {
-    "seed": "tsx prisma/seed.ts"
+    "seed": "tsx scripts/assert-database-schema.ts && tsx prisma/seed.ts"
   }
 }

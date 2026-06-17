@@ -6,7 +6,7 @@ import { AppError } from "./error.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-export const uploadRoot = path.resolve(__dirname, "../../public/uploads");
+export const uploadRoot = path.resolve(__dirname, "../../public/uploads/nexusplay");
 
 fs.mkdirSync(uploadRoot, { recursive: true });
 

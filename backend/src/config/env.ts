@@ -7,15 +7,31 @@ import { z } from "zod";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const envPaths = [
-  path.resolve(process.cwd(), ".env"),
-  path.resolve(__dirname, "../../.env"),
-  path.resolve(__dirname, "../../../.env"),
-];
+const runtimeNodeEnv = process.env.NODE_ENV === "test" || process.env.NODE_ENV === "production"
+  ? process.env.NODE_ENV
+  : "development";
 
-const envPath = envPaths.find((candidate) => fs.existsSync(candidate));
+const envFileNames = [`.env.${runtimeNodeEnv}`, ".env"];
+const envPaths = envFileNames.flatMap((fileName) => [
+  path.resolve(process.cwd(), fileName),
+  path.resolve(__dirname, "../../", fileName),
+  path.resolve(__dirname, "../../../", fileName),
+]);
 
-dotenv.config(envPath ? { path: envPath } : undefined);
+for (const candidate of envPaths) {
+  if (fs.existsSync(candidate)) {
+    dotenv.config({ path: candidate });
+  }
+}
+
+function databaseSchema(databaseUrl: string) {
+  try {
+    const parsed = new URL(databaseUrl);
+    return parsed.searchParams.get("schema")?.trim();
+  } catch {
+    return undefined;
+  }
+}
 
 const envSchema = z.object({
   NODE_ENV: z
@@ -23,6 +39,7 @@ const envSchema = z.object({
     .default("development"),
   PORT: z.coerce.number().default(4000),
   DATABASE_URL: z.string().min(1),
+  DATABASE_SCHEMA: z.string().default("nexusplay"),
   JWT_SECRET: z
     .string()
     .min(32, "JWT_SECRET deve ter pelo menos 32 caracteres"),
@@ -51,6 +68,31 @@ const envSchema = z.object({
   MELHOR_ENVIO_USER_AGENT: z.string().default("NexusPlay Marketplace (suporte@nexusplay.demo)"),
   MELHOR_ENVIO_CEP_ORIGEM: z.string().default("55900000"),
 }).superRefine((value, ctx) => {
+  const schema = databaseSchema(value.DATABASE_URL);
+  const expectedSchema = value.DATABASE_SCHEMA.trim();
+
+  if (!expectedSchema || expectedSchema.toLowerCase() === "public") {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["DATABASE_SCHEMA"],
+      message: "DATABASE_SCHEMA deve ser um schema exclusivo do NexusPlay, por exemplo nexusplay."
+    });
+  }
+
+  if (!schema || schema.toLowerCase() === "public") {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["DATABASE_URL"],
+      message: "Configure DATABASE_URL com schema dedicado para NexusPlay, por exemplo schema=nexusplay."
+    });
+  } else if (expectedSchema && schema !== expectedSchema) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["DATABASE_URL"],
+      message: "O schema da DATABASE_URL deve ser igual a DATABASE_SCHEMA para evitar uso acidental de outro projeto."
+    });
+  }
+
   if (value.NODE_ENV !== "production") return;
 
   if (value.MERCADO_PAGO_ACCESS_TOKEN && !value.MERCADO_PAGO_WEBHOOK_SECRET) {
