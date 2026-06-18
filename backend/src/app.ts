@@ -8,7 +8,7 @@ import { rateLimit } from "express-rate-limit";
 import { createRequire } from "node:module";
 
 import { env } from "./config/env.js";
-import { prisma } from "./lib/prisma.js";
+import { demoRoutes } from "./routes/demo.routes.js";
 import { router } from "./routes/index.js";
 import { errorHandler, notFound } from "./middlewares/error.js";
 import { sanitizeInput } from "./middlewares/sanitize.js";
@@ -74,7 +74,16 @@ const limiter = rateLimit({
 app.use(limiter);
 
 app.get("/health", async (_req, res) => {
+  if (env.DEMO_MODE) {
+    return res.status(200).json({
+      status: "ok",
+      database: "demo-mode",
+      mode: "portfolio-demo"
+    });
+  }
+
   try {
+    const { prisma } = await import("./lib/prisma.js");
     await prisma.$queryRaw`SELECT 1`;
 
     return res.status(200).json({
@@ -90,7 +99,11 @@ app.get("/health", async (_req, res) => {
   }
 });
 
-app.use("/api/v1", router);
+if (env.DEMO_MODE) {
+  app.use("/api/v1", demoRoutes);
+} else {
+  app.use("/api/v1", router);
+}
 
 app.use(notFound);
 app.use(errorHandler);

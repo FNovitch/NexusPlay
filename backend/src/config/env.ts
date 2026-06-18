@@ -10,6 +10,7 @@ const __dirname = path.dirname(__filename);
 const runtimeNodeEnv = process.env.NODE_ENV === "test" || process.env.NODE_ENV === "production"
   ? process.env.NODE_ENV
   : "development";
+const demoJwtSecret = "nexusplay-demo-secret-change-for-real-use-32chars";
 
 const envFileNames = [`.env.${runtimeNodeEnv}`, ".env"];
 const envPaths = envFileNames.flatMap((fileName) => [
@@ -37,12 +38,13 @@ const envSchema = z.object({
   NODE_ENV: z
     .enum(["development", "test", "production"])
     .default("development"),
+  DEMO_MODE: z.coerce.boolean().default(false),
   PORT: z.coerce.number().default(4000),
-  DATABASE_URL: z.string().min(1),
+  DATABASE_URL: z.string().optional(),
   DATABASE_SCHEMA: z.string().default("nexusplay"),
   JWT_SECRET: z
     .string()
-    .min(32, "JWT_SECRET deve ter pelo menos 32 caracteres"),
+    .default(demoJwtSecret),
   JWT_EXPIRES_IN: z.string().default("7d"),
   FRONTEND_URL: z.string().url().default("http://localhost:5173"),
   BACKEND_URL: z.string().url().default("http://localhost:4000"),
@@ -68,6 +70,35 @@ const envSchema = z.object({
   MELHOR_ENVIO_USER_AGENT: z.string().default("NexusPlay Marketplace (suporte@nexusplay.demo)"),
   MELHOR_ENVIO_CEP_ORIGEM: z.string().default("55900000"),
 }).superRefine((value, ctx) => {
+  if (!value.DEMO_MODE && value.JWT_SECRET.length < 32) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["JWT_SECRET"],
+      message: "JWT_SECRET deve ter pelo menos 32 caracteres."
+    });
+  }
+
+  if (!value.DEMO_MODE && value.JWT_SECRET === demoJwtSecret) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["JWT_SECRET"],
+      message: "Configure JWT_SECRET para usar o backend fora do modo demonstracao."
+    });
+  }
+
+  if (value.DEMO_MODE) {
+    return;
+  }
+
+  if (!value.DATABASE_URL) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["DATABASE_URL"],
+      message: "DATABASE_URL e obrigatoria quando DEMO_MODE=false."
+    });
+    return;
+  }
+
   const schema = databaseSchema(value.DATABASE_URL);
   const expectedSchema = value.DATABASE_SCHEMA.trim();
 

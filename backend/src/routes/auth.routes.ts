@@ -1,5 +1,5 @@
 import { Router } from "express";
-import rateLimit from "express-rate-limit";
+import { rateLimit } from "express-rate-limit";
 import { login, me, register } from "../controllers/auth.controller.js";
 import { asyncHandler } from "../middlewares/async-handler.js";
 import { authenticate } from "../middlewares/auth.js";
