@@ -225,7 +225,7 @@ export function Home() {
           </span>
           {query && <span className="badge-warm">Busca: {query}</span>}
         </div>
-        <div className="mb-6 flex gap-2 overflow-x-auto pb-1">
+        <div className="hide-scrollbar mb-6 flex gap-2 overflow-x-auto pb-1">
           <button type="button" onClick={() => setCategory("todos")} className={`shrink-0 rounded-lg border px-3 py-2 text-sm font-medium transition ${category === "todos" ? "border-nexus-secondary bg-nexus-accent text-nexus-contrast" : "border-nexus-line bg-nexus-surface text-nexus-muted hover:border-nexus-secondary hover:text-nexus-contrast"}`}>
             Todos
           </button>
@@ -254,7 +254,7 @@ export function Home() {
                 <div className="flex flex-wrap items-center gap-1.5">
                   {paginationItems.map((item, index) =>
                     item === "ellipsis" ? (
-                      <span key={`ellipsis-${index}`} className="grid h-9 min-w-9 place-items-center px-1 text-sm font-bold text-nexus-muted/70">
+                      <span key={`ellipsis-${index}`} className="grid h-11 min-w-11 place-items-center px-1 text-sm font-bold text-nexus-muted/70">
                         ...
                       </span>
                     ) : (
@@ -262,7 +262,7 @@ export function Home() {
                         key={item}
                         type="button"
                         onClick={() => goToProductPage(item)}
-                        className={`grid h-9 min-w-9 place-items-center rounded-lg px-2 text-sm font-bold transition ${
+                        className={`grid h-11 min-w-11 place-items-center rounded-lg px-2 text-sm font-bold transition ${
                           item === currentPage
                             ? "bg-nexus-accent text-nexus-contrast"
                             : "text-nexus-muted hover:bg-nexus-paper hover:text-nexus-contrast"
@@ -278,7 +278,7 @@ export function Home() {
                     type="button"
                     onClick={() => goToProductPage(activeProductPage + 1)}
                     disabled={activeProductPage === totalProductPages}
-                    className="grid h-9 w-9 place-items-center rounded-lg text-nexus-muted transition hover:bg-nexus-paper hover:text-nexus-contrast disabled:pointer-events-none disabled:opacity-35"
+                    className="grid h-11 w-11 place-items-center rounded-lg text-nexus-muted transition hover:bg-nexus-paper hover:text-nexus-contrast disabled:pointer-events-none disabled:opacity-35"
                     aria-label="Próxima página"
                   >
                     <ChevronRight className="h-4 w-4" />
@@ -287,7 +287,7 @@ export function Home() {
                     type="button"
                     onClick={() => goToProductPage(totalProductPages)}
                     disabled={activeProductPage === totalProductPages}
-                    className="grid h-9 w-9 place-items-center rounded-lg text-nexus-muted transition hover:bg-nexus-paper hover:text-nexus-contrast disabled:pointer-events-none disabled:opacity-35"
+                    className="grid h-11 w-11 place-items-center rounded-lg text-nexus-muted transition hover:bg-nexus-paper hover:text-nexus-contrast disabled:pointer-events-none disabled:opacity-35"
                     aria-label="Última página"
                   >
                     <ChevronsRight className="h-4 w-4" />
