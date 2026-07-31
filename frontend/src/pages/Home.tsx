@@ -2,6 +2,8 @@ import {
   ArrowRight,
   BarChart3,
   Boxes,
+  ChevronRight,
+  ChevronsRight,
   CheckCircle2,
   Gamepad2,
   Headphones,
@@ -50,6 +52,7 @@ const sellerFeatures = [
   ["Assinatura", "Planos demonstrativos para liberar publicação e recorrência."],
   ["Operação", "Pedidos, métricas, status de aprovação e gestão de loja no painel."]
 ];
+const PRODUCTS_PER_PAGE = 12;
 
 export function Home() {
   const [searchParams] = useSearchParams();
@@ -60,6 +63,7 @@ export function Home() {
   const [sellersLoading, setSellersLoading] = useState(true);
   const [category, setCategory] = useState("todos");
   const [sort, setSort] = useState("featured");
+  const [currentPage, setCurrentPage] = useState(1);
   const query = searchParams.get("q") ?? "";
 
   useEffect(() => {
@@ -113,6 +117,31 @@ export function Home() {
   }, [products, category, sort, query]);
 
   const activeCategory = category === "todos" ? "Todos os produtos" : categories.find((item) => item.slug === category)?.name ?? "Categoria";
+  const totalProductPages = Math.max(1, Math.ceil(visibleProducts.length / PRODUCTS_PER_PAGE));
+  const activeProductPage = Math.min(currentPage, totalProductPages);
+  const productPageItems = useMemo(() => {
+    const start = (activeProductPage - 1) * PRODUCTS_PER_PAGE;
+    return visibleProducts.slice(start, start + PRODUCTS_PER_PAGE);
+  }, [visibleProducts, activeProductPage]);
+  const paginationItems = useMemo(() => getPaginationItems(activeProductPage, totalProductPages), [activeProductPage, totalProductPages]);
+  const firstProductIndex = visibleProducts.length === 0 ? 0 : (activeProductPage - 1) * PRODUCTS_PER_PAGE + 1;
+  const lastProductIndex = Math.min(activeProductPage * PRODUCTS_PER_PAGE, visibleProducts.length);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [category, sort, query]);
+
+  useEffect(() => {
+    if (currentPage > totalProductPages) {
+      setCurrentPage(totalProductPages);
+    }
+  }, [currentPage, totalProductPages]);
+
+  function goToProductPage(page: number) {
+    const nextPage = Math.min(Math.max(page, 1), totalProductPages);
+    setCurrentPage(nextPage);
+    document.getElementById("produtos")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
 
   return (
     <main className="overflow-hidden bg-nexus-background">
@@ -211,11 +240,62 @@ export function Home() {
         ) : visibleProducts.length === 0 ? (
           <EmptyState title="Nenhum produto encontrado" description="Ajuste a busca ou remova os filtros para ver mais produtos." />
         ) : (
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {visibleProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
+          <>
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {productPageItems.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+            {totalProductPages > 1 && (
+              <nav className="mt-8 flex flex-col gap-4 border-t border-nexus-line pt-5 sm:flex-row sm:items-center sm:justify-between" aria-label="Paginação de produtos">
+                <p className="text-sm font-medium text-nexus-muted">
+                  Mostrando {firstProductIndex}-{lastProductIndex} de {visibleProducts.length} produtos
+                </p>
+                <div className="flex flex-wrap items-center gap-1.5">
+                  {paginationItems.map((item, index) =>
+                    item === "ellipsis" ? (
+                      <span key={`ellipsis-${index}`} className="grid h-9 min-w-9 place-items-center px-1 text-sm font-bold text-nexus-muted/70">
+                        ...
+                      </span>
+                    ) : (
+                      <button
+                        key={item}
+                        type="button"
+                        onClick={() => goToProductPage(item)}
+                        className={`grid h-9 min-w-9 place-items-center rounded-lg px-2 text-sm font-bold transition ${
+                          item === currentPage
+                            ? "bg-nexus-accent text-nexus-contrast"
+                            : "text-nexus-muted hover:bg-nexus-paper hover:text-nexus-contrast"
+                        }`}
+                        aria-current={item === activeProductPage ? "page" : undefined}
+                        aria-label={`Ir para página ${item}`}
+                      >
+                        {item}
+                      </button>
+                    )
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => goToProductPage(activeProductPage + 1)}
+                    disabled={activeProductPage === totalProductPages}
+                    className="grid h-9 w-9 place-items-center rounded-lg text-nexus-muted transition hover:bg-nexus-paper hover:text-nexus-contrast disabled:pointer-events-none disabled:opacity-35"
+                    aria-label="Próxima página"
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => goToProductPage(totalProductPages)}
+                    disabled={activeProductPage === totalProductPages}
+                    className="grid h-9 w-9 place-items-center rounded-lg text-nexus-muted transition hover:bg-nexus-paper hover:text-nexus-contrast disabled:pointer-events-none disabled:opacity-35"
+                    aria-label="Última página"
+                  >
+                    <ChevronsRight className="h-4 w-4" />
+                  </button>
+                </div>
+              </nav>
+            )}
+          </>
         )}
       </section>
 
@@ -318,6 +398,35 @@ export function Home() {
       </section>
     </main>
   );
+}
+
+function getPaginationItems(currentPage: number, totalPages: number) {
+  if (totalPages <= 9) {
+    return Array.from({ length: totalPages }, (_, index) => index + 1);
+  }
+
+  const pages = new Set<number>([1, 2, totalPages - 1, totalPages]);
+
+  if (currentPage <= 5) {
+    for (let page = 3; page <= 6; page += 1) pages.add(page);
+  } else if (currentPage >= totalPages - 4) {
+    for (let page = totalPages - 5; page <= totalPages - 2; page += 1) pages.add(page);
+  } else {
+    for (let page = currentPage - 2; page <= currentPage + 2; page += 1) pages.add(page);
+  }
+
+  const sortedPages = Array.from(pages)
+    .filter((page) => page >= 1 && page <= totalPages)
+    .sort((a, b) => a - b);
+
+  return sortedPages.reduce<Array<number | "ellipsis">>((items, page) => {
+    const previous = items[items.length - 1];
+    if (typeof previous === "number" && page - previous > 1) {
+      items.push("ellipsis");
+    }
+    items.push(page);
+    return items;
+  }, []);
 }
 
 function ProductSkeletonGrid() {
